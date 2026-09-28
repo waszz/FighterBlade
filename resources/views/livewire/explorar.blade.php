@@ -601,14 +601,21 @@
       </div>
       @endif
 
-      <!-- Poderes (los del set con el que pelea) -->
-      @php $poderesModalJugador = $personajeSeleccionadoModal->postDeCombate()?->poderes ?? collect(); @endphp
-      @php $joyaModalJugador = $personajeSeleccionadoModal->joya; @endphp
-      @if ($poderesModalJugador->isNotEmpty() || $joyaModalJugador)
+      <!-- Tipo de daño y poderes (los del set con el que pelea: el completo equipado o, si no, el base) -->
+      @php
+        $postCombateModal = $personajeSeleccionadoModal->postDeCombate();
+        $tipoModalJugador = $postCombateModal?->tipo ?? $personajeSeleccionadoModal->post?->tipo;
+        $poderesModalJugador = $postCombateModal?->poderes ?? collect();
+        $joyaModalJugador = $personajeSeleccionadoModal->joya;
+      @endphp
+      @if ($tipoModalJugador || $poderesModalJugador->isNotEmpty() || $joyaModalJugador)
         <div class="rounded-lg border border-black p-2 mb-4 text-left bg-gradient-to-b from-[#2a3240] to-[#10141b]
                     shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
           {{-- Solo los iconos: el nombre y la descripción aparecen al pasar el mouse o al tocar --}}
           <div class="flex flex-wrap justify-center gap-2">
+            @if ($tipoModalJugador)
+              <x-icono-tipo :tipo="$tipoModalJugador" tam="w-11 h-11" class="cursor-pointer" />
+            @endif
             @foreach ($poderesModalJugador as $poder)
               <x-icono-poder :poder="$poder" tam="w-11 h-11" class="cursor-pointer" />
             @endforeach
