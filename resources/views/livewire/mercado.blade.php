@@ -76,19 +76,15 @@
                 {{-- Nombre y nivel --}}
                 <p class="text-center font-bold text-lg text-yellow-400 truncate">{{ $post->nombre }}</p>
                 <p class="text-center text-sm text-white mb-0.5">Nivel {{ $post->nivel ?? 1 }}</p>
-                @php
-                $colorTipo = match(strtolower($post->tipo ?? '')) {
-                'fisico' => 'text-red-400',
-                'elemental' => 'text-sky-400',
-                'hibrido' => 'text-purple-400',
-                default => 'text-gray-400',
-                };
-                @endphp
-
-                <p class="text-center text-xs text-white mb-3 tracking-widest font-semibold">
-                    Daño del Personaje: <x-icono-tipo :tipo="$post->tipo" tam="w-5 h-5" /> <span class="{{ $colorTipo }}">{{ ucfirst($post->tipo ?? 'Tipo desconocido')
-                        }}</span>
-                </p>
+                {{-- Tipo de daño y poderes: solo iconos, al pasar el mouse o tocarlos muestran nombre y descripción --}}
+                <div class="flex flex-wrap items-center justify-center gap-1.5 mb-3">
+                    @if ($post->tipo)
+                        <x-icono-tipo :tipo="$post->tipo" tam="w-8 h-8" class="cursor-pointer" />
+                    @endif
+                    @foreach ($poderes as $poder)
+                        <x-icono-poder :poder="$poder" tam="w-8 h-8" class="cursor-pointer" />
+                    @endforeach
+                </div>
 
                 <div class="flex justify-center gap-2 mb-3">
                     @foreach ($items as $item)
@@ -137,23 +133,6 @@
                     $costo = $nivel === 5 ? 250 : 250 + ($nivel - 5) * 20;
                 @endphp
 
-                {{-- Poderes --}}
-                @if ($poderes->isNotEmpty())
-                <div class="bg-gray-900 border border-black rounded-md p-2 max-h-24 overflow-y-auto text-[11px] mb-3 shadow-[inset_0_2px_3px_rgba(0,0,0,0.8),0_1px_0_rgba(255,255,255,0.15)]">
-                    <p class="text-yellow-400 font-semibold mb-2 text-center">Poderes</p>
-                    @foreach ($poderes as $poder)
-                    <div class="mb-1 flex items-center gap-1.5">
-                        <x-icono-poder :poder="$poder" tam="w-8 h-8" />
-                        <div class="min-w-0">
-                        <p class="text-blue-300 font-semibold truncate">{{ $poder->nombre }}</p>
-                        <p class="text-gray-300 line-clamp-2">{{ $poder->descripcion }}</p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <p class="text-gray-500 italic text-center text-xs mb-4">Este personaje no tiene poderes asignados.</p>
-                @endif
 
                 {{-- Botón Comprar --}}
                 <button wire:click="comprarPersonaje({{ $post->id }})" wire:loading.attr="disabled"
