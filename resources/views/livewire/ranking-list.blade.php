@@ -2,12 +2,23 @@
     @if($ranking && count($ranking) > 0)
     <div>
         @foreach($ranking as $index => $item)
+        {{-- Puesto en el ranking (los 3 primeros en oro, plata y bronce) --}}
+        @php
+        $colorPuesto = match($loop->iteration) {
+            1 => 'from-yellow-300 to-yellow-600 text-black',
+            2 => 'from-gray-200 to-gray-400 text-black',
+            3 => 'from-amber-500 to-amber-800 text-white',
+            default => 'from-neutral-700 to-black text-yellow-400',
+        };
+        $puesto = '<span class="w-7 h-7 shrink-0 flex items-center justify-center rounded-full border border-black bg-gradient-to-b ' . $colorPuesto . ' text-xs font-extrabold shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]">' . $loop->iteration . '</span>';
+        @endphp
         @if($tipo === 'Clanes')
         {{-- Fila de clan: sin tarjeta, línea abajo; imagen y en el medio nombre, tag y prestigio --}}
         <div wire:click="abrirModalIngreso({{ $item->id }})"
              class="flex items-center gap-2 px-1 py-1.5 cursor-pointer transition hover:bg-white/5
                     {{ $loop->last ? '' : 'border-b border-white/20' }}
                     {{ optional($clanActual)->id === $item->id ? 'font-bold' : '' }}">
+            {!! $puesto !!}
             @if($item->imagen)
             <img src="{{ asset('storage/' . $item->imagen) }}" alt="{{ $item->nombre }}" class="w-10 h-10 shrink-0 rounded-full object-cover" />
             @endif
@@ -47,6 +58,7 @@
                     {{ $loop->last ? '' : 'border-b border-white/20' }}
                     {{ $esYoRanking ? 'font-bold' : '' }}
                     {{ $item instanceof \App\Models\Personaje && $item->claseRanking() ? 'rounded-lg border ' . $item->claseRanking() : '' }}">
+            {!! $puesto !!}
             @if($imagen)
             <img src="{{ asset('storage/' . $imagen) }}" alt="Imagen de {{ $item->nombre }}" class="w-10 h-10 shrink-0 rounded-full object-cover" />
             @endif

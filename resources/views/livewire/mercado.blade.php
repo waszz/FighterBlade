@@ -7,6 +7,27 @@
     <p class="text-lg text-white text-center mb-6 font-semibold drop-shadow-md">
         Explora objetos en venta
     </p>
+
+    {{-- Cuándo se renueva: la hora se muestra en la zona horaria de cada jugador --}}
+    <div wire:ignore class="flex justify-center mb-6"
+         x-data="{ fin: {{ \App\Livewire\Mercado::proximaRotacion()->timestamp }}, s: 0,
+                   get fecha() { return new Date(this.fin * 1000).toLocaleString('es', { weekday: 'long', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }); } }"
+         x-init="const tick = () => s = Math.max(0, Math.floor(fin - Date.now() / 1000)); tick(); setInterval(tick, 1000)">
+        <div class="px-4 py-2 rounded-lg border border-black text-center font-mono bg-gradient-to-b from-[#2a3240] to-[#10141b]
+                    shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
+            <p class="text-xs text-gray-300">🔄 El mercado se renueva los lunes y los sábados</p>
+            <template x-if="s > 0">
+                <p class="text-sm font-bold">
+                    <span class="text-yellow-300">Próxima: <span class="capitalize" x-text="fecha"></span></span>
+                    <span class="block text-emerald-300"
+                          x-text="'Faltan ' + (Math.floor(s / 86400) ? Math.floor(s / 86400) + 'd ' : '') + String(Math.floor(s % 86400 / 3600)).padStart(2, '0') + ':' + String(Math.floor(s % 3600 / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')"></span>
+                </p>
+            </template>
+            <template x-if="s <= 0">
+                <p class="text-sm font-bold text-emerald-300">¡Mercado renovado! Recargá la página para verlo.</p>
+            </template>
+        </div>
+    </div>
     @if ($esAdmin)
     <div class="flex justify-center mb-4">
         <button wire:click="forzarActualizacion" class="bg-gradient-to-b from-red-500 to-red-800 px-3 py-1 rounded text-white font-bold text-center text-sm border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 disabled:opacity-50 disabled:active:translate-y-0">

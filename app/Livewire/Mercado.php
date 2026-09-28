@@ -41,7 +41,7 @@ public function mount(Personaje $personaje)
 
     $claveCacheMercado = $this->claveCacheMercado();
 
-    $postsIds = Cache::remember($claveCacheMercado, now()->addDays(2), function () use ($nivelMaximo) {
+    $postsIds = Cache::remember($claveCacheMercado, self::proximaRotacion(), function () use ($nivelMaximo) {
         return Post::where('nivel', '<=', $nivelMaximo)
             ->inRandomOrder()
             ->take(4)
@@ -87,7 +87,7 @@ public function forzarActualizacion()
     $claveCacheMercado = $this->claveCacheMercado();
 
     Cache::forget($claveCacheMercado);
-    Cache::put($claveCacheMercado, $postsIds, now()->addDays(2));
+    Cache::put($claveCacheMercado, $postsIds, self::proximaRotacion());
     $this->postsDisponibles = Post::whereIn('id', $postsIds)
     ->orderByDesc('nivel')
     ->get();
@@ -106,58 +106,35 @@ public function forzarActualizacion()
 
 
 
-private function claveCacheMercado(): string
+// El mercado se renueva los lunes y los sábados a las 00:00 (hora del servidor)
+public static function ultimaRotacion(): Carbon
 {
-    $dia = now()->isoFormat('dddd');
-    $fechaHoy = now()->toDateString();
-
-    if ($dia === 'Saturday' || $dia === 'Monday') {
-        return "mercado_posts_" . $fechaHoy;
+    $hoy = now()->startOfDay();
+    if ($hoy->isMonday() || $hoy->isSaturday()) {
+        return $hoy;
     }
-
-    $ultimaRotacion = Carbon::parse($fechaHoy)->previous('Saturday');
-    if (now()->isMonday()) {
-        $ultimaRotacion = Carbon::parse($fechaHoy)->previous('Monday');
-    }
-    return "mercado_posts_" . $ultimaRotacion->toDateString();
+    return max($hoy->copy()->previous(Carbon::SATURDAY), $hoy->copy()->previous(Carbon::MONDAY));
 }
 
+public static function proximaRotacion(): Carbon
+{
+    $hoy = now()->startOfDay();
+    return min($hoy->copy()->next(Carbon::SATURDAY), $hoy->copy()->next(Carbon::MONDAY));
+}
 
-
-
+private function claveCacheMercado(): string
+{
+    return 'mercado_posts_' . self::ultimaRotacion()->toDateString();
+}
 
 private function claveCachePartesRandom(): string
 {
-    $dia = now()->isoFormat('dddd');
-    $fechaHoy = now()->toDateString();
-
-    if ($dia === 'Saturday' || $dia === 'Monday') {
-        return "partes_random_" . $fechaHoy;
-    }
-
-    $ultimaRotacion = Carbon::parse($fechaHoy)->previous('Saturday');
-    if (now()->isMonday()) {
-        $ultimaRotacion = Carbon::parse($fechaHoy)->previous('Monday');
-    }
-    return "partes_random_" . $ultimaRotacion->toDateString();
+    return 'partes_random_' . self::ultimaRotacion()->toDateString();
 }
 
 private function duracionCachePartesRandom()
 {
-    $now = now();
-    $dia = $now->isoFormat('dddd');
-
-    if ($dia === 'Saturday') {
-        return $now->copy()->addDays(2)->startOfDay(); // hasta lunes
-    } elseif ($dia === 'Monday') {
-        return $now->copy()->addDays(5)->startOfDay(); // hasta sábado siguiente
-    } else {
-        // Si es otro día, cache hasta próximo sábado o lunes
-        $nextSaturday = $now->copy()->next('Saturday')->startOfDay();
-        $nextMonday = $now->copy()->next('Monday')->startOfDay();
-
-        return $nextSaturday < $nextMonday ? $nextSaturday : $nextMonday;
-    }
+    return self::proximaRotacion();
 }
 public function cargarPartesRandom($forzar = false)
 {
