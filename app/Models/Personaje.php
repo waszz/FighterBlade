@@ -81,7 +81,7 @@ protected $casts = [
     }
 
     // Entrenamiento con el maestro (App\Livewire\Entrenar): mientras dura no puede explorar, atacar,
-    // hacer misiones, torre ni caza, ni viajar (pero sí lo pueden atacar)
+    // hacer misiones, torre ni caza, ni viajar (pero sí lo pueden atacar, y puede aceptar duelos e intercambios)
     const MENSAJE_ENTRENANDO = 'Estás entrenando: no podés hacer esto hasta que termine el entrenamiento.';
 
     public function estaEntrenando(): bool
