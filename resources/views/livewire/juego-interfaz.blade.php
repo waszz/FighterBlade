@@ -85,6 +85,9 @@
                     ? \Carbon\Carbon::parse($personaje->fin_exploracion) : null;
                 $segundosExplorando = $finExplorando ? max(0, $finExplorando->timestamp - now()->timestamp) : 0;
             @endphp
+            {{-- Contenedores fijos (display: contents) para los paneles que aparecen y desaparecen: si el @if quedara suelto,
+                 Livewire empareja mal los elementos al redibujar y pisa el componente de stats de abajo (se traba el juego) --}}
+            <div wire:key="panel-explorando" class="contents">
             @if ($finExplorando)
                 <div wire:key="explorando-{{ $finExplorando->timestamp }}"
                      x-data="{ fin: Date.now() / 1000 + {{ $segundosExplorando }}, s: {{ $segundosExplorando }}, avisado: false }"
@@ -112,6 +115,7 @@
                     </button>
                 </div>
             @endif
+            </div>
 
             {{-- Recuperándose después de una pelea: cuenta regresiva y recuperar con oro --}}
             @php
@@ -120,6 +124,7 @@
                 $segundosRecuperacion = $finRecuperacion ? max(0, $finRecuperacion->timestamp - now()->timestamp) : 0;
                 $costoRecuperacion = $personaje->nivel * 20;
             @endphp
+            <div wire:key="panel-recuperacion" class="contents">
             @if ($segundosRecuperacion > 0)
                 {{-- La cuenta se calcula contra la hora de fin; al llegar a 0 se oculta sola y el panel se actualiza --}}
                 <div wire:key="recuperacion-{{ $finRecuperacion->timestamp }}"
@@ -148,9 +153,10 @@
                     </button>
                 </div>
             @endif
+            </div>
 
             {{-- Recuadro único: Stats y EXP --}}
-            <div class="w-full mt-1 font-mono border-2 border-[#16203a] rounded p-1.5 shadow-[inset_0_0_10px_rgba(0,0,0,0.55),0_0_0_1px_rgba(90,130,200,0.35)] space-y-1.5"
+            <div wire:key="recuadro-stats" class="w-full mt-1 font-mono border-2 border-[#16203a] rounded p-1.5 shadow-[inset_0_0_10px_rgba(0,0,0,0.55),0_0_0_1px_rgba(90,130,200,0.35)] space-y-1.5"
                 style="background-color: rgba(0,0,0,0.6); background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' font-family='monospace' font-size='9' fill='%23ffffff' fill-opacity='0.09'%3E%3Ctext x='4' y='12'%3E10%3C/text%3E%3Ctext x='58' y='20'%3E18%3C/text%3E%3Ctext x='96' y='10'%3E01%3C/text%3E%3Ctext x='24' y='40'%3E71%3C/text%3E%3Ctext x='80' y='46'%3E10%3C/text%3E%3Ctext x='6' y='66'%3E48%3C/text%3E%3Ctext x='50' y='72'%3E01%3C/text%3E%3Ctext x='100' y='78'%3E78%3C/text%3E%3Ctext x='30' y='98'%3E14%3C/text%3E%3Ctext x='76' y='106'%3E01%3C/text%3E%3Ctext x='4' y='116'%3E70%3C/text%3E%3C/svg%3E&quot;); background-size: 120px 120px;">
 
                 {{-- Asignar stats --}}
