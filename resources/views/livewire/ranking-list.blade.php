@@ -205,8 +205,12 @@
             </div>
             @endif
 
-            {{-- Atacar (no a uno mismo) --}}
-            @if (! $esMiPersonajeRanking && $personajeActual)
+            {{-- Atacar (no a uno mismo; los novatos no atacan ni son atacados) --}}
+            @if (! $esMiPersonajeRanking && $personajeActual && ($personajeActual->esNovato() || $personajeSeleccionadoModal->esNovato()))
+            <p class="w-full text-center py-2 rounded-lg border border-black text-xs font-bold text-gray-300 bg-gradient-to-b from-gray-600 to-gray-800 shadow-[0_3px_0_#000]">
+                🛡️ {{ $personajeActual->esNovato() ? 'Podés atacar jugadores desde el nivel ' . (\App\Livewire\Explorar::NIVEL_MAX_ENEMIGO_ESPECIAL + 1) : 'Jugador nuevo: todavía no se lo puede atacar' }}
+            </p>
+            @elseif (! $esMiPersonajeRanking && $personajeActual)
             <a href="{{ route('atacar.personaje', ['personajeId' => $personajeActual->id, 'objetivoId' => $personajeSeleccionadoModal->id]) }}"
                class="block w-full text-center py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-red-500 to-red-800
                       shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">

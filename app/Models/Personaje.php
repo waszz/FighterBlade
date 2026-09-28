@@ -169,6 +169,12 @@ protected $casts = [
         return $this->belongsTo(User::class);
     }
 
+    // Novato: todavía le toca el enemigo especial de bienvenida (nivel 1 y 2). No puede atacar ni ser atacado en PvP
+    public function esNovato(): bool
+    {
+        return ($this->nivel ?? 1) <= \App\Livewire\Explorar::NIVEL_MAX_ENEMIGO_ESPECIAL;
+    }
+
     // Excluye a los personajes de cuentas admin (no aparecen en los rankings)
     public function scopeSinAdmins($query)
     {

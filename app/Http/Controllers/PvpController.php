@@ -19,6 +19,14 @@ class PvpController extends Controller
             return $volver->with('toast_error', 'No podés atacar a ese personaje.');
         }
 
+        // Protección de novatos: hasta terminar las peleas con el enemigo especial no hay PvP
+        if ($personaje->esNovato()) {
+            return $volver->with('toast_error', 'Primero terminá tu entrenamiento: podés pelear contra otros jugadores desde el nivel ' . (\App\Livewire\Explorar::NIVEL_MAX_ENEMIGO_ESPECIAL + 1) . '.');
+        }
+        if ($objetivo->esNovato()) {
+            return $volver->with('toast_error', "{$objetivo->nombre} es un jugador nuevo: no se lo puede atacar todavía.");
+        }
+
         if ($motivo = $this->motivoBloqueo($personaje)) {
             return $volver->with('toast_error', $motivo);
         }
