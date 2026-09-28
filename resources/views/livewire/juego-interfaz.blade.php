@@ -1,4 +1,4 @@
-<div class="relative h-screen overflow-hidden" style="height: 100dvh" x-data="{ perfil: false, chat: false }">
+<div class="relative h-screen overflow-hidden" style="height: 100dvh" x-data="{ perfil: false, chat: false }" @cerrar-chat.window="chat = false">
     {{-- Una sola pestaña por navegador: las pestañas comparten la sesión (el servidor no las distingue), así que se avisan
          entre ellas; al abrir el juego en otra pestaña, esta queda bloqueada. "Jugar acá" la recarga y bloquea a la otra --}}
     <div wire:ignore x-data="{ otraPestana: false }"
@@ -393,7 +393,7 @@
                 @elseif ($seccion === 'drops')
                 @livewire('mis-drops', ['personajeId' => $personaje->id], key('drops-'.($reloadCounters['drops'] ?? 0)))
                 @elseif ($seccion === 'peleas')
-                @livewire('mis-peleas', ['personajeId' => $personaje->id], key('peleas-'.$reloadCounters['peleas']))
+                @livewire('mis-peleas', ['personajeId' => $personaje->id, 'peleaCompartidaId' => $peleaCompartidaId], key('peleas-'.$reloadCounters['peleas']))
                 @endif
             </main>
 
@@ -467,6 +467,9 @@
         </div>
     </div>
     @endif
+
+    {{-- Perfil de un jugador tocado en los Conectados del chat (el mismo modal del Ranking) --}}
+    <livewire:ranking-list :ranking="collect()" tipo="Nivel" :personaje="$personaje" :solo-modal="true" key="perfil-jugador-chat" />
 
     {{-- Script recarga --}}
     @push('scripts')

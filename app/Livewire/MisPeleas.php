@@ -25,10 +25,15 @@ class MisPeleas extends Component
 
 
 
-    public function mount($personajeId)
+    public function mount($personajeId, $peleaCompartidaId = null)
     {
         $this->personajeId = $personajeId;
         $this->cargarPeleas();
+
+        // Pelea tocada en el chat: se muestra aunque sea de otro jugador, solo si de verdad se compartió
+        if ($peleaCompartidaId && \App\Models\Mensaje::where('tipo', 'pelea')->where('adjunto->pelea_id', (int) $peleaCompartidaId)->exists()) {
+            $this->peleaVistaId = (int) $peleaCompartidaId;
+        }
     }
 
     public function cambiarPestana(string $pestana)

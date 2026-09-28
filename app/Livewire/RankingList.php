@@ -18,6 +18,8 @@ public $clanSeleccionado;
 public $personajeSeleccionadoModal;
 public $personajeSeleccionadoModalStats = [];
 public $gifPersonajeEquipado = null;
+// Instancia sin lista que solo abre el modal de un jugador (desde los Conectados del chat)
+public bool $soloModal = false;
    
    public function mount($personaje = null)
 {
@@ -26,6 +28,14 @@ public $gifPersonajeEquipado = null;
     $this->personajeActual = $personaje ?? Personaje::where('user_id', auth()->id())->first();
 }
 
+
+#[\Livewire\Attributes\On('verPerfilJugador')]
+public function verPerfilJugador($personajeId)
+{
+    if ($this->soloModal) {
+        $this->mostrarModalPersonaje($personajeId);
+    }
+}
 
 public function mostrarModalPersonaje($id)
 {

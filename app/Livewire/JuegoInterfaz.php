@@ -61,7 +61,18 @@ public function toggleChat()
     'abrirInventario' => 'mostrarInventario',
     'verMercado' => 'mostrarMercado',
     'cambiarSeccion' => 'cambiarSeccion', //Agregado
+    'verPeleaCompartida' => 'verPeleaCompartida',
 ];
+
+    // Pelea compartida en el chat que se abre en Mis peleas
+    public ?int $peleaCompartidaId = null;
+
+    public function verPeleaCompartida($peleaId)
+    {
+        $this->peleaCompartidaId = (int) $peleaId;
+        $this->seccion = 'peleas';
+        $this->reloadCounters['peleas']++;
+    }
 
     public function mount($personajeId)
     {
@@ -83,6 +94,7 @@ public function toggleChat()
 public function cambiarSeccion(string $nuevaSeccion)
 {
     $this->seccion = $nuevaSeccion;
+    $this->peleaCompartidaId = null;
 
     // Si la sección seleccionada es 'inicio', disparamos el evento para recargar la página
     if ($this->seccion === 'inicio') {

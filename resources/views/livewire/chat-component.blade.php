@@ -143,7 +143,9 @@
                                         default    => ['border-l-red-500', 'bg-gradient-to-b from-red-500 to-red-800'],
                                     };
                                 @endphp
-                                <div class="mt-1 mb-1 p-1.5 rounded-lg border border-black border-l-4 {{ $bordeResultado }} bg-black/30">
+                                {{-- Tocándola se abre la pelea en Mis peleas (en el celular además se cierra el chat) --}}
+                                <button type="button" wire:click="verPelea({{ $msg->id }})" x-on:click="$dispatch('cerrar-chat')" title="Ver la pelea"
+                                    class="block w-full text-left mt-1 mb-1 p-1.5 rounded-lg border border-black border-l-4 {{ $bordeResultado }} bg-black/30 hover:bg-black/50 transition-colors">
                                     <div class="flex items-center gap-2">
                                         <div class="w-10 h-10 shrink-0 rounded-md bg-black/50 border border-black flex items-end justify-center overflow-hidden">
                                             @if (! empty($adj['gif_personaje']))<img src="{{ asset('storage/' . $adj['gif_personaje']) }}" alt="" class="max-w-full max-h-full object-contain" loading="lazy">@endif
@@ -163,7 +165,7 @@
                                             <span class="flex items-center gap-0.5 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="" class="w-3.5 h-3.5">+{{ number_format($adj['oro'] ?? 0, 0, ',', '.') }}</span>
                                         </p>
                                     @endif
-                                </div>
+                                </button>
                                 @break
 
                             @default
@@ -209,7 +211,7 @@
                 </button>
             @endif
         </form>
-        {{-- Modal: conectados (tocando a alguien se abre el privado) --}}
+        {{-- Modal: conectados (tocando a alguien se abre su perfil; el sobre abre el privado) --}}
         @if ($panel === 'online')
             <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3" wire:click="alternarPanel('online')">
                 <div wire:click.stop class="relative w-full max-w-xs max-h-[80vh] flex flex-col p-4 rounded-xl border border-black text-white
@@ -223,23 +225,31 @@
                     <div class="min-h-0 overflow-y-auto sidebar-pj space-y-1 pr-1">
                     @forelse ($conectados as $pjOnline)
                         @php $soyYo = $pjOnline->id === $personajeId || $pjOnline->user_id === auth()->id(); @endphp
-                        <button type="button" @unless ($soyYo) wire:click="abrirPrivado({{ $pjOnline->id }})" @endunless wire:key="online-{{ $pjOnline->id }}"
-                            class="w-full flex items-center gap-2 p-1.5 rounded-lg text-left {{ $soyYo ? 'cursor-default' : 'hover:bg-white/5' }}">
-                            <span class="relative shrink-0">
-                                <img src="{{ asset('storage/' . $foto($pjOnline)) }}" alt="" class="w-9 h-9 rounded-full object-cover">
-                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
-                            </span>
-                            <span class="min-w-0 flex-1">
-                                <span class="block truncate text-sm font-bold {{ $colorNombre($pjOnline) }}">{{ $pjOnline->nombre }}{{ $soyYo ? ' (vos)' : '' }}</span>
-                                <span class="block text-[11px] text-yellow-300">Nivel {{ $pjOnline->nivel }}</span>
-                            </span>
-                            @unless ($soyYo)<i class="fa-regular fa-envelope text-gray-400 text-sm"></i>@endunless
-                        </button>
+                        {{-- Tocando al jugador se abre su perfil; el sobre abre el privado --}}
+                        <div wire:key="online-{{ $pjOnline->id }}" class="flex items-center gap-1 rounded-lg hover:bg-white/5">
+                            <button type="button" wire:click="verPerfil({{ $pjOnline->id }})" x-on:click="$dispatch('cerrar-chat')" title="Ver perfil"
+                                class="min-w-0 flex-1 flex items-center gap-2 p-1.5 text-left">
+                                <span class="relative shrink-0">
+                                    <img src="{{ asset('storage/' . $foto($pjOnline)) }}" alt="" class="w-9 h-9 rounded-full object-cover">
+                                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-sm font-bold hover:underline {{ $colorNombre($pjOnline) }}">{{ $pjOnline->nombre }}{{ $soyYo ? ' (vos)' : '' }}</span>
+                                    <span class="block text-[11px] text-yellow-300">Nivel {{ $pjOnline->nivel }}</span>
+                                </span>
+                            </button>
+                            @unless ($soyYo)
+                                <button type="button" wire:click="abrirPrivado({{ $pjOnline->id }})" title="Escribirle en privado" aria-label="Escribirle en privado"
+                                    class="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-white hover:bg-white/10">
+                                    <i class="fa-regular fa-envelope text-sm"></i>
+                                </button>
+                            @endunless
+                        </div>
                     @empty
                         <p class="px-1 py-2 text-xs text-gray-400 italic">No hay nadie conectado.</p>
                     @endforelse
                     </div>
-                    <p class="mt-2 text-center text-[10px] text-gray-400">Tocá a un jugador para escribirle en privado.</p>
+                    <p class="mt-2 text-center text-[10px] text-gray-400">Tocá a un jugador para ver su perfil; el sobre le escribe en privado.</p>
                 </div>
             </div>
         @endif

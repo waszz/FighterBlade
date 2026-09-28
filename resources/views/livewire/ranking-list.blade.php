@@ -1,5 +1,7 @@
 <div>
-    @if($ranking && count($ranking) > 0)
+    @if($soloModal)
+    {{-- Solo el modal del jugador (abierto desde los Conectados del chat) --}}
+    @elseif($ranking && count($ranking) > 0)
     <div>
         @foreach($ranking as $index => $item)
         {{-- Puesto en el ranking (los 3 primeros en oro, plata y bronce) --}}

@@ -114,6 +114,24 @@ class ChatComponent extends Component
         $this->objetoVistoId = $visible ? $mensaje->id : null;
     }
 
+    // Pelea compartida: se abre en Mis peleas con la misma pantalla de rondas
+    public function verPelea(int $mensajeId)
+    {
+        $mensaje = Mensaje::where('tipo', 'pelea')->find($mensajeId);
+        $visible = $mensaje && (! $mensaje->destinatario_id
+            || in_array($this->personajeId, [$mensaje->personaje_id, $mensaje->destinatario_id], true));
+        if ($visible && ! empty($mensaje->adjunto['pelea_id'])) {
+            $this->dispatch('verPeleaCompartida', peleaId: (int) $mensaje->adjunto['pelea_id']);
+        }
+    }
+
+    // Tocando a alguien en Conectados se abre su perfil (el mismo modal del Ranking)
+    public function verPerfil(int $personajeId)
+    {
+        $this->panel = null;
+        $this->dispatch('verPerfilJugador', personajeId: $personajeId);
+    }
+
     public function cerrarObjeto()
     {
         $this->objetoVistoId = null;
