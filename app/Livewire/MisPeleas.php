@@ -202,7 +202,16 @@ if ($enemigo->gif) {
             $vista[$clave] = $valor;
         }
 
+        // El set con el que peleó cada uno en esa pelea (no el que tenga equipado ahora).
+        // Las peleas viejas no lo guardaron: se busca el set por el gif que sí quedó guardado.
+        $setDeLaPelea = function ($id, $gif) {
+            $post = $id ? \App\Models\Post::conRivales()->with('poderes')->find($id) : null;
+            return $post ?? ($gif ? \App\Models\Post::conRivales()->with('poderes')->where('gif', $gif)->first() : null);
+        };
+
         return $vista + [
+            'postPjRepeticion' => $setDeLaPelea($datos['post_personaje_id'] ?? null, $datos['gif_personaje'] ?? null),
+            'postEnRepeticion' => $setDeLaPelea($datos['post_enemigo_id'] ?? null, $datos['gif_enemigo'] ?? null),
             'pelea'            => $pelea,
             // Botón Compartir abajo de la pelea: solo en las propias (las de otros se ven desde el chat)
             'idPeleaCompartir' => (int) $pelea->personaje_id === (int) $this->personajeId ? $pelea->id : null,

@@ -1165,6 +1165,9 @@ if ($tieneSiempreEnPie) {
             'poderes_enemigo'   => collect($this->enemigo->poderes ?? [])->map(fn($p) => strtoupper($p['nombre'] ?? ''))->toArray(),
             // Para volver a ver la pelea desde "Mis peleas" (partial livewire.partials.resultado-pelea)
             'enemigo_es_personaje' => (bool) $this->esPvp,
+            // El set con el que peleó cada uno: al volver a verla se muestra ese, no el que tengan equipado después
+            'post_personaje_id' => $this->personaje->postDeCombate()?->id,
+            'post_enemigo_id'   => $this->gifsEnemigo()?->id,
             'ciudad_id'         => $this->ciudadActual->id ?? null,
             // Para "Mis Drops": de dónde salió la pelea y cuántos minutos se exploró
             'origen'            => match (true) {

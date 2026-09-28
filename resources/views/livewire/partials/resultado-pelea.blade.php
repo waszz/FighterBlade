@@ -14,8 +14,11 @@
   $tipoDeCombate = fn ($pj) => $pj instanceof \App\Models\Personaje
       ? ($pj->postDeCombate()?->tipo ?? $pj->tipo ?? 'fisico')
       : ($pj->tipo ?? 'fisico');
-  $tipoVistaPersonaje = $tipoDeCombate($personaje);
-  $tipoVistaEnemigo = $tipoDeCombate($enemigo);
+  // Al volver a ver una pelea guardada (Mis peleas) vienen los sets con los que peleó cada uno ese día
+  $postPjRep = $postPjRepeticion ?? null;
+  $postEnRep = $postEnRepeticion ?? null;
+  $tipoVistaPersonaje = $postPjRep->tipo ?? $tipoDeCombate($personaje);
+  $tipoVistaEnemigo = $postEnRep->tipo ?? $tipoDeCombate($enemigo);
 
   $golpesPersonaje = 0;
   $golpesEnemigo = 0;
@@ -108,8 +111,8 @@
     }
     }
 
-    $gifsPersonaje = obtenerGifsPorPersonaje($personaje);
-    $gifsEnemigo = obtenerGifsPorPersonaje($enemigo);
+    $gifsPersonaje = obtenerGifsPorPersonaje($postPjRep ?? $personaje);
+    $gifsEnemigo = obtenerGifsPorPersonaje($postEnRep ?? $enemigo);
     @endphp
 
     @php
@@ -839,9 +842,15 @@
     }
 
     // Si el rival es un jugador (PvP), sus gifs están en su set
-    $postGifsEnemigo = $enemigo instanceof \App\Models\Personaje ? ($enemigo->postDeCombate() ?? $enemigo) : $enemigo;
+    $postGifsEnemigo = $postEnRep ?? ($enemigo instanceof \App\Models\Personaje ? ($enemigo->postDeCombate() ?? $enemigo) : $enemigo);
     $gifVictoriaEnemigo = $postGifsEnemigo->gif_victoria ?? null;
     $gifDerrotaEnemigo = $postGifsEnemigo->gif_derrota ?? null;
+
+    // Pelea guardada: los gifs del set con el que peleó ese día
+    if ($postPjRep) {
+        $gifVictoriaPersonaje = $postPjRep->gif_victoria ?? $gifVictoriaPersonaje;
+        $gifDerrotaPersonaje = $postPjRep->gif_derrota ?? $gifDerrotaPersonaje;
+    }
     @endphp
     
 
@@ -877,6 +886,10 @@
             }
         }
     }
+    // Pelea guardada: la foto del set con el que peleó ese día
+    if ($postPjRep?->imagen) {
+        $imagenMostrar = $postPjRep->imagen;
+    }
 @endphp
 
 {{-- Mostrar gif del personaje o enemigo con nombre y frase arriba de la ciudad --}}
@@ -902,7 +915,7 @@
         {{-- Personaje perdió, mostrar enemigo --}}
         <div class="flex items-center bg-black bg-opacity-60 px-3 py-2 rounded-xl shadow-lg space-x-3">
             {{-- Imagen enemigo --}}
-            @php $imagenEnemigoFinal = $enemigo instanceof \App\Models\Personaje ? ($enemigo->postDeCombate()?->imagen ?? $enemigo->imagen) : $enemigo->imagen; @endphp
+            @php $imagenEnemigoFinal = $postEnRep?->imagen ?? ($enemigo instanceof \App\Models\Personaje ? ($enemigo->postDeCombate()?->imagen ?? $enemigo->imagen) : $enemigo->imagen); @endphp
             <img src="{{ asset('storage/' . ($imagenEnemigoFinal ?? 'default-enemigo.png')) }}" alt="Enemigo"
                 class="w-16 h-16 rounded-full shadow-md object-cover">
 
