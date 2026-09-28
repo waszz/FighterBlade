@@ -547,6 +547,15 @@
       {{-- CARD 1: info de la poción --}}
       <div class="bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] rounded-xl border-2 border-black w-full p-3 relative">
 
+        {{-- Compartir en el chat (esquina de la tarjeta) --}}
+          <button type="button" wire:click="compartirEnChat({{ $pocionSeleccionada->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
+            title="Compartir en el chat" aria-label="Compartir en el chat"
+            class="absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-black text-white text-xs
+                   bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+                   hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+
         {{-- Cerrar modal --}}
         <button wire:click="$set('modalEquiparPocionAbierto', false)"
                 class="absolute top-2 right-2 text-gray-400 hover:text-white transition"
@@ -586,10 +595,6 @@
 
       {{-- CARD 2: menú de acciones (separado) --}}
       <div class="flex flex-col w-[85%] mt-2 rounded-lg overflow-hidden border border-black shadow-[0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.7)]">
-          <button wire:click="compartirEnChat({{ $pocionSeleccionada->id }})" wire:loading.attr="disabled"
-            class="w-full py-1.5 bg-gradient-to-b from-indigo-600 to-indigo-900 hover:brightness-125 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_0_rgba(0,0,0,0.6)] active:translate-y-px font-bold text-sm text-white transition border-t border-black [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
-             💬 Compartir en el chat
-          </button>
 
         @if(!$pocionSeleccionada->precio_venta)
           <button type="button" wire:click="equiparPocion"
@@ -839,6 +844,14 @@
         <div class="bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] border-2 border-black rounded-xl p-3 w-full relative">
           <button wire:click="cerrarModal"
             class="absolute top-1 right-2 text-gray-400 hover:text-white text-2xl leading-none transition">&times;</button>
+          {{-- Compartir en el chat (esquina de la tarjeta) --}}
+          <button type="button" wire:click="compartirEnChat({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
+            title="Compartir en el chat" aria-label="Compartir en el chat"
+            class="absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-black text-white text-xs
+                   bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+                   hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
 
           <div class="flex flex-col items-center text-center">
           <p class="text-sm font-bold text-white mb-2 px-4 truncate max-w-full">{{ $objetoSeleccionado->nombre }}</p>
@@ -928,10 +941,6 @@
 
         {{-- CARD 2: menú de acciones (separado) --}}
         <div class="flex flex-col w-[85%] mt-2 rounded-lg overflow-hidden border border-black shadow-[0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.7)]">
-          <button wire:click="compartirEnChat({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled"
-            class="w-full py-1.5 bg-gradient-to-b from-indigo-600 to-indigo-900 hover:brightness-125 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_0_rgba(0,0,0,0.6)] active:translate-y-px font-bold text-sm text-white transition border-t border-black [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
-             💬 Compartir en el chat
-          </button>
 
           @if(!$objetoSeleccionado->precio_venta && $objetoSeleccionado->tipo === 'cofre')
           <button wire:click="abrirCofre({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled"
