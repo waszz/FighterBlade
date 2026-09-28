@@ -216,8 +216,26 @@ class Explorar extends Component
                 $this->limpiarCombate(); // Limpieza en caso de fallo
             }
         }
+        // 7️⃣b Enemigo guardado en la base pero no en la sesión (se cerró la sesión o cambió de dispositivo):
+        // se recupera; si no, quedaba "asignado" sin mostrarse y bloqueaba el enemigo especial y el PvP
+        elseif ($this->personaje->enemigo_actual_id
+            && ($postEnemigo = Post::conRivales()->with('poderes')->find($this->personaje->enemigo_actual_id))) {
+            $this->enemigo         = $postEnemigo;
+            $this->mostrarOpciones = false;
+            $this->combateActivo   = true;
+            $this->esPvp           = false;
+            session([
+                'enemigo'        => ['id' => $postEnemigo->id, 'nombre' => $postEnemigo->titulo, 'nivel' => $postEnemigo->nivel, 'gif' => $postEnemigo->gif],
+                'combate_activo' => true,
+            ]);
+        }
         // 8️⃣ No hay enemigo
         else {
+            // Marca vieja de un enemigo que ya no existe: se limpia para no trabar al personaje
+            if ($this->personaje->enemigo_actual_id) {
+                $this->personaje->enemigo_actual_id = null;
+                $this->personaje->save();
+            }
             $this->enemigo         = null;
             $this->mostrarOpciones = false;
             $this->combateActivo   = false;
