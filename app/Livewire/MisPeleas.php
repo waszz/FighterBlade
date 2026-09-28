@@ -21,16 +21,33 @@ class MisPeleas extends Component
     public $gifCiudadPersonaje;
     public $personajeId;
     public ?int $peleaVistaId = null; // pelea que se está repitiendo ("Ver")
+    public string $pestana = 'pve';   // 'pve' (contra la máquina) o 'pvp' (contra jugadores)
 
 
 
     public function mount($personajeId)
     {
         $this->personajeId = $personajeId;
-        $this->peleas = \App\Models\Pelea::where('personaje_id', $personajeId)
-                        ->orderBy('realizada_en', 'desc')
-                        ->take(20)
-                        ->get();
+        $this->cargarPeleas();
+    }
+
+    public function cambiarPestana(string $pestana)
+    {
+        $this->pestana = $pestana === 'pvp' ? 'pvp' : 'pve';
+        $this->peleaVistaId = null;
+        $this->cargarPeleas();
+    }
+
+    // Últimas 20 peleas de la pestaña; PvP son las que se guardaron con el rival siendo otro jugador
+    protected function cargarPeleas(): void
+    {
+        $this->peleas = Pelea::where('personaje_id', $this->personajeId)
+            ->orderBy('realizada_en', 'desc')
+            ->take(300)
+            ->get()
+            ->filter(fn ($pelea) => ! empty(($pelea->datos_combate ?? [])['enemigo_es_personaje']) === ($this->pestana === 'pvp'))
+            ->take(20)
+            ->values();
     }
 
 

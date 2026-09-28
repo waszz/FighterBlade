@@ -105,6 +105,18 @@
   <div class="max-w-xl mx-auto">
     <h2 class="text-xl font-bold text-yellow-400 mb-3 text-center [text-shadow:0_2px_0_#000]">Últimas 20 peleas</h2>
 
+    {{-- Pestañas: contra la máquina (PvE) o contra jugadores (PvP) --}}
+    <div class="flex justify-center gap-1.5 mb-3">
+      @foreach (['pve' => '⚔️ PvE', 'pvp' => '🤺 PvP'] as $clave => $titulo)
+        <button type="button" wire:click="cambiarPestana('{{ $clave }}')"
+          class="px-4 py-1 rounded-md border-2 text-sm font-semibold uppercase bg-gradient-to-b transition-all duration-100
+                 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] active:translate-y-[3px] active:shadow-none hover:brightness-125
+                 {{ $pestana === $clave ? 'border-yellow-400 text-black from-yellow-300 to-yellow-600' : 'border-black text-yellow-400 from-neutral-700 to-black' }}">
+          {{ $titulo }}
+        </button>
+      @endforeach
+    </div>
+
     <div class="space-y-2">
       @forelse($peleas as $pelea)
         @php
@@ -163,7 +175,7 @@
           </div>
         </div>
       @empty
-        <p class="text-gray-400 text-center text-sm">Aún no tienes peleas registradas.</p>
+        <p class="text-gray-400 text-center text-sm">{{ $pestana === 'pvp' ? 'Todavía no peleaste contra otros jugadores.' : 'Aún no tienes peleas registradas.' }}</p>
       @endforelse
     </div>
   </div>
