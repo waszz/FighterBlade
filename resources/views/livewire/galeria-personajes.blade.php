@@ -15,11 +15,12 @@
   <div class="grid gap-2 p-2 [grid-template-columns:repeat(auto-fill,minmax(90px,1fr))]">
     @foreach($personajesDisponibles as $post)
     @php
+    // Equipado = su set base o las 3 partes de ese set a la vez (con una parte sola no cuenta)
     $esEquipado = (
     $personaje->post_id === $post->id ||
-    optional($personaje->equipo)->origen_post_id === $post->id ||
-    optional($personaje->entrenamiento)->origen_post_id === $post->id ||
-    optional($personaje->accesorio)->origen_post_id === $post->id
+    (optional($personaje->equipo)->origen_post_id === $post->id &&
+     optional($personaje->entrenamiento)->origen_post_id === $post->id &&
+     optional($personaje->accesorio)->origen_post_id === $post->id)
     );
 
     $esDesbloqueado = in_array($post->id, $postsDesbloqueados);

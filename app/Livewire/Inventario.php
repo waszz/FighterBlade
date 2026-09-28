@@ -900,7 +900,13 @@ class Inventario extends Component
         $this->personaje->$campoEquipadoId = $objeto->id;
         $this->personaje->save();
 
-        if ($objeto->origen_post_id) {
+        // "Mis personajes": el set queda desbloqueado recién cuando tiene las 3 partes de ese set equipadas a la vez
+        $partesDelSet = $this->personaje->fresh(['equipo', 'entrenamiento', 'accesorio']);
+        $setCompleto = $objeto->origen_post_id
+            && $partesDelSet->equipo?->origen_post_id === $objeto->origen_post_id
+            && $partesDelSet->entrenamiento?->origen_post_id === $objeto->origen_post_id
+            && $partesDelSet->accesorio?->origen_post_id === $objeto->origen_post_id;
+        if ($setCompleto) {
     // Se mira la tabla del historial directo: la relación oculta a los personajes especiales y daba "no usado" → duplicado
     $yaUsado = \Illuminate\Support\Facades\DB::table('personaje_post_historial')
         ->where('personaje_id', $this->personaje->id)->where('post_id', $objeto->origen_post_id)->exists();
