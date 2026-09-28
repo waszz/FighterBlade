@@ -928,7 +928,8 @@
           @if(!$objetoSeleccionado->precio_venta && $objetoSeleccionado->tipo === 'cofre')
           <button wire:click="abrirCofre({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled"
             class="w-full py-1.5 bg-gradient-to-b from-amber-500 to-amber-800 hover:brightness-125 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_0_rgba(0,0,0,0.6)] active:translate-y-px font-bold text-sm text-white transition [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
-             🎁 Abrir cofre ({{ number_format(\App\Support\RecompensasTorre::costoAbrirCofre((int) ($objetoSeleccionado->nivel ?? 10)), 0, ',', '.') }} oro)
+             @php $costoCofre = \App\Support\RecompensasTorre::costoCofre($objetoSeleccionado); @endphp
+             🎁 Abrir cofre ({{ $costoCofre > 0 ? number_format($costoCofre, 0, ',', '.') . ' oro' : 'gratis' }})
           </button>
           @endif
 

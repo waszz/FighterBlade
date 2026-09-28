@@ -118,17 +118,57 @@ class RecompensasTorre
         return max(1000, $nivel * self::ORO_ABRIR_COFRE_POR_NIVEL);
     }
 
+    // Cofre de bienvenida: se regala con el primer personaje de cada cuenta, se abre gratis y trae un set de nivel 5
+    const NOMBRE_COFRE_BIENVENIDA = 'Cofre de Bienvenida';
+    const NIVEL_COFRE_BIENVENIDA = 5;
+
+    public static function esCofreBienvenida(Objeto $cofre): bool
+    {
+        return $cofre->nombre === self::NOMBRE_COFRE_BIENVENIDA;
+    }
+
+    public static function costoCofre(Objeto $cofre): int
+    {
+        return self::esCofreBienvenida($cofre) ? 0 : self::costoAbrirCofre((int) ($cofre->nivel ?? 10));
+    }
+
+    public static function darCofreBienvenida(Personaje $personaje): void
+    {
+        Objeto::create([
+            'personaje_id'   => $personaje->id,
+            'nombre'         => self::NOMBRE_COFRE_BIENVENIDA,
+            'tipo'           => 'cofre',
+            'nivel'          => self::NIVEL_COFRE_BIENVENIDA,
+            'stats'          => [],
+            'imagen'         => 'torre/cofre1.png',
+            'origen_post_id' => null,
+            'descripcion'    => '¡Regalo de bienvenida! Abrilo gratis: trae un set completo de nivel ' . self::NIVEL_COFRE_BIENVENIDA . ' al azar.',
+            'requisitos_equipo' => [], 'requisitos_entrenamiento' => [], 'requisitos_accesorio' => [],
+        ]);
+    }
+
     // Abre un cofre: crea su contenido en el inventario, borra el cofre y devuelve un texto con lo que tocó
     public static function abrirCofre(Objeto $cofre, Personaje $personaje): string
     {
         $nivel = (int) ($cofre->nivel ?? 20);
-        $opcion = ['drop', 'oro', 'diamante', 'set'][random_int(0, 3)];
+        $bienvenida = self::esCofreBienvenida($cofre);
+        $opcion = $bienvenida ? 'set' : ['drop', 'oro', 'diamante', 'set'][random_int(0, 3)];
 
         if ($opcion === 'set') {
+            if ($bienvenida) {
+                // Un set normal publicado de nivel 5 (sin los personajes iniciales ni los enemigos especiales)
+                $set = Post::where('nivel', self::NIVEL_COFRE_BIENVENIDA)
+                    ->where('publicado', true)
+                    ->where('inicial', false)
+                    ->where(fn ($q) => $q->whereNull('es_enemigo')->orWhere('es_enemigo', 0))
+                    ->inRandomOrder()->first();
+            }
             // Un set normal del nivel del cofre (o el más cercano por debajo)
-            $set = Post::where('nivel', '<=', $nivel)->orderByDesc('nivel')->inRandomOrder()->first()
-                ?? Post::inRandomOrder()->first();
-            $set = Post::where('nivel', $set->nivel)->inRandomOrder()->first();
+            if (empty($set)) {
+                $set = Post::where('nivel', '<=', $nivel)->orderByDesc('nivel')->inRandomOrder()->first()
+                    ?? Post::inRandomOrder()->first();
+                $set = Post::where('nivel', $set->nivel)->inRandomOrder()->first();
+            }
             foreach (['equipo', 'entrenamiento', 'accesorio'] as $tipo) {
                 $decodificar = fn ($v) => is_array($v) ? $v : (json_decode($v ?? '[]', true) ?: []);
                 Objeto::create([

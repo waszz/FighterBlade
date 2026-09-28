@@ -141,6 +141,9 @@ public function mount()
         // Ciudad inicial: la de menor nivel disponible (por defecto, la ciudad de partida)
         $ciudadInicial = \App\Models\Ciudad::orderBy('nivel')->first();
 
+        // Primer personaje de la cuenta: se lleva el cofre de bienvenida
+        $esPrimerPersonaje = ! Personaje::where('user_id', $userId)->exists();
+
         // Crear el nuevo personaje
         $nuevoPersonaje = Personaje::create([
             'user_id' => $userId,
@@ -155,6 +158,10 @@ public function mount()
             'ciudad_id' => $ciudadInicial?->id,
             'stats' => json_encode($statsBase),
         ]);
+
+        if ($esPrimerPersonaje) {
+            \App\Support\RecompensasTorre::darCofreBienvenida($nuevoPersonaje);
+        }
 
         // Recargar lista del usuario
         $this->personajesUsuario = Personaje::where('user_id', $userId)->get();

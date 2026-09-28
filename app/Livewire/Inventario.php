@@ -142,14 +142,16 @@ class Inventario extends Component
             return;
         }
 
-        // Abrirlo cuesta oro según su nivel (se descuenta solo si alcanza, en una sola consulta)
-        $costo = \App\Support\RecompensasTorre::costoAbrirCofre((int) ($cofre->nivel ?? 10));
-        $pagado = Personaje::whereKey($this->personaje->id)->where('oro', '>=', $costo)->decrement('oro', $costo);
-        if (! $pagado) {
-            $this->dispatch('error', ['message' => 'Necesitás ' . number_format($costo, 0, ',', '.') . ' de oro para abrir este cofre.']);
-            return;
+        // Abrirlo cuesta oro según su nivel (se descuenta solo si alcanza, en una sola consulta). El de bienvenida es gratis
+        $costo = \App\Support\RecompensasTorre::costoCofre($cofre);
+        if ($costo > 0) {
+            $pagado = Personaje::whereKey($this->personaje->id)->where('oro', '>=', $costo)->decrement('oro', $costo);
+            if (! $pagado) {
+                $this->dispatch('error', ['message' => 'Necesitás ' . number_format($costo, 0, ',', '.') . ' de oro para abrir este cofre.']);
+                return;
+            }
+            $this->dispatch('statsActualizados'); // el oro del panel lateral
         }
-        $this->dispatch('statsActualizados'); // el oro del panel lateral
 
         $texto = \App\Support\RecompensasTorre::abrirCofre($cofre, Personaje::find($this->personaje->id));
         $this->objetoSeleccionado = null;
