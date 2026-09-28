@@ -90,10 +90,10 @@
                 @endphp
 
                 @if($gif)
-                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set), un poco más chico para el recuadro --}}
+                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set), a tamaño completo en el recuadro --}}
                 <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')">
                     <img src="{{ asset('storage/' . $gif) }}" alt="Personaje"
-                        style="{{ \App\Models\Post::estiloGif($gif, 0.8) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
+                        style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
                 </div>
                 @endif
             </div>
