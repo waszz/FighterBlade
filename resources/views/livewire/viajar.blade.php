@@ -5,7 +5,7 @@
         $card3d   = 'bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]';
         $boton3d  = 'font-bold rounded border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:active:translate-y-0 disabled:active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]';
         $numDiamante = 'font-bold bg-gradient-to-r from-[#6ee7b7] via-[#34d399] to-[#10b981] bg-clip-text text-transparent [filter:drop-shadow(1px_1px_0_#000)]';
-        $costoTeleport = \App\Livewire\Viajar::COSTO_TELEPORT;
+        // $costoTeleport lo manda el componente: 0 si tiene Teletransportarse
     @endphp
 
     <h2 class="text-2xl font-bold mb-3 text-center text-indigo-300 [text-shadow:0_2px_0_#000]">🌍 Viajar</h2>
@@ -134,8 +134,12 @@
                     <button wire:click="teleportarA({{ $ciudadDestino->id }})"
                         class="{{ $boton3d }} px-3 py-2 bg-gradient-to-b from-purple-500 to-purple-800 text-white text-sm flex items-center justify-center gap-1">
                         Teleport
+                        @if ($costoTeleport > 0)
                         <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4">
                         <span class="{{ $numDiamante }}">{{ $costoTeleport }}</span>
+                        @else
+                        <span class="text-emerald-300">· Gratis</span>
+                        @endif
                     </button>
                 @endif
                 <button wire:click="cancelarViaje" type="button"
@@ -198,8 +202,12 @@
                     class="{{ $boton3d }} w-full px-3 py-2 bg-gradient-to-b from-purple-500 to-purple-800 text-white text-sm flex items-center justify-center gap-1"
                 >
                     Teleport
+                    @if ($costoTeleport > 0)
                     <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4">
                     <span class="{{ $numDiamante }}">{{ $costoTeleport }}</span>
+                    @else
+                    <span class="text-emerald-300">· Gratis</span>
+                    @endif
                 </button>
                 @endif
             </div>

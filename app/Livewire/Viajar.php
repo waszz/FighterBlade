@@ -54,6 +54,28 @@ class Viajar extends Component
         }
     }
 
+    // % que se reduce el tiempo de viaje por los poderes del set con el que pelea (el completo equipado o el base),
+    // hasta 100: Súper Velocidad 50, Teletransportarse 100
+    private function reduccionTiempoViaje(): int
+    {
+        $post = $this->personaje->postDeCombate() ?? $this->personaje->post;
+        $reduccion = 0;
+        foreach ($post?->poderes ?? [] as $poder) {
+            foreach ((array) ($poder['modificadores'] ?? []) as $modificador) {
+                if (($modificador['tipo'] ?? null) === 'reduccion_tiempo_viaje' && isset($modificador['porcentaje'])) {
+                    $reduccion += (int) $modificador['porcentaje'];
+                }
+            }
+        }
+        return min($reduccion, 100);
+    }
+
+    // Esmeraldas que cuesta el teleport: gratis si tiene un poder que reduce el viaje al 100% (Teletransportarse)
+    public function costoTeleport(): int
+    {
+        return $this->reduccionTiempoViaje() >= 100 ? 0 : self::COSTO_TELEPORT;
+    }
+
    private function noPuedeViajar(): bool
 {
     // Explorando
@@ -164,22 +186,8 @@ class Viajar extends Component
         }
 
         
-    // Buscar % de reducción de tiempo de viaje por poderes
-    $reduccion = 0;
-    if ($this->personaje->post && $this->personaje->post->poderes) {
-        foreach ($this->personaje->post->poderes as $poder) {
-            if (isset($poder['modificadores']) && is_array($poder['modificadores'])) {
-                foreach ($poder['modificadores'] as $modificador) {
-                    if ($modificador['tipo'] === 'reduccion_tiempo_viaje' && isset($modificador['porcentaje'])) {
-                        $reduccion += $modificador['porcentaje'];
-                    }
-                }
-            }
-        }
-    }
-
-    // Limitar reducción máxima a 100%
-    $reduccion = min($reduccion, 100);
+    // % de reducción de tiempo de viaje por poderes (máximo 100%)
+    $reduccion = $this->reduccionTiempoViaje();
 
     // Calcular tiempo restante considerando la reducción (1 hora = 3600 segundos)
     $segundosViaje = 3600 * (1 - $reduccion / 100);
@@ -274,13 +282,14 @@ class Viajar extends Component
             return;
         }
 
-        if ($this->personaje->diamante < self::COSTO_TELEPORT) {
+        $costoTeleport = $this->costoTeleport();
+        if ($this->personaje->diamante < $costoTeleport) {
             session()->flash('error', 'No tienes suficientes esmeraldas para teleportarte.');
             return;
         }
 
-        // Descontar diamantes y actualizar ciudad instantáneamente
-        $this->personaje->diamante -= self::COSTO_TELEPORT;
+        // Descontar diamantes (nada con Teletransportarse) y actualizar ciudad instantáneamente
+        $this->personaje->diamante -= $costoTeleport;
         $this->personaje->viajando_a_id = null;
         $this->personaje->viajando_hasta = null;
         $this->personaje->ciudad_id = $ciudad->id;
@@ -313,6 +322,7 @@ class Viajar extends Component
             'personaje' => $this->personaje,
             'ciudadesDisponibles' => $this->ciudadesDisponibles,
             'costosViaje' => $this->costosViaje,
+            'costoTeleport' => $this->costoTeleport(),
             'viajando' => $this->viajando,
             'ciudadDestino' => $this->ciudadDestino,
         ]);
