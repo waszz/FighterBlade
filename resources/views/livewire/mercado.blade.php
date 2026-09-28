@@ -78,9 +78,9 @@
                 <p class="text-center text-sm text-white mb-0.5">Nivel {{ $post->nivel ?? 1 }}</p>
                 @php
                 $colorTipo = match(strtolower($post->tipo ?? '')) {
-                'fisico' => 'text-red-600',
-                'elemental' => 'text-blue-600',
-                'hibrido' => 'text-purple-600',
+                'fisico' => 'text-red-400',
+                'elemental' => 'text-sky-400',
+                'hibrido' => 'text-purple-400',
                 default => 'text-gray-400',
                 };
                 @endphp
@@ -92,12 +92,14 @@
 
                 <div class="flex justify-center gap-2 mb-3">
                     @foreach ($items as $item)
+                    {{-- Icono de la parte: cuadrado 3D con el borde y el texto del color de su ranura (como en el inventario y Mis Drops) --}}
+                    @php [$bordeParte, $textoParte] = ['Equipo' => ['border-indigo-500', 'text-indigo-300'], 'Entrenamiento' => ['border-green-500', 'text-green-300'], 'Accesorio' => ['border-pink-500', 'text-pink-300']][$item['tipo']]; @endphp
                     <div class="text-center w-[4.5rem]">
-                        <img src="{{ asset('storage/posts/' . $item['imagen']) }}" alt="{{ $item['tipo'] }}"
-                            class="w-11 h-11 rounded-full object-cover mx-auto mb-1 border-2 border-black shadow-[0_0_0_1px_rgba(255,255,255,0.25),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
+                        <img src="{{ asset('storage/posts/' . $item['imagen']) }}" alt="{{ $item['tipo'] }}" loading="lazy"
+                            class="w-12 h-12 rounded-md object-cover mx-auto mb-1 bg-black/50 border-2 {{ $bordeParte }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
 
                         {{-- Texto con tipo debajo de la imagen --}}
-                        <p class="text-[10px] font-semibold text-gray-300 mb-1.5 select-none">
+                        <p class="text-[10px] font-bold {{ $textoParte }} mb-1.5 select-none">
                             {{ $item['tipo'] }}
                         </p>
 
@@ -226,21 +228,22 @@
 
         @if($nombre && $imagen)
         <div class="bg-gradient-to-b from-[#2a3240] to-[#10141b] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] p-3 rounded-lg text-center text-sm text-white">
-            <img src="{{ asset('storage/posts/' . $imagen) }}" alt="{{ $nombre }}"
-                class="w-16 h-16 mx-auto object-cover rounded mb-2">
-            <p class="text-xs text-gray-300 uppercase mb-1">{{ ucfirst($tipo) }}</p>
+            @php [$bordeParte, $textoParte] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300']][$tipo] ?? ['border-black', 'text-gray-300']; @endphp
+            <img src="{{ asset('storage/posts/' . $imagen) }}" alt="{{ $nombre }}" loading="lazy"
+                class="w-16 h-16 mx-auto object-cover rounded-md mb-2 bg-black/50 border-2 {{ $bordeParte }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
+            <p class="text-xs font-bold uppercase mb-1 {{ $textoParte }}">{{ ucfirst($tipo) }}</p>
             <p class="font-bold text-white truncate">{{ $nombre }}</p>
             <p class="text-xs text-white mb-1">Nivel: {{ $nivel }}</p>
             @if($estilo)
             @php
             $colorEstilo = match(strtolower($estilo)) {
-            'fisico' => 'text-red-600',
-            'elemental' => 'text-blue-600',
-            'hibrido' => 'text-purple-600',
-            default => 'text-gray-600',
+            'fisico' => 'text-red-400',
+            'elemental' => 'text-sky-400',
+            'hibrido' => 'text-purple-400',
+            default => 'text-gray-400',
             };
             @endphp
-            <p class="text-xs font-bold mb-1 {{ $colorEstilo }}">{{ ucfirst($estilo) }}</p>
+            <p class="text-xs font-bold mb-1 {{ $colorEstilo }}"><x-icono-tipo :tipo="$estilo" tam="w-4 h-4" :con-nombre="true" /></p>
             @endif
 
 
@@ -328,9 +331,10 @@
         @endphp
 
         <div class="bg-gradient-to-b from-[#2a3240] to-[#10141b] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] p-3 rounded-2xl text-center text-xs">
-            <img src="{{ $rutaImagen }}" alt="{{ $objeto->nombre }}"
-                class="mx-auto w-16 h-16 object-cover rounded mb-2">
-            <p class="text-xs text-gray-300 uppercase mb-1">{{ ucfirst($objeto->tipo) }}</p>
+            @php [$bordeParte, $textoParte] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300']][$objeto->tipo] ?? ['border-black', 'text-gray-300']; @endphp
+            <img src="{{ $rutaImagen }}" alt="{{ $objeto->nombre }}" loading="lazy"
+                class="mx-auto w-16 h-16 mb-2 rounded-md {{ $esPocion ? 'object-contain' : 'object-cover bg-black/50 border-2 ' . $bordeParte . ' shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]' }}">
+            <p class="text-xs font-bold uppercase mb-1 {{ $textoParte }}">{{ ucfirst($objeto->tipo) }}</p>
             <h3 class="font-bold text-sm mb-1 text-white truncate">{{ $objeto->nombre ?? 'Objeto Misterioso' }}</h3>
             <p class="text-xs text-white mb-0.5">Nivel: {{ $objeto->nivel ?? 1 }}</p>
 
