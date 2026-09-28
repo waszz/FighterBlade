@@ -52,6 +52,9 @@ class MisDrops extends Component
             }
 
             $tipo = $drop['tipo'] ?? 'objeto';
+            if ($tipo === 'pocion') {
+                continue; // Las pociones no se muestran en Mis Drops
+            }
             $esParte = isset(self::MINUTOS_PARTE[$tipo]);
 
             // Ciudad: la guardada; si no, la del nivel del set (una ciudad de nivel N tiene enemigos de nivel N+5)
