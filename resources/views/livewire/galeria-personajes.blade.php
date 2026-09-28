@@ -12,7 +12,7 @@
     <p class="text-gray-300 mt-1 [text-shadow:0_1px_0_#000]">Tu colección de personajes equipados</p>
   </div>
 
-  <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 p-2">
+  <div class="grid gap-2 p-2 [grid-template-columns:repeat(auto-fill,minmax(90px,1fr))]">
     @foreach($personajesDisponibles as $post)
     @php
     $esEquipado = (

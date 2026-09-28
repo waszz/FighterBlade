@@ -39,7 +39,7 @@
         @endif
     </p>
     @else
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl w-full px-2">
+    <div class="grid gap-4 max-w-6xl w-full px-2 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
         @foreach ($personajes as $personaje)
         <div wire:key="set-{{ $personaje->id }}" class="p-3 rounded-xl flex flex-col items-center gap-2 text-xs {{ $panel3d }}">
 
@@ -87,12 +87,12 @@
                     <span class="mt-1 text-[9px] text-gray-300 select-none">{{ $label }}</span>
                     @foreach ($ajustes as $stat => $valor)
                     @if ($valor > 0)
-                    <span class="text-[10px] font-bold text-emerald-300 leading-tight">+{{ $valor }} {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }}</span>
+                    <span class="text-[10px] font-bold text-emerald-300 leading-tight whitespace-nowrap">+{{ $valor }} {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }}</span>
                     @endif
                     @endforeach
                     @foreach ($requisitos as $stat => $valor)
                     @if ($valor > 0)
-                    <span class="text-[10px] font-bold text-red-400 leading-tight" title="Requisito para equipar">Req {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} {{ $valor }}</span>
+                    <span class="text-[10px] font-bold text-red-400 leading-tight whitespace-nowrap" title="Requisito para equipar">Req {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} {{ $valor }}</span>
                     @endif
                     @endforeach
                 </div>
