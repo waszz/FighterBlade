@@ -70,8 +70,11 @@
 
             <div class="flex-shrink-0 w-60 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-3 text-white transition rounded-lg">
                 {{-- Imagen principal --}}
-                <img src="{{ asset('storage/' . $post->gif) }}" alt="{{ $post->nombre }}"
-                    class="w-20 h-20 mx-auto mb-2 object-contain">
+                {{-- Misma escala que en las peleas (según el alto del personaje en el gif): todos quedan del mismo tamaño --}}
+                <div class="h-24 mb-2 flex items-end justify-center overflow-hidden">
+                    <img src="{{ asset('storage/' . $post->gif) }}" alt="{{ $post->nombre }}" loading="lazy"
+                        style="{{ \App\Models\Post::estiloGif($post->gif, 0.65) }}" class="block max-w-none">
+                </div>
 
                 {{-- Nombre y nivel --}}
                 <p class="text-center font-bold text-lg text-yellow-400 truncate">{{ $post->nombre }}</p>
