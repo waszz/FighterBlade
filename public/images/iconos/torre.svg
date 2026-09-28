@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><linearGradient id="g" x1="380" y1="20" x2="200" y2="500" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFC21A"/><stop offset="0.5" stop-color="#F58A3C"/><stop offset="1" stop-color="#E8403A"/></linearGradient></defs>
+<g fill="none" stroke="url(#g)" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+  <!-- almenas -->
+  <path d="M150 150 V70 H200 V110 H231 V70 H281 V110 H312 V70 H362 V150 Z"/>
+  <!-- cuerpo de la torre -->
+  <path d="M168 150 L150 450 H362 L344 150"/>
+  <!-- puerta -->
+  <path d="M216 450 V380 a40 40 0 0 1 80 0 V450"/>
+  <!-- ventanas -->
+  <line x1="256" y1="210" x2="256" y2="250"/>
+  <line x1="256" y1="290" x2="256" y2="320"/>
+</g>
+<line x1="110" y1="450" x2="402" y2="450" stroke="url(#g)" stroke-width="26" stroke-linecap="round"/>
+</svg>

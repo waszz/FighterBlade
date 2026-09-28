@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><linearGradient id="g" x1="380" y1="20" x2="200" y2="500" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFC21A"/><stop offset="0.5" stop-color="#F58A3C"/><stop offset="1" stop-color="#E8403A"/></linearGradient></defs>
+<g fill="none" stroke="url(#g)" stroke-width="26" stroke-linejoin="round">
+  <!-- anillo exterior: parte sólida + parte punteada -->
+  <path d="M256 36 A220 220 0 1 0 476 256" stroke-linecap="round"/>
+  <path d="M290 39 A220 220 0 0 1 473 222" stroke-dasharray="16 24"/>
+  <!-- mira -->
+  <circle cx="256" cy="256" r="118"/>
+  <g stroke-linecap="round">
+    <line x1="256" y1="100" x2="256" y2="186"/>
+    <line x1="256" y1="326" x2="256" y2="412"/>
+    <line x1="100" y1="256" x2="186" y2="256"/>
+    <line x1="326" y1="256" x2="412" y2="256"/>
+  </g>
+</g>
+<circle cx="256" cy="256" r="20" fill="url(#g)"/>
+</svg>

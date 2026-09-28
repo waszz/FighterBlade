@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Alpine: ocultar lo que tiene x-cloak hasta que Alpine lo inicialice (evita que modales/avisos se vean un instante) */
+[x-cloak] { display: none !important; }
+
+/* Scroll del panel lateral del personaje: barra finita azul */
+.sidebar-pj { scrollbar-width: thin; scrollbar-color: #3d7fd6 transparent; }
+.sidebar-pj::-webkit-scrollbar { width: 6px; }
+.sidebar-pj::-webkit-scrollbar-track { background: transparent; }
+.sidebar-pj::-webkit-scrollbar-thumb { background: #3d7fd6; border-radius: 3px; }
+/* Mis Drops: se oculta la barra nativa, el juego dibuja la suya */
+.lista-drops { scrollbar-width: none; }
+.lista-drops::-webkit-scrollbar { display: none; }
+
+/* ===================== Cosméticos (Extras) — catálogo en App\Support\Cosmeticos ===================== */
+
+/* --- Burbujas de chat (van sobre la burbuja del mensaje, pisan su fondo) --- */
+.cos-chat-fuego, .cos-chat-hielo, .cos-chat-neon, .cos-chat-oro, .cos-chat-arcoiris { background-size: 200% 200% !important; }
+.cos-chat-fuego {
+  background-image: linear-gradient(135deg, #7a1500, #e0490b, #ffb000, #e0490b) !important; color: #fff7e6 !important;
+  text-shadow: 0 1px 0 #5a1000; animation: cosMover 3s ease infinite, cosFuegoBrillo 1.2s ease-in-out infinite alternate;
+}
+.cos-chat-hielo {
+  background-image: linear-gradient(135deg, #0b3a5c, #3cc4f5, #e6fbff, #3cc4f5) !important; color: #06263d !important;
+  animation: cosMover 5s ease infinite; box-shadow: 0 0 8px rgba(125, 211, 252, .7), inset 0 0 6px rgba(255, 255, 255, .6);
+}
+.cos-chat-neon {
+  background: #12001f !important; color: #f5d0fe !important; border: 1px solid #d946ef;
+  animation: cosNeonCaja 1.6s ease-in-out infinite alternate;
+}
+.cos-chat-oro {
+  background-image: linear-gradient(110deg, #8a5a00 0%, #f5c542 30%, #fff3b0 45%, #f5c542 60%, #8a5a00 100%) !important;
+  color: #3a2600 !important; font-weight: 600; animation: cosMover 2.5s linear infinite; box-shadow: 0 0 8px rgba(245, 197, 66, .6);
+}
+.cos-chat-arcoiris {
+  background-image: linear-gradient(90deg, #ff4d6d, #ffb000, #6ee07a, #3cc4f5, #a78bfa, #ff4d6d) !important; color: #fff !important;
+  text-shadow: 0 1px 1px #000; animation: cosMover 4s linear infinite;
+}
+
+/* --- Nombres (texto con degradado animado o brillo) --- */
+.cos-nombre-fuego, .cos-nombre-hielo, .cos-nombre-oro, .cos-nombre-arcoiris {
+  -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important;
+  -webkit-text-fill-color: transparent; background-size: 200% auto !important;
+}
+.cos-nombre-fuego { background-image: linear-gradient(90deg, #ff2200, #ff8a00, #ffe066, #ff8a00, #ff2200); animation: cosMover 2s linear infinite; filter: drop-shadow(0 0 4px rgba(255, 90, 0, .8)); }
+.cos-nombre-hielo { background-image: linear-gradient(90deg, #3cc4f5, #e6fbff, #7dd3fc, #e6fbff, #3cc4f5); animation: cosMover 3s linear infinite; filter: drop-shadow(0 0 4px rgba(125, 211, 252, .8)); }
+.cos-nombre-oro { background-image: linear-gradient(110deg, #b8860b 0%, #ffd700 35%, #fffbe0 50%, #ffd700 65%, #b8860b 100%); animation: cosMover 2.2s linear infinite; filter: drop-shadow(0 1px 0 #000); }
+.cos-nombre-arcoiris { background-image: linear-gradient(90deg, #ff4d6d, #ffb000, #6ee07a, #3cc4f5, #a78bfa, #ff4d6d); animation: cosMover 3s linear infinite; filter: drop-shadow(0 1px 0 #000); }
+.cos-nombre-neon { color: #a5f3fc !important; -webkit-text-fill-color: #a5f3fc; animation: cosNeonTexto 1.5s ease-in-out infinite alternate; }
+
+/* --- Auras (resplandor animado alrededor del gif del personaje) --- */
+.cos-aura-fuego { animation: cosAuraFuego 1s ease-in-out infinite alternate; }
+.cos-aura-hielo { animation: cosAuraHielo 2s ease-in-out infinite alternate; }
+.cos-aura-electrica { animation: cosAuraElectrica .9s steps(2, end) infinite; }
+.cos-aura-oscura { animation: cosAuraOscura 2.2s ease-in-out infinite alternate; }
+.cos-aura-dorada { animation: cosAuraDorada 1.6s ease-in-out infinite alternate; }
+
+@keyframes cosMover { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes cosFuegoBrillo { from { box-shadow: 0 0 6px rgba(255, 106, 0, .6); } to { box-shadow: 0 0 14px rgba(255, 60, 0, .95); } }
+@keyframes cosNeonCaja { from { box-shadow: 0 0 4px #d946ef, inset 0 0 4px #d946ef; } to { box-shadow: 0 0 14px #d946ef, 0 0 24px #a21caf, inset 0 0 8px #d946ef; } }
+@keyframes cosNeonTexto { from { text-shadow: 0 0 2px #22d3ee, 0 0 6px #06b6d4; } to { text-shadow: 0 0 4px #67e8f9, 0 0 12px #22d3ee, 0 0 22px #0891b2; } }
+@keyframes cosAuraFuego { from { filter: drop-shadow(0 0 3px #ff8a00) drop-shadow(0 0 8px #ff3d00); } to { filter: drop-shadow(0 0 6px #ffb000) drop-shadow(0 0 16px #ff2200); } }
+@keyframes cosAuraHielo { from { filter: drop-shadow(0 0 3px #e0f2fe) drop-shadow(0 0 8px #38bdf8); } to { filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 16px #0ea5e9); } }
+@keyframes cosAuraElectrica { 0% { filter: drop-shadow(0 0 4px #c4b5fd) drop-shadow(0 0 10px #6366f1); } 100% { filter: drop-shadow(0 0 7px #e0e7ff) drop-shadow(0 0 16px #3b82f6); } }
+@keyframes cosAuraOscura { from { filter: drop-shadow(0 0 4px #7e22ce) drop-shadow(0 0 10px #000); } to { filter: drop-shadow(0 0 8px #a855f7) drop-shadow(0 0 18px #1e0033); } }
+@keyframes cosAuraDorada { from { filter: drop-shadow(0 0 4px #fde047) drop-shadow(0 0 10px #f59e0b); } to { filter: drop-shadow(0 0 8px #fff7cc) drop-shadow(0 0 18px #eab308); } }
+
+/* --- Filas de ranking (van sobre la fila del personaje, pisan su fondo y borde) --- */
+.cos-ranking-fuego, .cos-ranking-hielo, .cos-ranking-galaxia, .cos-ranking-oro { background-size: 200% 200% !important; }
+.cos-ranking-fuego {
+  background-image: linear-gradient(120deg, #2a0a00, #7a1d00, #c2410c, #7a1d00, #2a0a00) !important; border-color: #fb923c !important;
+  animation: cosMover 4s ease infinite, cosFuegoBrillo 1.2s ease-in-out infinite alternate;
+}
+.cos-ranking-hielo {
+  background-image: linear-gradient(120deg, #06243a, #0e5a86, #38bdf8, #0e5a86, #06243a) !important; border-color: #7dd3fc !important;
+  animation: cosMover 6s ease infinite; box-shadow: 0 0 10px rgba(125, 211, 252, .5), inset 0 0 12px rgba(224, 242, 254, .25);
+}
+.cos-ranking-galaxia {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 45% 80%, #e9d5ff 50%, transparent 51%), radial-gradient(1px 1px at 85% 20%, #fff 50%, transparent 51%),
+    linear-gradient(120deg, #0b0320, #3b0764, #1e1b4b, #581c87, #0b0320) !important;
+  border-color: #a855f7 !important; animation: cosMover 8s ease infinite; box-shadow: 0 0 12px rgba(168, 85, 247, .45);
+}
+.cos-ranking-oro {
+  background-image: linear-gradient(110deg, #3a2600 0%, #6b4a00 35%, #a57c00 50%, #6b4a00 65%, #3a2600 100%) !important;
+  border-color: #facc15 !important; animation: cosMover 3s linear infinite; box-shadow: 0 0 10px rgba(250, 204, 21, .55);
+}
+.cos-ranking-arcoiris {
+  border: 2px solid transparent !important;
+  background: linear-gradient(#1f2937, #1f2937) padding-box, linear-gradient(90deg, #ff4d6d, #ffb000, #6ee07a, #3cc4f5, #a78bfa, #ff4d6d) border-box !important;
+  background-size: 100% 100%, 300% 100% !important; animation: cosArcoirisBorde 3s linear infinite;
+}
+@keyframes cosArcoirisBorde { from { background-position: 0 0, 0% 0; } to { background-position: 0 0, 300% 0; } }
+
+/* --- Materiales: Black, Old, Plata, Zafiro, Amatista, Ruby, Esmeralda y Diamante (los 4 tipos) --- */
+.cos-chat-black { background-image: linear-gradient(120deg, #000000, #27272a, #71717a, #27272a, #000000) !important; background-size: 200% 200% !important; color: #e4e4e7 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #a1a1aa99, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-black { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #27272a, #71717a, #d4d4d8, #71717a, #27272a); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 1px 0 #000); }
+.cos-aura-black { animation: cosAuraBlack 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraBlack { from { filter: drop-shadow(0 0 3px #52525b) drop-shadow(0 0 10px #000) drop-shadow(0 0 2px #000); } to { filter: drop-shadow(0 0 6px #a1a1aa) drop-shadow(0 0 18px #000) drop-shadow(0 0 4px #000); } }
+.cos-ranking-black { background-image: linear-gradient(120deg, #000000, #27272a99, #000000, #27272a99, #000000) !important; background-size: 200% 200% !important; border-color: #a1a1aa !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #a1a1aa88, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-old { background-image: linear-gradient(120deg, #2b1d0e, #7a5a2e, #d9c08a, #7a5a2e, #2b1d0e) !important; background-size: 200% 200% !important; color: #fff4d6 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #b08d5799, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-old { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #7a5a2e, #d9c08a, #ffffff, #d9c08a, #7a5a2e); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #b08d57cc) drop-shadow(0 1px 0 #000); }
+.cos-aura-old { animation: cosAuraOld 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraOld { from { filter: drop-shadow(0 0 3px #d9c08a) drop-shadow(0 0 9px #b08d57); } to { filter: drop-shadow(0 0 7px #d9c08a) drop-shadow(0 0 18px #7a5a2e); } }
+.cos-ranking-old { background-image: linear-gradient(120deg, #2b1d0e, #7a5a2e99, #2b1d0e, #7a5a2e99, #2b1d0e) !important; background-size: 200% 200% !important; border-color: #b08d57 !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #b08d5788, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-plata { background-image: linear-gradient(120deg, #3f4550, #9ca3af, #f8fafc, #9ca3af, #3f4550) !important; background-size: 200% 200% !important; color: #111827 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #e5e7eb99, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-plata { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #9ca3af, #f8fafc, #ffffff, #f8fafc, #9ca3af); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #e5e7ebcc) drop-shadow(0 1px 0 #000); }
+.cos-aura-plata { animation: cosAuraPlata 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraPlata { from { filter: drop-shadow(0 0 3px #f8fafc) drop-shadow(0 0 9px #e5e7eb); } to { filter: drop-shadow(0 0 7px #f8fafc) drop-shadow(0 0 18px #9ca3af); } }
+.cos-ranking-plata { background-image: linear-gradient(120deg, #3f4550, #9ca3af99, #3f4550, #9ca3af99, #3f4550) !important; background-size: 200% 200% !important; border-color: #e5e7eb !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #e5e7eb88, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-zafiro { background-image: linear-gradient(120deg, #0a1740, #1d4ed8, #93c5fd, #1d4ed8, #0a1740) !important; background-size: 200% 200% !important; color: #eff6ff !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #3b82f699, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-zafiro { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #1d4ed8, #93c5fd, #ffffff, #93c5fd, #1d4ed8); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #3b82f6cc) drop-shadow(0 1px 0 #000); }
+.cos-aura-zafiro { animation: cosAuraZafiro 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraZafiro { from { filter: drop-shadow(0 0 3px #93c5fd) drop-shadow(0 0 9px #3b82f6); } to { filter: drop-shadow(0 0 7px #93c5fd) drop-shadow(0 0 18px #1d4ed8); } }
+.cos-ranking-zafiro { background-image: linear-gradient(120deg, #0a1740, #1d4ed899, #0a1740, #1d4ed899, #0a1740) !important; background-size: 200% 200% !important; border-color: #3b82f6 !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #3b82f688, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-amatista { background-image: linear-gradient(120deg, #240a4d, #7c3aed, #d8b4fe, #7c3aed, #240a4d) !important; background-size: 200% 200% !important; color: #faf5ff !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #a855f799, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-amatista { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #7c3aed, #d8b4fe, #ffffff, #d8b4fe, #7c3aed); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #a855f7cc) drop-shadow(0 1px 0 #000); }
+.cos-aura-amatista { animation: cosAuraAmatista 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraAmatista { from { filter: drop-shadow(0 0 3px #d8b4fe) drop-shadow(0 0 9px #a855f7); } to { filter: drop-shadow(0 0 7px #d8b4fe) drop-shadow(0 0 18px #7c3aed); } }
+.cos-ranking-amatista { background-image: linear-gradient(120deg, #240a4d, #7c3aed99, #240a4d, #7c3aed99, #240a4d) !important; background-size: 200% 200% !important; border-color: #a855f7 !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #a855f788, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-ruby { background-image: linear-gradient(120deg, #3d0012, #be123c, #fda4af, #be123c, #3d0012) !important; background-size: 200% 200% !important; color: #fff1f2 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #f43f5e99, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-ruby { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #be123c, #fda4af, #ffffff, #fda4af, #be123c); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #f43f5ecc) drop-shadow(0 1px 0 #000); }
+.cos-aura-ruby { animation: cosAuraRuby 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraRuby { from { filter: drop-shadow(0 0 3px #fda4af) drop-shadow(0 0 9px #f43f5e); } to { filter: drop-shadow(0 0 7px #fda4af) drop-shadow(0 0 18px #be123c); } }
+.cos-ranking-ruby { background-image: linear-gradient(120deg, #3d0012, #be123c99, #3d0012, #be123c99, #3d0012) !important; background-size: 200% 200% !important; border-color: #f43f5e !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #f43f5e88, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-esmeralda { background-image: linear-gradient(120deg, #01261c, #059669, #6ee7b7, #059669, #01261c) !important; background-size: 200% 200% !important; color: #ecfdf5 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #10b98199, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-esmeralda { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #059669, #6ee7b7, #ffffff, #6ee7b7, #059669); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #10b981cc) drop-shadow(0 1px 0 #000); }
+.cos-aura-esmeralda { animation: cosAuraEsmeralda 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraEsmeralda { from { filter: drop-shadow(0 0 3px #6ee7b7) drop-shadow(0 0 9px #10b981); } to { filter: drop-shadow(0 0 7px #6ee7b7) drop-shadow(0 0 18px #059669); } }
+.cos-ranking-esmeralda { background-image: linear-gradient(120deg, #01261c, #05966999, #01261c, #05966999, #01261c) !important; background-size: 200% 200% !important; border-color: #10b981 !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #10b98188, inset 0 0 10px rgba(255,255,255,.08); }
+.cos-chat-diamante { background-image: linear-gradient(120deg, #0e4a5c, #67e8f9, #ffffff, #67e8f9, #0e4a5c), radial-gradient(1.5px 1.5px at 25% 35%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 75% 65%, #fff 50%, transparent 51%) !important; background-size: 200% 200% !important; color: #083344 !important; text-shadow: 0 1px 1px rgba(0,0,0,.45); animation: cosMover 4s ease infinite; box-shadow: 0 0 8px #a5f3fc99, inset 0 0 6px rgba(255,255,255,.25); }
+.cos-nombre-diamante { -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; background-size: 200% auto !important; background-image: linear-gradient(110deg, #67e8f9, #ffffff, #ffffff, #ffffff, #67e8f9); animation: cosMover 2.5s linear infinite; filter: drop-shadow(0 0 4px #a5f3fccc) drop-shadow(0 1px 0 #000); }
+.cos-aura-diamante { animation: cosAuraDiamante 1.8s ease-in-out infinite alternate; }
+@keyframes cosAuraDiamante { from { filter: drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 9px #a5f3fc); } to { filter: drop-shadow(0 0 7px #ffffff) drop-shadow(0 0 18px #67e8f9); } }
+.cos-ranking-diamante { background-image: linear-gradient(120deg, #0e4a5c, #67e8f999, #0e4a5c, #67e8f999, #0e4a5c), radial-gradient(1.5px 1.5px at 25% 35%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 75% 65%, #fff 50%, transparent 51%) !important; background-size: 200% 200% !important; border-color: #a5f3fc !important; animation: cosMover 5s ease infinite; box-shadow: 0 0 10px #a5f3fc88, inset 0 0 10px rgba(255,255,255,.08); }
