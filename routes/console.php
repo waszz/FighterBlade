@@ -158,3 +158,24 @@ Artisan::command('zona:variantes', function () {
     }
     $this->info("Variantes creadas: $creadas (" . $sets->count() . " sets × 3)");
 })->purpose('Crea las variantes Black / normal / Gold de los sets de nivel 5 para la zona inicial');
+
+// Bots: los sube (o baja) a un nivel, con exp y stats de ese nivel. Por defecto al 3, el primero sin protección de novato
+Artisan::command('bots:nivel {nivel=3}', function () {
+    $nivel = max(1, min(100, (int) $this->argument('nivel')));
+    $random = new \Random\Randomizer();
+    $bots = \App\Models\Personaje::with('post')
+        ->whereHas('user', fn ($q) => $q->where('email', 'like', '%@' . \Database\Seeders\BotsSeeder::DOMINIO))
+        ->get();
+    foreach ($bots as $bot) {
+        $stats = \Database\Seeders\BotsSeeder::statsParaNivel($bot->post?->tipo ?? $bot->tipo, $nivel);
+        $bot->forceFill([
+            'nivel'        => $nivel,
+            'experiencia'  => \Database\Seeders\BotsSeeder::experienciaAlAzar($nivel, $random),
+            'stats'        => $stats,
+            'stats_base'   => $stats,
+            'puntos_stats' => 0,
+        ])->save();
+        $this->line("  {$bot->nombre}: nivel $nivel " . json_encode($stats));
+    }
+    $this->info("Bots actualizados: " . $bots->count());
+})->purpose('Sube los bots a un nivel (por defecto 3) con exp y stats de ese nivel');

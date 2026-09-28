@@ -16,7 +16,8 @@ use Illuminate\Support\Str;
 class BotsSeeder extends Seeder
 {
     const DOMINIO = 'bot.fighterblade';
-    const NIVEL = 2;
+    // Nivel 3: ya pasaron la protección de novatos (nivel 1 y 2), así se los puede atacar en PvP
+    const NIVEL = 3;
 
     const NOMBRES = ['ShadowFist', 'Kaizer', 'LunaByte', 'RyuMaster99', 'Nekomata',
                      'ZeroCool', 'Valkyria', 'TurboKid', 'DarkPhoenix', 'ElCondor'];
@@ -49,16 +50,7 @@ class BotsSeeder extends Seeder
             ]);
             $user->forceFill(['email_verified_at' => now()])->save();
 
-            // Stats base 5 + los puntos de los niveles ganados, repartidos según el tipo
-            $puntos = (self::NIVEL - 1) * 5;
-            $stats = ['fuerza' => 5, 'ataque' => 5, 'velocidad' => 5, 'resistencia' => 5, 'defensa' => 5, 'energia' => 5];
-            $reparto = self::REPARTO[$set->tipo] ?? self::REPARTO['fisico'];
-            $usados = 0;
-            foreach ($reparto as $stat => $fraccion) {
-                $stats[$stat] += (int) floor($puntos * $fraccion);
-                $usados += (int) floor($puntos * $fraccion);
-            }
-            $stats[array_key_first($reparto)] += $puntos - $usados;
+            $stats = self::statsParaNivel($set->tipo, self::NIVEL);
 
             $personaje = Personaje::create([
                 'user_id'     => $user->id,
@@ -71,7 +63,7 @@ class BotsSeeder extends Seeder
                 'ciudad_id'   => $ciudad?->id,
                 'stats'       => $stats,
                 'stats_base'  => $stats,
-                'experiencia' => 10000 * (self::NIVEL - 1) ** 2 + $random->getInt(0, 40000),
+                'experiencia' => self::experienciaAlAzar(self::NIVEL, $random),
                 'oro'         => $random->getInt(200, 900),
                 'diamante'    => 0,
             ]);
@@ -82,5 +74,27 @@ class BotsSeeder extends Seeder
         }
 
         $this->command->info("Bots creados: $creados");
+    }
+
+    // Stats base 5 + los puntos de los niveles ganados (5 por nivel), repartidos según el tipo
+    public static function statsParaNivel(?string $tipo, int $nivel): array
+    {
+        $puntos = ($nivel - 1) * 5;
+        $stats = ['fuerza' => 5, 'ataque' => 5, 'velocidad' => 5, 'resistencia' => 5, 'defensa' => 5, 'energia' => 5];
+        $reparto = self::REPARTO[$tipo] ?? self::REPARTO['fisico'];
+        $usados = 0;
+        foreach ($reparto as $stat => $fraccion) {
+            $stats[$stat] += (int) floor($puntos * $fraccion);
+            $usados += (int) floor($puntos * $fraccion);
+        }
+        $stats[array_key_first($reparto)] += $puntos - $usados;
+
+        return $stats;
+    }
+
+    // Exp al azar dentro del nivel (sin llegar al siguiente: el nivel N va de 10000·(N-1)² a 10000·N² - 1)
+    public static function experienciaAlAzar(int $nivel, \Random\Randomizer $random): int
+    {
+        return $random->getInt(10000 * ($nivel - 1) ** 2, 10000 * $nivel ** 2 - 1);
     }
 }
