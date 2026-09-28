@@ -36,8 +36,30 @@
         $postPreview = $personaje->postDeCombate();
         $gifPreview = $postPreview?->gif ?? $personaje->post?->gif;
     @endphp
-    <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-4 rounded-xl border border-fuchsia-500 space-y-4">
-        <h2 class="text-xl font-bold text-center text-fuchsia-300 [text-shadow:0_2px_0_#000]">✨ Cosméticos</h2>
+    {{-- En el celular la sección es un botón que abre los cosméticos a pantalla completa (así no hay que bajar tanto);
+         en PC se ve siempre --}}
+    <div x-data="{ abierto: false }">
+    <button type="button" x-show="! abierto" @click="abierto = true"
+        class="lg:hidden w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-fuchsia-500 text-left
+               bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)]
+               active:translate-y-[3px] transition-all">
+        <span>
+            <span class="block text-xl font-bold text-fuchsia-300 [text-shadow:0_2px_0_#000]">✨ Cosméticos</span>
+            <span class="block text-xs text-gray-300">{{ collect($tiposCos)->pluck('titulo')->implode(' · ') }}</span>
+        </span>
+        <i class="fa-solid fa-chevron-right text-fuchsia-300"></i>
+    </button>
+    <div :class="abierto ? 'fixed inset-0 z-50 overflow-y-auto rounded-none' : 'hidden lg:block rounded-xl'"
+        class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-4 border border-fuchsia-500 space-y-4">
+        <div class="relative">
+            {{-- Volver (solo celular) --}}
+            <button type="button" @click="abierto = false" aria-label="Volver"
+                class="lg:hidden absolute left-0 top-0 w-8 h-8 flex items-center justify-center rounded-full border-2 border-black text-white
+                       bg-gradient-to-b from-red-600 to-red-900 shadow-[0_2px_0_#000]">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </button>
+            <h2 class="text-xl font-bold text-center text-fuchsia-300 [text-shadow:0_2px_0_#000]">✨ Cosméticos</h2>
+        </div>
 
         {{-- Pestañas --}}
         <div class="flex flex-wrap justify-center gap-2">
@@ -51,7 +73,7 @@
         </div>
         <p class="text-center text-sm text-gray-300">{{ $tipoCos['descripcion'] }} Se compran una vez y los podés poner o sacar cuando quieras.</p>
 
-        <div wire:key="cosmeticos-{{ $tipoCosmetico }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div wire:key="cosmeticos-{{ $tipoCosmetico }}" class="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
             @foreach (\App\Support\Cosmeticos::delTipo($tipoCosmetico) as $claveCos => $cos)
             @php
                 $comprado = in_array($claveCos, $cosmeticosComprados, true);
@@ -111,6 +133,7 @@
             </div>
             @endforeach
         </div>
+    </div>
     </div>
 
     {{-- Super Pociones por diamantes --}}
