@@ -411,6 +411,12 @@
         <span {!! $iconoCiudad('torre.svg') !!}></span>
         Torre
       </button>
+      {{-- Entrenamiento con el maestro: se puede aunque te estés recuperando --}}
+      <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'entrenar' })"
+        class="{{ $botonCiudad }}" style="--c:#fb923c">
+        <span {!! $iconoCiudad('entrenar.svg') !!}></span>
+        Entrenar
+      </button>
       </div>
       @endif
     </div>

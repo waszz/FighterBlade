@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><linearGradient id="g" x1="380" y1="20" x2="200" y2="500" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFC21A"/><stop offset="0.5" stop-color="#F58A3C"/><stop offset="1" stop-color="#E8403A"/></linearGradient></defs>
+<g fill="none" stroke="url(#g)" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+  <!-- barra de la pesa -->
+  <line x1="150" y1="256" x2="362" y2="256"/>
+  <!-- discos de la izquierda -->
+  <rect x="110" y="176" width="40" height="160" rx="10"/>
+  <rect x="62" y="206" width="48" height="100" rx="10"/>
+  <!-- discos de la derecha -->
+  <rect x="362" y="176" width="40" height="160" rx="10"/>
+  <rect x="402" y="206" width="48" height="100" rx="10"/>
+</g>
+</svg>

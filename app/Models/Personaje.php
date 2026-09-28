@@ -62,6 +62,7 @@ protected $casts = [
     'stats_modificados' => 'array',
     'stats_guardados' => 'boolean',
     'fin_exploracion' => 'datetime',
+    'entreno_fin' => 'datetime', // entrenamiento con el maestro (ver App\Livewire\Entrenar)
     'fin_recuperacion' => 'datetime',
     'viajando_hasta' => 'datetime',
     'minutos_originales' => 'integer',
