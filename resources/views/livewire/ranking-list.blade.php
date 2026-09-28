@@ -173,7 +173,8 @@
                 <div class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white [text-shadow:0_1px_0_#000]">EXP {{ number_format($porcentajeExp, 0) }}%</div>
             </div>
 
-            {{-- Oro y diamantes --}}
+            {{-- Oro, diamantes y stats: solo del personaje propio --}}
+            @if ($esMiPersonajeRanking)
             <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">
                 <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg {{ $caja3d }}">
                     <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4">
@@ -194,6 +195,7 @@
                 </div>
                 @endforeach
             </div>
+            @endif
 
             {{-- Tipo de daño y poderes: solo iconos --}}
             @if ($postModalRanking || $personajeSeleccionadoModal->joya)
