@@ -466,15 +466,11 @@
               <span class="truncate text-sm font-semibold {{ $personajeRanking->claseNombre() }}">{{ $personajeRanking->nombre }}</span>
             </div>
 
-            {{-- Nivel y batallas ganadas / perdidas (PvP + PvE) --}}
-            @php
-              $pvpG = $personajeRanking->pvp_ganadas ?? 0; $pvpP = $personajeRanking->pvp_perdidas ?? 0;
-              $pveG = $personajeRanking->pve_ganadas ?? 0; $pveP = $personajeRanking->pve_perdidas ?? 0;
-            @endphp
+            {{-- Nivel y peleas PvP ganadas / perdidas --}}
             <div class="shrink-0 flex items-center gap-2 text-xs font-bold">
               <span class="text-yellow-300">Nivel {{ $personajeRanking->nivel }}</span>
-              <span title="PvP {{ $pvpG }}/{{ $pvpP }} · PvE {{ $pveG }}/{{ $pveP }}">
-                <span class="text-green-400">{{ $pvpG + $pveG }}</span><span class="text-white">/</span><span class="text-red-400">{{ $pvpP + $pveP }}</span>
+              <span title="PvP: ganadas / perdidas">
+                <span class="text-green-400">{{ $personajeRanking->pvp_ganadas ?? 0 }}</span><span class="text-white">/</span><span class="text-red-400">{{ $personajeRanking->pvp_perdidas ?? 0 }}</span>
               </span>
             </div>
           </div>
