@@ -657,12 +657,8 @@
           🛡️ {{ $personaje->esNovato() ? 'Podés atacar jugadores desde el nivel ' . (\App\Livewire\Explorar::NIVEL_MAX_ENEMIGO_ESPECIAL + 1) : 'Jugador nuevo: todavía no se lo puede atacar' }}
         </p>
       @elseif (! $esMiPersonaje)
-        <a href="{{ route('atacar.personaje', ['personajeId' => $personaje->id, 'objetivoId' => $personajeSeleccionadoModal->id]) }}"
-           class="block w-full text-center py-2 rounded-lg border border-black font-bold text-white
-                  bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]
-                  hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
-          Atacar
-        </a>
+        <x-boton-atacar :personaje="$personaje"
+            :href="route('atacar.personaje', ['personajeId' => $personaje->id, 'objetivoId' => $personajeSeleccionadoModal->id])" />
       @endif
     </div>
   </div>
