@@ -483,16 +483,23 @@
 
   {{-- Anuncios (esquina derecha) --}}
   @php
-    $anuncios = [
-      ['titulo' => '¡Bienvenido a la aventura!', 'texto' => 'Explorá las ciudades, derrotá enemigos y subí en el ranking.', 'fecha' => null],
-      ['titulo' => 'Próximamente', 'texto' => 'Nuevos eventos y recompensas en camino.', 'fecha' => null],
-    ];
+    // Los publican los admins en Administración → Anuncios. Arriba, la foto del admin que publicó el último
+    $anuncios = \App\Models\Anuncio::activos()->with('autor')->take(\App\Models\Anuncio::MAXIMO_EN_PANEL)->get();
+    $fotoAnunciante = $anuncios->first()?->fotoAutor();
   @endphp
   {{-- Anuncios: panel 3D --}}
   <div class="w-full md:w-[24rem] rounded-xl p-5 text-white text-sm border border-yellow-600
               bg-gradient-to-b from-[#1c2533]/95 to-[#0a0e14]/95
               shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_8px_16px_rgba(0,0,0,0.7)]">
-    <h2 class="text-xl font-bold text-yellow-300 text-center mb-4 [text-shadow:0_2px_0_#000]">📢 Anuncios</h2>
+    <h2 class="flex items-center justify-center gap-2 text-xl font-bold text-yellow-300 text-center mb-4 [text-shadow:0_2px_0_#000]">
+      @if ($fotoAnunciante)
+        <img src="{{ asset('storage/' . $fotoAnunciante) }}" alt="{{ $anuncios->first()->autor?->name }}" title="{{ $anuncios->first()->autor?->name }}"
+             class="w-9 h-9 rounded-full object-cover border-2 border-yellow-400 shadow-[0_2px_0_#000]">
+      @else
+        📢
+      @endif
+      Anuncios
+    </h2>
 
     @if(count($anuncios) > 0)
       <div class="space-y-3">
@@ -501,12 +508,10 @@
                       bg-gradient-to-b from-[#2a3240] to-[#10141b]
                       shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-base text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio['titulo'] }}</span>
-              @if($anuncio['fecha'])
-                <span class="text-gray-400 text-xs">{{ $anuncio['fecha'] }}</span>
-              @endif
+              <span class="font-bold text-base text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio->titulo }}</span>
+              <span class="shrink-0 ml-2 text-gray-400 text-xs">{{ $anuncio->created_at->format('d/m') }}</span>
             </div>
-            <p class="mt-1 text-gray-200">{{ $anuncio['texto'] }}</p>
+            <p class="mt-1 text-gray-200 whitespace-pre-line">{{ $anuncio->texto }}</p>
           </div>
         @endforeach
       </div>

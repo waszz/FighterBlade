@@ -84,6 +84,7 @@ Route::get('/atacar/{personajeId}/{objetivoId}', [\App\Http\Controllers\PvpContr
 
 Route::get('/poderes', Poderes::class)->name('poderes');
 Route::get('/personajes-especiales', \App\Livewire\PersonajesEspeciales::class)->middleware('auth')->name('personajes.especiales');
+Route::get('/admin/anuncios', \App\Livewire\AdminAnuncios::class)->middleware('auth')->name('admin.anuncios');
 Route::get('/personajes-especiales/{post}/editar', \App\Livewire\EditarEspecial::class)->middleware('auth')->name('personajes.especiales.editar');
 
 require __DIR__.'/auth.php';

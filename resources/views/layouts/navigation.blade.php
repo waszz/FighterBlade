@@ -32,7 +32,8 @@
                                     <a href="{{ route('posts.create') }}" class="block px-4 py-2 hover:bg-gray-100">Crear Personajes</a>
                                     <a href="{{ route('personajes.especiales') }}" class="block px-4 py-2 hover:bg-gray-100">Personajes especiales</a>
                                     <a href="{{ route('news.index') }}" class="block px-4 py-2 hover:bg-gray-100">Mis Ciudades</a>
-                                    <a href="{{ route('news.create') }}" class="block px-4 py-2 hover:bg-gray-100">Crear Ciudades</a>                                </div>
+                                    <a href="{{ route('news.create') }}" class="block px-4 py-2 hover:bg-gray-100">Crear Ciudades</a>
+                                    <a href="{{ route('admin.anuncios') }}" class="block px-4 py-2 hover:bg-gray-100">Anuncios</a>                                </div>
                             </div>
                         @endif
                     @endauth
@@ -113,7 +114,8 @@
                         <x-responsive-nav-link :href="route('posts.create')">Crear Personajes</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('personajes.especiales')">Personajes especiales</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('news.index')">Mis Ciudades</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('news.create')">Crear Ciudades</x-responsive-nav-link>                    </div>
+                        <x-responsive-nav-link :href="route('news.create')">Crear Ciudades</x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.anuncios')">Anuncios</x-responsive-nav-link>                    </div>
                 </div>
                 @endif
 
