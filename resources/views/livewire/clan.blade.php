@@ -204,7 +204,7 @@
     @endif
 
     @if ($modalRetirarObjeto && $objetoSeleccionado)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3">
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModalRetirarObjeto">
         <div
             class="bg-gray-900 rounded-xl shadow-xl p-4 max-w-sm w-full text-white relative transform transition-transform duration-300 ease-in-out animate-fade-in-scale border-2 border-yellow-400">
             <button wire:click="cerrarModalRetirarObjeto"
@@ -299,7 +299,7 @@
     </style>
 
     @if($modalSolicitudes)
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" wire:click.self="$set('modalSolicitudes', false)">
         <div class="bg-gray-900 rounded-xl p-6 w-full max-w-lg text-white shadow-2xl">
             @foreach($miembrosDelClan as $miembro)
             <li class="py-3 flex justify-between items-center">
@@ -356,7 +356,7 @@
     @endif
 
     @if($modalConfirmarSalir)
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" wire:click.self="$set('modalConfirmarSalir', false)">
         <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md text-white shadow-2xl">
             <h2 class="text-xl font-bold mb-4 text-center">Confirmar salida</h2>
             <p class="mb-6 text-center">¿Estás seguro que querés salir del clan?</p>
@@ -371,7 +371,7 @@
     @endif
 
     @if($modalConfirmarEliminarClan)
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" wire:click.self="$set('modalConfirmarEliminarClan', false)">
         <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md text-white shadow-2xl">
             <h2 class="text-xl font-bold mb-4 text-center">Confirmar eliminación</h2>
             <p class="mb-6 text-center">¿Estás seguro que querés eliminar el clan? Esta acción no se puede deshacer.</p>

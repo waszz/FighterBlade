@@ -1,6 +1,13 @@
 {{-- Rondas y resultado de una pelea. Lo usa la Ciudad (explorar) y "Mis peleas" para volver a ver una pelea guardada.
      Variables: $resultadosRondas, $personaje, $enemigo, $recompensas, $ciudadActual, $escenarioMision y las de Explorar::VISTA_PELEA --}}
   @if($resultadosRondas)
+  {{-- Tocando la pelea se baja hasta el final (el resultado y la escena), con el scroll del contenedor en el que está --}}
+  <div x-data="{ bajar() {
+          let el = this.$el.parentElement;
+          while (el && !(el.scrollHeight > el.clientHeight && /(auto|scroll)/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
+          el = el || document.scrollingElement;
+          el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+       } }" @click="bajar()" title="Tocá para ir al resultado">
   @php
   $golpesPersonaje = 0;
   $golpesEnemigo = 0;
@@ -1024,4 +1031,5 @@
 </div>
 @endif
 
+  </div>
 @endif

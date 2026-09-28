@@ -552,7 +552,7 @@
 {{-- Las pociones se muestran más abajo, dentro de la grilla de slots --}}
 
 @if ($modalEquiparPocionAbierto && $pocionSeleccionada)
-  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-2">
+  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-2" wire:click.self="$set('modalEquiparPocionAbierto', false)">
     <div class="flex flex-col items-center w-full max-w-[220px]">
 
       {{-- CARD 1: info de la poción --}}
@@ -848,7 +848,7 @@
 
     {{-- Modal objeto seleccionado --}}
     @if ($objetoSeleccionado)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3">
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModal">
       <div class="flex flex-col items-center w-full max-w-[220px] text-white">
 
         {{-- CARD 1: info del objeto --}}
@@ -1031,7 +1031,7 @@
     {{-- Modal guardar oro --}}
     @if($modalGuardarOroAbierto)
     <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3"
-      wire:click.self="cerrarModalTirarObjetos">
+      wire:click.self="cerrarModalGuardarOro">
       <div class="bg-gray-900 p-4 rounded-xl shadow-lg max-w-xs w-full text-white">
         <h3 class="text-xl font-bold mb-3 text-yellow-300 text-center">💰 Gestión de Oro</h3>
 
@@ -1068,7 +1068,7 @@
 
     {{-- Modal tirar objeto --}}
     @if($modalTirarObjetosAbierto)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3">
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModalTirarObjetos">
       <div class="bg-gray-900 p-4 rounded-xl shadow-lg max-w-sm w-full text-white relative">
         <button wire:click="cerrarModalTirarObjetos"
           class="absolute top-2 right-2 text-yellow-300 hover:text-white text-3xl leading-none">&times;</button>
@@ -1132,7 +1132,7 @@
 
     {{-- Modal desequipar --}}
     @if($modalDesequiparAbierto && $objetoADesequipar)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3">
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModalDesequipar">
       <div class="flex flex-col items-center w-full max-w-[290px] text-white">
 
       {{-- CARD 1: info del objeto --}}

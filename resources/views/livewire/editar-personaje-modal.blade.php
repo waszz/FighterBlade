@@ -6,7 +6,7 @@
 
     {{-- Modal --}}
     @if($modalOpen)
-        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" wire:click.self="closeModal">
             <div class="bg-gray-800 rounded-lg p-6 w-96 text-white shadow-lg relative">
                 <h2 class="text-xl font-bold mb-4">Editar Personaje</h2>
 
