@@ -132,7 +132,7 @@
                      x-show="s > 0"
                      x-init="const t = setInterval(() => {
                                  s = Math.max(0, Math.ceil(fin - Date.now() / 1000));
-                                 if (s <= 0) { clearInterval(t); setTimeout(() => $wire.recargarPersonaje(), 1000); }
+                                 if (s <= 0) { clearInterval(t); setTimeout(() => { $wire.recargarPersonaje(); Livewire.dispatch('recuperacionTerminada'); }, 1000); }
                              }, 250)"
                      class="w-full p-2 rounded-lg border border-black text-center font-mono
                             bg-gradient-to-b from-[#3a2a10] to-[#120c04]

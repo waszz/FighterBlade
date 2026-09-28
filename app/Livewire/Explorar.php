@@ -70,6 +70,7 @@ class Explorar extends Component
         'reloadExploracion' => '$refresh',
         'refreshComponent'  => '$refresh',
         'refrescarBuffs'    => '$refresh',
+        'recuperacionTerminada' => 'onRecuperacionTerminada',
     ];
     public Post $post;
     public $personaje;
@@ -249,8 +250,11 @@ class Explorar extends Component
                 $duracionExploracion = $this->personaje->exploracion_duracion;
                 if ($duracionExploracion > 0) {
                     $this->generarYGuardarEnemigo();
+                    return;
                 }
-                return;
+                // Terminó la recuperación de la pelea anterior: se limpia y sigue (así aparece el enemigo especial)
+                $this->personaje->fin_exploracion = null;
+                $this->personaje->save();
             }
         }
 
@@ -409,6 +413,16 @@ public function colorBarraPorStat($valor)
 
         session()->forget('enemigo');
         session()->forget('combate_activo');
+    }
+
+    // Fin de la recuperación (la cuenta regresiva del panel lateral): si le toca el enemigo especial de bienvenida,
+    // se recarga la página para que aparezca (el mount lo asigna)
+    public function onRecuperacionTerminada()
+    {
+        $personaje = $this->personaje->fresh();
+        if ($personaje && $personaje->nivel <= self::NIVEL_MAX_ENEMIGO_ESPECIAL && ! $personaje->enemigo_actual_id) {
+            $this->dispatch('recargar-pagina');
+        }
     }
 
     public function onTimerTerminado()
