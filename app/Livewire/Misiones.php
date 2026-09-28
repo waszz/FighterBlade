@@ -52,6 +52,9 @@ class Misiones extends Component
     // Mismas restricciones que para explorar o cazar
     private function motivoBloqueo(Personaje $personaje): ?string
     {
+        if ($personaje->estaEntrenando()) {
+            return Personaje::MENSAJE_ENTRENANDO;
+        }
         $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
         foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {
             if ($estados->contains($estado)) {

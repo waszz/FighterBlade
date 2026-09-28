@@ -6,6 +6,11 @@
         ? max(0, \Carbon\Carbon::parse($personaje->fin_exploracion)->timestamp - now()->timestamp)
         : 0;
     $motivoEspera = $personaje->exploracion_duracion > 0 ? '🧭 Estás explorando' : '⏳ Te estás recuperando';
+    // El entrenamiento también bloquea atacar (y suele durar más)
+    if ($personaje->segundosEntreno() > $segundosEspera) {
+        $segundosEspera = $personaje->segundosEntreno();
+        $motivoEspera = '🏋️ Estás entrenando';
+    }
 @endphp
 <div wire:key="boton-atacar-{{ $segundosEspera }}"
      x-data="{ fin: Date.now() / 1000 + {{ $segundosEspera }}, s: {{ $segundosEspera }} }"
@@ -19,7 +24,7 @@
        class="w-full text-center py-2 rounded-lg border border-black font-bold text-gray-300 bg-gradient-to-b from-gray-600 to-gray-800 shadow-[0_3px_0_#000] cursor-not-allowed select-none">
         Atacar
         <span class="block text-[11px] font-semibold">{{ $motivoEspera }} ·
-            <span x-text="String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')">{{ gmdate('i:s', $segundosEspera) }}</span>
+            <span x-text="(s >= 3600 ? Math.floor(s / 3600) + ':' : '') + String(Math.floor(s % 3600 / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')">{{ $segundosEspera >= 3600 ? gmdate('G:i:s', $segundosEspera) : gmdate('i:s', $segundosEspera) }}</span>
         </span>
     </p>
 </div>

@@ -116,6 +116,12 @@ class Viajar extends Component
     {
         $this->actualizarEstado();
 
+        // Mientras entrena no puede viajar
+        if ($this->personaje->fresh()?->estaEntrenando()) {
+            session()->flash('error', \App\Models\Personaje::MENSAJE_ENTRENANDO);
+            return;
+        }
+
             // Verificación específica para congelado
     $congelado = $this->personaje->estadosTemporales
         ->where('estado', 'Congelado')
@@ -214,6 +220,12 @@ class Viajar extends Component
     public function teleportarA($ciudadId)
     {
         $this->actualizarEstado();
+
+        // Mientras entrena no puede viajar
+        if ($this->personaje->fresh()?->estaEntrenando()) {
+            session()->flash('error', \App\Models\Personaje::MENSAJE_ENTRENANDO);
+            return;
+        }
 
             // Verificación específica para congelado
     $congelado = $this->personaje->estadosTemporales

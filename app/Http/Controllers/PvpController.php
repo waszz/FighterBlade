@@ -50,6 +50,9 @@ class PvpController extends Controller
     // Un duelo (pelea amistosa) se puede aceptar aunque esté explorando o recuperándose
     public static function motivoBloqueo(Personaje $personaje, bool $esDuelo = false): ?string
     {
+        if ($personaje->estaEntrenando()) {
+            return Personaje::MENSAJE_ENTRENANDO;
+        }
         $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
         foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {
             if ($estados->contains($estado)) {

@@ -49,6 +49,17 @@ class Entrenar extends Component
         if ($pj->entreno_fin) {
             return;
         }
+        // Mientras entrena no puede hacer nada de esto, así que tiene que empezar sin nada pendiente
+        $motivo = match (true) {
+            $pj->fin_exploracion && now()->lt($pj->fin_exploracion) && $pj->exploracion_duracion > 0 => 'Estás explorando: terminá la exploración antes de entrenar.',
+            $pj->viajando_hasta && now()->lt($pj->viajando_hasta) => 'Estás viajando: entrená cuando llegues.',
+            $pj->enemigo_actual_id || $pj->enemigo_actual_personaje_id || $pj->mision_activa_id || $pj->torre_piso_activo => 'Terminá tu pelea actual antes de entrenar.',
+            (bool) \App\Models\Caza::activaDe($pj->id) => 'Tenés una caza en curso: terminala antes de entrenar.',
+            default => null,
+        };
+        if ($motivo) {
+            return $this->dispatch('error', ['message' => $motivo]);
+        }
         $pj->entreno_fin = now()->addHours(self::HORAS);
         $pj->save();
         $this->dispatch('success', ['message' => '¡Empezó el entrenamiento! Volvé en ' . self::HORAS . ' horas.']);

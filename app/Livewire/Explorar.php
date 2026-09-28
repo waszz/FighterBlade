@@ -577,6 +577,11 @@ public function colorBarraPorStat($valor)
 
     public function explorar($minutos)
     {
+        if ($this->personaje->fresh()?->estaEntrenando()) {
+            $this->mensajeExploracion = Personaje::MENSAJE_ENTRENANDO;
+            $this->mostrarOpciones    = false;
+            return;
+        }
 
          // Bloquear si está aturdido
     $estadoAturdido = $this->personaje->estadosTemporales
@@ -712,6 +717,12 @@ if ($estadoParalizado) {
 
     public function toggleExplorar()
     {
+        if ($this->personaje->fresh()?->estaEntrenando()) {
+            $this->mensajeExploracion = Personaje::MENSAJE_ENTRENANDO;
+            $this->mostrarOpciones    = false;
+            return;
+        }
+
         // Si está en cooldown
         if ($this->personaje->fin_exploracion && now()->lt($this->personaje->fin_exploracion)) {
             $restante                 = \Carbon\Carbon::parse($this->personaje->fin_exploracion)->diffForHumans(now(), ['parts' => 1]);

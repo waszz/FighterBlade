@@ -80,6 +80,20 @@ protected $casts = [
         return $this->belongsToMany(Poder::class, 'poder_post', 'post_id', 'poder_id', 'post_id', 'id');
     }
 
+    // Entrenamiento con el maestro (App\Livewire\Entrenar): mientras dura no puede explorar, atacar,
+    // hacer misiones, torre ni caza, ni viajar (pero sí lo pueden atacar)
+    const MENSAJE_ENTRENANDO = 'Estás entrenando: no podés hacer esto hasta que termine el entrenamiento.';
+
+    public function estaEntrenando(): bool
+    {
+        return $this->entreno_fin && now()->lt($this->entreno_fin);
+    }
+
+    public function segundosEntreno(): int
+    {
+        return $this->estaEntrenando() ? max(0, $this->entreno_fin->timestamp - now()->timestamp) : 0;
+    }
+
     // Segundos que le quedan de recuperación después de una pelea (0 si no se está recuperando)
     public function segundosRecuperacion(): int
     {

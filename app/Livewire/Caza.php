@@ -159,6 +159,9 @@ class Caza extends Component
     // Mismas restricciones que para explorar
     private function motivoBloqueo(Personaje $personaje): ?string
     {
+        if ($personaje->estaEntrenando()) {
+            return Personaje::MENSAJE_ENTRENANDO;
+        }
         if (CazaModel::activaDe($personaje->id)) {
             return 'Ya tenés una caza en curso.';
         }
