@@ -35,7 +35,7 @@ public function mount(Personaje $personaje)
     ->get();
 
 
-    $primerJugador = Personaje::orderByDesc('nivel')->first();
+    $primerJugador = Personaje::sinAdmins()->orderByDesc('nivel')->first();
     $nivelReferencia = $primerJugador ? $primerJugador->nivel : 1;
     $nivelMaximo = max(1, $nivelReferencia - 5);
 
@@ -74,7 +74,7 @@ public function forzarActualizacion()
         return;
     }
 
-    $primerJugador = Personaje::orderByDesc('nivel')->first();
+    $primerJugador = Personaje::sinAdmins()->orderByDesc('nivel')->first();
     $nivelReferencia = $primerJugador ? $primerJugador->nivel : 1;
     $nivelMaximo = max(1, $nivelReferencia - 5);
 
