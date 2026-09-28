@@ -298,7 +298,7 @@
                     <button type="button" @click="$dispatch('abrir-tutorial')" title="Cómo jugar" aria-label="Cómo jugar"
                     class="w-9 h-9 text-lg shrink-0 flex items-center justify-center rounded-full border-2 border-black text-white font-extrabold bg-gradient-to-b from-sky-500 to-sky-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[2px] transition-all">?</button>
                 </div>
-                <div class="relative z-10 flex flex-col gap-2">
+                <div class="relative z-10 flex flex-col gap-2 pr-11">
                 {{-- Fila 1 --}}
                 <div class="flex flex-wrap justify-center items-center gap-1 sm:gap-2">
                     @php

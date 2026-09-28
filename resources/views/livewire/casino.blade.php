@@ -5,7 +5,7 @@
         : e($s['icono']);
     $iconos = collect($simbolos)->map($iconoHtml);
 @endphp
-<div class="relative w-full py-3 px-2 text-white font-mono select-none"
+<div class="relative w-full py-3 px-2 text-white font-mono select-none flex flex-col"
     x-data="{
         simbolos: @js($iconos),
         apuestas: @js($apuestas),
@@ -197,8 +197,8 @@
         },
     }">
 
-    {{-- Probabilidades por tirada (esquina) --}}
-    <div class="mx-auto mb-3 max-w-md lg:absolute lg:top-3 lg:right-3 lg:mb-0 lg:w-64 rounded border-2 border-[#16203a] bg-black/70 p-3 text-[13px] shadow-[inset_0_0_8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(90,130,200,0.35)]">
+    {{-- Probabilidades por tirada: al costado en pantallas anchas; en las más chicas, al final (debajo de la máquina) --}}
+    <div class="order-last mt-3 w-full mx-auto mb-3 max-w-md min-[1650px]:order-none min-[1650px]:mt-0 min-[1650px]:absolute min-[1650px]:top-3 min-[1650px]:right-3 min-[1650px]:mb-0 min-[1650px]:w-64 rounded border-2 border-[#16203a] bg-black/70 p-3 text-[13px] shadow-[inset_0_0_8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(90,130,200,0.35)]">
         <h3 class="text-center text-sm font-bold uppercase tracking-wide text-yellow-300 mb-2 pb-1.5 border-b border-white/10">Tus chances por tirada</h3>
         @foreach ($probabilidades as $vida => $porMoneda)
             @foreach ($porMoneda as $moneda => $lista)
