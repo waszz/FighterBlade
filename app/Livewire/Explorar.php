@@ -32,6 +32,18 @@ class Explorar extends Component
     // Las misiones dan esta cantidad de veces la exp de una pelea común
     const MISION_MULTIPLICADOR_EXP = 2;
 
+    // Misiones y Torre: el rival pelea como un jugador de su nivel con equipo. Sus stats (30 + 5 por nivel, como un
+    // jugador sin nada equipado) se refuerzan con lo que sumaría un set de su nivel (5 por nivel) × esta fracción.
+    // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo
+    const EQUIPO_RIVAL_MISION_TORRE = 1.0;
+
+    // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
+    public static function refuerzoRivalMisionTorre(int $nivel): float
+    {
+        $base = 30 + 5 * max(1, $nivel);
+        return ($base + 5 * max(1, $nivel) * self::EQUIPO_RIVAL_MISION_TORRE) / $base;
+    }
+
     const EXP_POR_NIVEL = [
         [1, 25, 0.03],
         [26, 49, 0.02],
@@ -1367,6 +1379,16 @@ protected function obtenerPoderesAnulados($combatiente)
             ? $this->enemigo->statsDeCombate()
             : Personaje::decodificarStats($this->enemigo->stats);
         // dd($statsEnemigo);
+
+        // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel
+        if (! ($this->enemigo instanceof Personaje) && ($this->misionActiva() || $this->torreActiva())) {
+            $factorRival = self::refuerzoRivalMisionTorre((int) ($this->enemigo->nivel ?? 1));
+            foreach ($statsEnemigo as $stat => $valor) {
+                if (is_numeric($valor)) {
+                    $statsEnemigo[$stat] = (int) round($valor * $factorRival);
+                }
+            }
+        }
 
         // 🎯 Presa de caza: stats reforzados según la rareza
         if ($caza = $this->cazaActiva()) {
