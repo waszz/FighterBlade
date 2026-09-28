@@ -186,6 +186,11 @@
         $nivel = $parte['nivel'] ?? 1;
         $costo = 50 * $nivel;
         $estilo = $parte['estilo'] ?? null;
+        // Set de origen (tipo de daño y poderes): el guardado en la oferta o, en las viejas, buscado por nombre
+        $postParte = ! empty($parte['origen_post_id'])
+            ? \App\Models\Post::conRivales()->with('poderes')->find($parte['origen_post_id'])
+            : \App\Models\Post::with('poderes')->where($tipo . '_nombre', $nombre)->where('nivel', $nivel)->first();
+        $estilo = $postParte?->tipo ?? $estilo;
         $requisitos = [];
 
         if ($tipo === 'equipo' && isset($parte['requisitos_equipo'])) {
@@ -216,17 +221,7 @@
             <p class="text-xs font-bold uppercase mb-1 {{ $textoParte }}">{{ ucfirst($tipo) }}</p>
             <p class="font-bold text-white truncate">{{ $nombre }}</p>
             <p class="text-xs text-white mb-1">Nivel: {{ $nivel }}</p>
-            @if($estilo)
-            @php
-            $colorEstilo = match(strtolower($estilo)) {
-            'fisico' => 'text-red-400',
-            'elemental' => 'text-sky-400',
-            'hibrido' => 'text-purple-400',
-            default => 'text-gray-400',
-            };
-            @endphp
-            <p class="text-xs font-bold mb-1 {{ $colorEstilo }}"><x-icono-tipo :tipo="$estilo" tam="w-4 h-4" :con-nombre="true" /></p>
-            @endif
+            @include('livewire.partials.iconos-tipo-poderes', ['tipoIconos' => $estilo, 'poderesIconos' => $postParte?->poderes])
 
 
             {{-- Stats desde ajustes --}}
@@ -280,7 +275,8 @@
     });
     @endphp
 
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-6">
+    <h3 class="text-xl text-center font-bold text-white mt-8 mb-3">Vendidos por jugadores</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 px-4">
         @foreach($objetosEnVentaSinPocion as $objeto)
         @php
         $stats = is_string($objeto->stats) ? json_decode($objeto->stats, true) : ($objeto->stats ?? []);
@@ -312,13 +308,13 @@
         : asset('storage/posts/' . $objeto->imagen);
         @endphp
 
-        <div class="bg-gradient-to-b from-[#2a3240] to-[#10141b] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] p-3 rounded-2xl text-center text-xs">
+        <div class="bg-gradient-to-b from-[#2a3240] to-[#10141b] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] p-3 rounded-lg text-center text-sm text-white">
             @php [$bordeParte, $textoParte] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300']][$objeto->tipo] ?? ['border-black', 'text-gray-300']; @endphp
             <img src="{{ $rutaImagen }}" alt="{{ $objeto->nombre }}" loading="lazy"
                 class="mx-auto w-16 h-16 mb-2 rounded-md {{ $esPocion ? 'object-contain' : 'object-cover bg-black/50 border-2 ' . $bordeParte . ' shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]' }}">
             <p class="text-xs font-bold uppercase mb-1 {{ $textoParte }}">{{ ucfirst($objeto->tipo) }}</p>
-            <h3 class="font-bold text-sm mb-1 text-white truncate">{{ $objeto->nombre ?? 'Objeto Misterioso' }}</h3>
-            <p class="text-xs text-white mb-0.5">Nivel: {{ $objeto->nivel ?? 1 }}</p>
+            <p class="font-bold text-white truncate">{{ $objeto->nombre ?? 'Objeto Misterioso' }}</p>
+            <p class="text-xs text-white mb-1">Nivel: {{ $objeto->nivel ?? 1 }}</p>
 
             {{-- SOLO PARA POCIONES: mostrar usos y qué afecta --}}
             @if($esPocion)
@@ -349,27 +345,17 @@
             @endif
 
 
-            {{-- Estilo para objetos que no sean pociones --}}
-            @if(!empty($objeto->estilo) && !$esPocion)
-            @php
-            $colorEstilo = match(strtolower($objeto->estilo)) {
-            'fisico' => 'text-red-600',
-            'elemental' => 'text-blue-600',
-            'hibrido' => 'text-purple-600',
-            default => 'text-gray-600',
-            };
-            @endphp
-            <p class="text-xs mb-1 font-bold tracking-wide {{ $colorEstilo }}">
-                {{ ucfirst($objeto->estilo) }}
-            </p>
+            {{-- Tipo de daño y poderes del set de la parte (no en pociones) --}}
+            @if (!$esPocion)
+            @include('livewire.partials.iconos-tipo-poderes', ['tipoIconos' => $objeto->post?->tipo ?? $objeto->estilo, 'poderesIconos' => $objeto->post?->poderes])
             @endif
 
             {{-- Stats SOLO si no es poción --}}
             @if (!empty($stats) && !$esPocion)
-            <div class="mb-1">
+            <div class="flex flex-wrap justify-center gap-1 text-xs mb-1">
                 @foreach ($stats as $stat => $valor)
                 @if($valor > 0)
-                <span class="inline-block border border-black bg-gradient-to-b from-green-600 to-green-900 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] px-1 rounded mr-1 mb-1">
+                <span class="border border-black bg-gradient-to-b from-green-600 to-green-900 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] text-white px-2 rounded">
                     {{ ($abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3))) }} +{{ $valor }}
                 </span>
                 @endif
@@ -379,7 +365,7 @@
 
             {{-- Requisitos --}}
             @if (!empty($requisitos))
-            <div class="mb-1 text-purple-400 italic">
+            <div class="mb-1 text-xs text-purple-400 italic">
                 Requisitos:
                 @foreach ($requisitos as $stat => $valor)
                 <span>

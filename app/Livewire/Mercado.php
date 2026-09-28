@@ -205,6 +205,7 @@ public function cargarPartesRandom($forzar = false)
                     'nivel' => $nivel,
                     'costo' => $costoBase + $nivel * 100,
                     'estilo' => $post->tipo,
+                    'origen_post_id' => $post->id,
                     'requisitos_equipo' => $post->requisitos_equipo,
                 ];
             }
@@ -218,6 +219,7 @@ public function cargarPartesRandom($forzar = false)
                     'nivel' => $nivel,
                     'costo' => $costoBase + $nivel * 100,
                     'estilo' => $post->tipo,
+                    'origen_post_id' => $post->id,
                     'requisitos_entrenamiento' => $post->requisitos_entrenamiento,
                 ];
             }
@@ -231,6 +233,7 @@ public function cargarPartesRandom($forzar = false)
                     'nivel' => $nivel,
                     'costo' => $costoBase + $nivel * 100,
                     'estilo' => $post->tipo,
+                    'origen_post_id' => $post->id,
                     'requisitos_accesorio' => $post->requisitos_accesorio,
                 ];
             }
@@ -276,8 +279,9 @@ public function comprarParteAleatoria($index)
     $this->personaje->oro -= $costo;
     $this->personaje->save();
 
-    // Buscar post relacionado por imagen o nombre (depende de cómo se identifica)
-    $post = Post::where('nivel', $nivel)
+    // Set de la parte: el guardado en la oferta o, en las ofertas viejas (sin el id), buscado por nombre
+    $post = (! empty($parte['origen_post_id']) ? Post::conRivales()->find($parte['origen_post_id']) : null)
+        ?? Post::where('nivel', $nivel)
                 ->where(function($query) use ($parte) {
                     $query->where('equipo_nombre', $parte['nombre'])
                           ->orWhere('entrenamiento_nombre', $parte['nombre'])
