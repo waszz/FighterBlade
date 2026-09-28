@@ -35,9 +35,7 @@ public function mount(Personaje $personaje)
     ->get();
 
 
-    $primerJugador = Personaje::sinAdmins()->orderByDesc('nivel')->first();
-    $nivelReferencia = $primerJugador ? $primerJugador->nivel : 1;
-    $nivelMaximo = max(1, $nivelReferencia - 5);
+    $nivelMaximo = self::nivelMaximoMercado();
 
     $claveCacheMercado = $this->claveCacheMercado();
 
@@ -74,9 +72,7 @@ public function forzarActualizacion()
         return;
     }
 
-    $primerJugador = Personaje::sinAdmins()->orderByDesc('nivel')->first();
-    $nivelReferencia = $primerJugador ? $primerJugador->nivel : 1;
-    $nivelMaximo = max(1, $nivelReferencia - 5);
+    $nivelMaximo = self::nivelMaximoMercado();
 
     $postsIds = Post::where('nivel', '<=', $nivelMaximo)
         ->inRandomOrder()
@@ -105,6 +101,13 @@ public function forzarActualizacion()
 }
 
 
+
+// Nivel máximo de lo que se vende: el del mejor jugador (sin contar admins) menos 5
+public static function nivelMaximoMercado(): int
+{
+    $nivelTop = Personaje::sinAdmins()->max('nivel') ?? 1;
+    return max(5, $nivelTop - 5);
+}
 
 // El mercado se renueva los lunes y los sábados a las 00:00 (hora del servidor)
 public static function ultimaRotacion(): Carbon
@@ -147,19 +150,17 @@ public function cargarPartesRandom($forzar = false)
     $partes = Cache::get($cacheKey);
 
     if (!$partes || $forzar) {
-        // Nivel objetivo: máximo 5 niveles menos, o mínimo 5 si el personaje tiene nivel bajo
-        $nivelPersonaje = $this->personaje->nivel ?? 1;
-        $nivelObjetivo = max(5, $nivelPersonaje - 5);
+        // Es la misma oferta para todos: sale del nivel del mejor jugador (sin admins), no del que abre el mercado.
+        // Sets de ese nivel máximo y hasta 15 niveles menos; si no hay, cualquiera hasta ese nivel
+        $nivelMaximo = self::nivelMaximoMercado();
 
-        // Traer posts aleatorios con nivel igual al nivel objetivo
-        $posts = Post::where('nivel', $nivelObjetivo)
+        $posts = Post::whereBetween('nivel', [max(5, $nivelMaximo - 15), $nivelMaximo])
             ->inRandomOrder()
             ->take(10)
             ->get();
 
-        // Si no hay posts en ese nivel, traer posts con nivel >= 5
         if ($posts->isEmpty()) {
-            $posts = Post::where('nivel', '>=', 5)
+            $posts = Post::where('nivel', '<=', $nivelMaximo)
                 ->inRandomOrder()
                 ->take(10)
                 ->get();
