@@ -491,7 +491,7 @@
   <div class="w-full md:w-[24rem] rounded-xl p-4 text-white text-sm border border-yellow-600
               bg-gradient-to-b from-[#1c2533]/95 to-[#0a0e14]/95
               shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_8px_16px_rgba(0,0,0,0.7)]">
-    <h2 class="text-xl font-bold text-yellow-300 text-center mb-3 [text-shadow:0_2px_0_#000]">📢 Anuncios</h2>
+    <h2 class="text-xl font-bold text-yellow-300 text-center mb-3 [text-shadow:0_2px_0_#000]">Anuncios</h2>
 
     @if($anuncios->isNotEmpty())
       <div class="max-h-[26rem] overflow-y-auto sidebar-pj pr-1 pl-3 pt-3 space-y-5">
@@ -501,17 +501,17 @@
                       bg-gradient-to-b from-[#2a3240] to-[#10141b]
                       shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
             {{-- Foto del autor, asomando por la esquina --}}
-            <div class="absolute -left-3 -top-3 w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400 bg-black shadow-[0_2px_0_#000]">
+            <div class="absolute -left-3 -top-3 w-10 h-10 rounded-full overflow-hidden bg-black shadow-[0_2px_0_#000]">
               @if ($fotoAutor)
                 <img src="{{ asset('storage/' . $fotoAutor) }}" alt="{{ $anuncio->autor?->name }}" class="w-full h-full object-cover">
               @else
-                <span class="w-full h-full flex items-center justify-center text-lg">📢</span>
+                <span class="w-full h-full flex items-center justify-center text-sm font-bold text-yellow-300">{{ mb_substr($anuncio->autor?->name ?? 'A', 0, 1) }}</span>
               @endif
             </div>
 
             {{-- Autor · me gusta --}}
             <div class="flex items-center justify-between gap-2">
-              <p class="min-w-0 truncate font-bold text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio->autor?->name ?? 'Admin' }} <span class="text-sm">📢</span></p>
+              <p class="min-w-0 truncate font-bold text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio->autor?->name ?? 'Admin' }}</p>
               <button type="button" wire:click="meGustaAnuncio({{ $anuncio->id }})" aria-label="Me gusta"
                       class="shrink-0 flex items-center gap-1 text-sm font-bold transition-transform active:scale-90 {{ $anuncio->me_gusta ? 'text-red-500' : 'text-gray-300 hover:text-red-400' }}">
                 <i class="{{ $anuncio->me_gusta ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
