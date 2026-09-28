@@ -379,6 +379,17 @@
 <div class="relative bg-[#0c0f14] border border-teal-500/30 p-3 rounded-2xl shadow-lg flex flex-col items-center"
     style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 14px 14px;">
 
+    @if($objetoEquipado && $objetoEquipado->pocion && ($stats['usos_restantes'] ?? 1) > 0)
+    {{-- Compartir en el chat (esquina de la tarjeta) --}}
+    <button type="button" wire:click="compartirEnChat({{ $objetoEquipado->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
+      title="Compartir en el chat" aria-label="Compartir en el chat"
+      class="absolute -top-3 -left-3 z-20 w-9 h-9 flex items-center justify-center rounded-full border-2 border-black text-white text-sm
+             bg-gradient-to-b from-red-700 to-red-950 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_8px_rgba(0,0,0,0.7)]
+             hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
+      <i class="fa-solid fa-share-nodes"></i>
+    </button>
+    @endif
+
     <div class="text-teal-400 font-bold text-xs tracking-wider uppercase mb-2">
         Poción
     </div>
@@ -1128,6 +1139,14 @@
       <div class="bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] p-4 rounded-xl w-full relative border-2 border-black">
         <button wire:click="cerrarModalDesequipar"
           class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+        {{-- Compartir en el chat (esquina de la tarjeta) --}}
+        <button type="button" wire:click="compartirEnChat({{ $objetoADesequipar->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
+          title="Compartir en el chat" aria-label="Compartir en el chat"
+          class="absolute -top-3 -left-3 z-20 w-9 h-9 flex items-center justify-center rounded-full border-2 border-black text-white text-sm
+                 bg-gradient-to-b from-red-700 to-red-950 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_8px_rgba(0,0,0,0.7)]
+                 hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
 
         <p class="text-sm font-bold text-white text-center mb-3 px-4 truncate">{{ $objetoADesequipar->nombre }}</p>
 

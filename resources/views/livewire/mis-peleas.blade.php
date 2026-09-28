@@ -14,6 +14,8 @@
     @php
       $datosRep = $repeticion['pelea']->datos_combate ?? [];
       $ganoRep = $repeticion['pelea']->resultado === 'victoria';
+      // Verde si ganó, gris si empató, rojo si perdió
+      $colorRep = match ($repeticion['pelea']->resultado) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
       $fondoRep = $repeticion['escenarioMision'] ?? $repeticion['ciudadActual']?->gif;
       $gifPjRep = $datosRep['gif_personaje'] ?? null;
       $gifEnRep = $datosRep['gif_enemigo'] ?? null;
@@ -31,7 +33,7 @@
       <span class="text-gray-300 mx-1">vs</span>
       <span class="text-yellow-300">{{ $datosRep['nombre_enemigo'] ?? ($repeticion['enemigo']->titulo ?? $repeticion['enemigo']->nombre ?? 'Enemigo') }}</span>
       <span class="ml-2 inline-block align-middle px-2 py-0.5 rounded-full border border-black text-xs font-extrabold uppercase shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]
-                   {{ $ganoRep ? 'bg-gradient-to-b from-emerald-500 to-emerald-800' : 'bg-gradient-to-b from-red-500 to-red-800' }}">{{ ucfirst($repeticion['pelea']->resultado) }}</span>
+                   {{ $colorRep }}">{{ ucfirst($repeticion['pelea']->resultado) }}</span>
     </h2>
 
     {{-- Escenario de la pelea, como en la Ciudad: los dos enfrentados con el VS y los poderes a los costados --}}
@@ -116,6 +118,7 @@
           $nombrePersonaje = $datosCombate['nombre_personaje'] ?? ($pelea->personaje->nombre ?? 'Personaje');
           $nombreEnemigo = $datosCombate['nombre_enemigo'] ?? ($pelea->enemigo->titulo ?? 'Enemigo');
           $gano = $pelea->resultado === 'victoria';
+          $colorResultado = match ($pelea->resultado) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
         @endphp
 
         {{-- Tarjeta 3D de la pelea --}}
@@ -133,7 +136,7 @@
           {{-- Resultado --}}
           <div class="flex-1 min-w-0 text-center">
             <span class="inline-block px-2 py-0.5 rounded-full border border-black text-xs font-extrabold uppercase shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]
-                         {{ $gano ? 'bg-gradient-to-b from-emerald-500 to-emerald-800' : 'bg-gradient-to-b from-red-500 to-red-800' }}">
+                         {{ $colorResultado }}">
               {{ ucfirst($pelea->resultado) }}
             </span>
             <p class="mt-1 text-gray-300 text-xs flex justify-center items-center gap-2">

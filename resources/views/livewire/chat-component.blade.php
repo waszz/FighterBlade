@@ -135,15 +135,22 @@
 
                             @case('pelea')
                                 {{-- Pelea compartida: los dos personajes, resultado, tipo de pelea y premio --}}
-                                @php $gano = ($adj['resultado'] ?? '') === 'victoria'; @endphp
-                                <div class="mt-1 mb-1 p-1.5 rounded-lg border border-black border-l-4 {{ $gano ? 'border-l-emerald-500' : 'border-l-red-500' }} bg-black/30">
+                                @php
+                                    $resultadoPelea = $adj['resultado'] ?? '';
+                                    [$bordeResultado, $fondoResultado] = match ($resultadoPelea) {
+                                        'victoria' => ['border-l-emerald-500', 'bg-gradient-to-b from-emerald-500 to-emerald-800'],
+                                        'empate'   => ['border-l-gray-400', 'bg-gradient-to-b from-gray-400 to-gray-700'],
+                                        default    => ['border-l-red-500', 'bg-gradient-to-b from-red-500 to-red-800'],
+                                    };
+                                @endphp
+                                <div class="mt-1 mb-1 p-1.5 rounded-lg border border-black border-l-4 {{ $bordeResultado }} bg-black/30">
                                     <div class="flex items-center gap-2">
                                         <div class="w-10 h-10 shrink-0 rounded-md bg-black/50 border border-black flex items-end justify-center overflow-hidden">
                                             @if (! empty($adj['gif_personaje']))<img src="{{ asset('storage/' . $adj['gif_personaje']) }}" alt="" class="max-w-full max-h-full object-contain" loading="lazy">@endif
                                         </div>
                                         <div class="min-w-0 flex-1 text-center leading-tight">
                                             <p class="truncate text-[11px] font-bold text-white">{{ $adj['nombre_personaje'] ?? '' }} <span class="text-yellow-300">vs</span> {{ $adj['nombre_enemigo'] ?? '' }}</p>
-                                            <span class="inline-block mt-0.5 px-1.5 rounded-full border border-black text-[10px] font-extrabold uppercase {{ $gano ? 'bg-gradient-to-b from-emerald-500 to-emerald-800' : 'bg-gradient-to-b from-red-500 to-red-800' }}">{{ ucfirst($adj['resultado'] ?? '') }}</span>
+                                            <span class="inline-block mt-0.5 px-1.5 rounded-full border border-black text-[10px] font-extrabold uppercase {{ $fondoResultado }}">{{ ucfirst($resultadoPelea) }}</span>
                                             <span class="text-[10px] text-gray-400">{{ \App\Support\ChatCompartir::ORIGEN_PELEA[$adj['origen'] ?? ''] ?? 'Pelea' }}</span>
                                         </div>
                                         <div class="w-10 h-10 shrink-0 rounded-md bg-black/50 border border-black flex items-end justify-center overflow-hidden">

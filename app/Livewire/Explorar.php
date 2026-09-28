@@ -1105,7 +1105,8 @@ if ($tieneSiempreEnPie) {
         Pelea::create([
             'personaje_id'  => $this->personaje->id,
             'enemigo_id'    => $this->enemigo->id ?? null,
-            'resultado'     => $this->totalDanioPersonaje > $this->totalDanioEnemigo ? 'victoria' : 'derrota',
+            // victoria | derrota | empate (el mismo daño de los dos lados)
+            'resultado'     => strtolower($this->resultadoFinal ?? 'derrota'),
             'exp_ganada'    => $this->recompensas['exp'] ?? 0,
             'oro_ganado'    => $this->recompensas['oro'] ?? 0,
             'drop'          => $this->recompensas['drop'] ?? null,  // 🎁 Drop
