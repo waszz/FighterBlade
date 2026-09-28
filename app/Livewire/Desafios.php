@@ -89,8 +89,8 @@ class Desafios extends Component
         }
 
         if ($desafio->tipo === 'duelo') {
-            // Pelea el que acepta contra el que desafió, con las mismas restricciones que para cualquier pelea
-            if ($motivo = PvpController::motivoBloqueo($yo)) {
+            // Pelea el que acepta contra el que desafió (aunque esté explorando o recuperándose: la exploración sigue igual)
+            if ($motivo = PvpController::motivoBloqueo($yo, esDuelo: true)) {
                 return $this->dispatch('error', ['message' => $motivo]);
             }
             // Queda aceptado un rato para que la pelea arranque aunque se haya aceptado en el último segundo

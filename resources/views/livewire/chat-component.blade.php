@@ -93,10 +93,14 @@
                                 bg-gradient-to-b from-[#1b2230] to-[#121722] shadow-[0_2px_6px_rgba(0,0,0,0.5)]
                                 {{ $msg->tipo === 'texto' ? $pj?->claseChat() : '' }}">
                         <p class="flex items-baseline gap-2 leading-tight">
-                            @if ($pj && ! $con && $pj->id !== $personajeId)
-                                {{-- Tocar el nombre abre un privado con esa persona --}}
-                                <button type="button" wire:click="abrirPrivado({{ $pj->id }})" title="Escribirle en privado"
+                            @if ($pj && $pj->id !== $personajeId)
+                                {{-- Tocar el nombre abre su perfil; el sobre (en el chat general) abre un privado --}}
+                                <button type="button" wire:click="verPerfil({{ $pj->id }})" x-on:click="$dispatch('cerrar-chat')" title="Ver perfil"
                                     class="font-bold text-sm truncate hover:underline {{ $colorNombre($pj) }}">{{ $pj->nombre }}</button>
+                                @unless ($con)
+                                    <button type="button" wire:click="abrirPrivado({{ $pj->id }})" title="Escribirle en privado" aria-label="Escribirle en privado"
+                                        class="shrink-0 self-center text-gray-400 hover:text-white text-xs"><i class="fa-regular fa-envelope"></i></button>
+                                @endunless
                             @else
                                 <span class="font-bold text-sm truncate {{ $colorNombre($pj) }}">{{ $pj->nombre ?? 'Sin nombre' }}</span>
                             @endif

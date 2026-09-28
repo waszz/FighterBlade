@@ -1225,10 +1225,12 @@ if ($tieneSiempreEnPie) {
             $this->personaje->torre_piso_activo = null;
         }
 
-        // Finalizamos el combate y actualizamos
-        $this->personaje->exploracion_duracion = 0;
+        // Finalizamos el combate y actualizamos (un duelo aceptado mientras explora no corta la exploración)
+        if (! $this->esDuelo) {
+            $this->personaje->exploracion_duracion = 0;
+            $this->personaje->minutos_originales   = null;
+        }
         $this->personaje->enemigo_actual_id    = null; $this->personaje->enemigo_actual_personaje_id = null;
-        $this->personaje->minutos_originales   = null;
         $this->personaje->save();
 
         session(['combate_activo' => false]);

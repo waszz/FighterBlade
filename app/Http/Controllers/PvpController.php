@@ -46,8 +46,9 @@ class PvpController extends Controller
         return $volver->with('toast_success', "¡Desafiaste a {$objetivo->nombre}!");
     }
 
-    // Mismas restricciones que para explorar, cazar o hacer misiones
-    public static function motivoBloqueo(Personaje $personaje): ?string
+    // Mismas restricciones que para explorar, cazar o hacer misiones.
+    // Un duelo (pelea amistosa) se puede aceptar aunque esté explorando o recuperándose
+    public static function motivoBloqueo(Personaje $personaje, bool $esDuelo = false): ?string
     {
         $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
         foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {
@@ -58,7 +59,7 @@ class PvpController extends Controller
         if ($personaje->viajando_hasta && now()->lt($personaje->viajando_hasta)) {
             return 'Estás viajando. Peleá cuando llegues.';
         }
-        if ($personaje->fin_exploracion && now()->lt($personaje->fin_exploracion)) {
+        if (! $esDuelo && $personaje->fin_exploracion && now()->lt($personaje->fin_exploracion)) {
             return $personaje->exploracion_duracion > 0
                 ? 'Estás explorando. Terminá la exploración antes de pelear.'
                 : 'Te estás recuperando. Esperá para pelear.';
