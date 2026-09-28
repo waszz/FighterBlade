@@ -76,6 +76,9 @@ class Explorar extends Component
     // Fondo de la pelea cuando es una misión (se mantiene hasta cerrar el resultado)
     public ?string $escenarioMision = null;
 
+    // Última pelea guardada: se puede compartir en el chat desde abajo del resultado
+    public ?int $ultimaPeleaId = null;
+
     protected $listeners = [
         'timerTerminado'    => 'onTimerTerminado',
         'generarEnemigo',
@@ -429,8 +432,21 @@ public function colorBarraPorStat($valor)
         }
     }
 
+    // Compartir en el chat la pelea recién terminada (explorar, misión, torre, caza o PvP)
+    public function compartirPelea($id)
+    {
+        $pelea = Pelea::where('personaje_id', $this->personaje->id)->find($id);
+        if (! $pelea || $this->personaje->user_id !== auth()->id()) {
+            return;
+        }
+        \App\Support\ChatCompartir::pelea($this->personaje, $pelea);
+        $this->dispatch('chatCompartido');
+        $this->dispatch('success', ['message' => 'Compartiste la pelea en el chat.']);
+    }
+
     public function limpiarCombate()
     {
+        $this->ultimaPeleaId   = null;
         $this->escenarioMision = null;
         $this->enemigo         = null;
         $this->combateActivo   = false;
@@ -1120,8 +1136,8 @@ if ($tieneSiempreEnPie) {
             'vista'             => $this->estadoVistaPelea(),
         ];
 
-// Guardar pelea con datos
-        Pelea::create([
+// Guardar pelea con datos (el id queda para el botón Compartir de abajo de la pelea)
+        $this->ultimaPeleaId = Pelea::create([
             'personaje_id'  => $this->personaje->id,
             'enemigo_id'    => $this->enemigo->id ?? null,
             // victoria | derrota | empate (el mismo daño de los dos lados)
@@ -1135,7 +1151,7 @@ if ($tieneSiempreEnPie) {
             'ciudad_actual' => $this->personaje->ciudad_actual ?? 'Desconocida',
             'gif_personaje' => $gifMostrar,
             'gif_enemigo'   => $this->gifEnemigo(),
-        ]);
+        ])->id;
 
         // ⏳ Recuperación al ganar o empatar (la de derrota se calcula arriba, con la poción de recuperación)
         if ($this->resultadoFinal !== 'Derrota') {

@@ -1039,5 +1039,16 @@
 </div>
 @endif
 
+  {{-- Compartir la pelea en el chat (explorar, misión, torre, caza o PvP); solo las propias --}}
+  @if (! empty($idPeleaCompartir))
+    <div class="flex justify-center mt-4 mb-2">
+      <button type="button" wire:click="compartirPelea({{ $idPeleaCompartir }})" @click.stop wire:loading.attr="disabled" title="Compartir en el chat"
+        class="px-4 py-1.5 rounded-lg border border-black text-white text-sm font-bold bg-gradient-to-b from-[#2f5470] to-[#0a1a26]
+               shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all duration-100 disabled:opacity-50">
+        💬 Compartir en el chat
+      </button>
+    </div>
+  @endif
+
   </div>
 @endif

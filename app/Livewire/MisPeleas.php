@@ -201,6 +201,8 @@ if ($enemigo->gif) {
 
         return $vista + [
             'pelea'            => $pelea,
+            // Botón Compartir abajo de la pelea: solo en las propias (las de otros se ven desde el chat)
+            'idPeleaCompartir' => (int) $pelea->personaje_id === (int) $this->personajeId ? $pelea->id : null,
             'conRondas'        => $conRondas,
             'resultadosRondas' => $conRondas ? $datos['rondas'] : [],
             'personaje'        => $pelea->personaje,

@@ -82,7 +82,8 @@
 
     @if ($repeticion['conRondas'])
     {{-- Rondas, poderes y resultado: la misma pantalla que la Ciudad --}}
-    <div class="flex flex-col items-center">
+    {{-- A todo el ancho (como en la Ciudad): centrado con items-center se achicaba y la escena de la ciudad salía más chica --}}
+    <div class="w-full">
       @include('livewire.partials.resultado-pelea', $repeticion)
     </div>
     @else

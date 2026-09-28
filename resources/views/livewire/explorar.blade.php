@@ -740,6 +740,6 @@
 
 
   {{-- Resultados de las rondas de combate y recompensas (fuera del overflow-hidden para no cortarse) --}}
-  @include('livewire.partials.resultado-pelea')
+  @include('livewire.partials.resultado-pelea', ['idPeleaCompartir' => $ultimaPeleaId])
 
 </div>
