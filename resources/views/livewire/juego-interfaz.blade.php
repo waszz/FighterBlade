@@ -468,6 +468,9 @@
     </div>
     @endif
 
+    {{-- Duelos e intercambios: avisos y ventana de intercambio --}}
+    <livewire:desafios :personajeId="$personaje->id" :key="'desafios-' . $personaje->id" />
+
     {{-- Perfil de un jugador tocado en los Conectados del chat (el mismo modal del Ranking) --}}
     <livewire:ranking-list :ranking="collect()" tipo="Nivel" :personaje="$personaje" :solo-modal="true" key="perfil-jugador-chat" />
 

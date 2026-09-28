@@ -32,7 +32,7 @@ class PvpController extends Controller
             return $volver->with('toast_error', "{$objetivo->nombre} está en otra zona: viajá a " . ($objetivo->ciudadActual?->nombre ?? 'su zona') . ' para atacarlo.');
         }
 
-        if ($motivo = $this->motivoBloqueo($personaje)) {
+        if ($motivo = self::motivoBloqueo($personaje)) {
             return $volver->with('toast_error', $motivo);
         }
 
@@ -47,7 +47,7 @@ class PvpController extends Controller
     }
 
     // Mismas restricciones que para explorar, cazar o hacer misiones
-    private function motivoBloqueo(Personaje $personaje): ?string
+    public static function motivoBloqueo(Personaje $personaje): ?string
     {
         $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
         foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {

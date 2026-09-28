@@ -660,6 +660,9 @@
         <x-boton-atacar :personaje="$personaje"
             :href="route('atacar.personaje', ['personajeId' => $personaje->id, 'objetivoId' => $personajeSeleccionadoModal->id])" />
       @endif
+      @if (! $esMiPersonaje)
+        <x-botones-desafio :objetivo-id="$personajeSeleccionadoModal->id" />
+      @endif
     </div>
   </div>
 @endif

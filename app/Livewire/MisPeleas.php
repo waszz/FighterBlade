@@ -31,7 +31,10 @@ class MisPeleas extends Component
         $this->cargarPeleas();
 
         // Pelea tocada en el chat: se muestra aunque sea de otro jugador, solo si de verdad se compartió
-        if ($peleaCompartidaId && \App\Models\Mensaje::where('tipo', 'pelea')->where('adjunto->pelea_id', (int) $peleaCompartidaId)->exists()) {
+        // (o si es la de un duelo que pidió este personaje)
+        $esDueloPropio = $peleaCompartidaId
+            && \App\Models\Desafio::where('de_id', $personajeId)->where('pelea_id', (int) $peleaCompartidaId)->exists();
+        if ($peleaCompartidaId && ($esDueloPropio || \App\Models\Mensaje::where('tipo', 'pelea')->where('adjunto->pelea_id', (int) $peleaCompartidaId)->exists())) {
             $this->peleaVistaId = (int) $peleaCompartidaId;
         }
     }

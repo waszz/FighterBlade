@@ -7,6 +7,7 @@ use App\Models\Ciudad;
 use App\Models\ExploracionRapida;
 use App\Models\Objeto;
 use App\Models\Pelea;
+use App\Models\Desafio;
 use App\Models\Personaje;
 use App\Models\Post;
 use App\Models\User;
@@ -106,6 +107,9 @@ class Explorar extends Component
     public $rankingCiudad     = [];
     public $mostrarRanking    = true;
     public $esPvp             = false;
+    // Duelo aceptado (pelea amistosa): sin premio, sin pociones gastadas, sin recuperación y sin contar para el PvP
+    public bool $esDuelo      = false;
+    public ?int $dueloId      = null;
 
     public $rondaActual         = 1;
     public $resultadosRondas    = [];
@@ -323,7 +327,26 @@ class Explorar extends Component
 
         // PvP recién iniciado con "Atacar": la pelea arranca sola, sin volver a apretar Atacar
         if ($this->esPvp && $this->enemigo && session()->pull('pvp_auto_atacar') == $this->enemigo->id) {
-            $this->atacar();
+            // Duelo aceptado: el que aceptó pelea contra el que lo desafió
+            $dueloSesion = session()->pull('duelo_id');
+            $duelo = $dueloSesion ? Desafio::where('tipo', 'duelo')->where('estado', 'aceptado')
+                ->where('para_id', $this->personaje->id)->where('de_id', $this->enemigo->id)
+                ->find($dueloSesion) : null;
+
+            if ($dueloSesion && ! $duelo) {
+                // El duelo ya no vale (venció o se canceló): no se arranca un PvP de verdad en su lugar
+                $this->personaje->enemigo_actual_personaje_id = null;
+                $this->personaje->save();
+                $this->enemigo = null;
+                $this->combateActivo = false;
+                $this->esPvp = false;
+                $this->mostrarOpciones = true;
+                $this->dispatch('error', ['message' => 'El duelo ya no está disponible.']);
+            } else {
+                $this->esDuelo = (bool) $duelo;
+                $this->dueloId = $duelo?->id;
+                $this->atacar();
+            }
         }
     }
 
@@ -446,6 +469,8 @@ public function colorBarraPorStat($valor)
 
     public function limpiarCombate()
     {
+        $this->esDuelo         = false;
+        $this->dueloId         = null;
         $this->ultimaPeleaId   = null;
         $this->escenarioMision = null;
         $this->enemigo         = null;
@@ -905,7 +930,15 @@ if ($estadoParalizado) {
 // No mapees ni hagas match, porque el minuto original ya es el correcto para drop y recompensas
         $statsOriginal = null;
 
-        if ($this->totalDanioPersonaje > $this->totalDanioEnemigo) {
+        if ($this->esDuelo) {
+            // Duelo amistoso: solo el resultado
+            $this->resultadoFinal = match (true) {
+                $this->totalDanioPersonaje > $this->totalDanioEnemigo => 'Victoria',
+                $this->totalDanioPersonaje < $this->totalDanioEnemigo => 'Derrota',
+                default => 'Empate',
+            };
+            $this->recompensas = [];
+        } elseif ($this->totalDanioPersonaje > $this->totalDanioEnemigo) {
             // Verificar si hay un objeto consumible
             if ($this->personaje->objeto_consumible_id) {
                 $objeto = \App\Models\Objeto::find($this->personaje->objeto_consumible_id);
@@ -1124,6 +1157,7 @@ if ($tieneSiempreEnPie) {
             'ciudad_id'         => $this->ciudadActual->id ?? null,
             // Para "Mis Drops": de dónde salió la pelea y cuántos minutos se exploró
             'origen'            => match (true) {
+                $this->esDuelo => 'duelo',
                 (bool) $this->esPvp => 'pvp',
                 (bool) $this->misionActiva() => 'mision',
                 (bool) $this->torreActiva() => 'torre',
@@ -1153,8 +1187,13 @@ if ($tieneSiempreEnPie) {
             'gif_enemigo'   => $this->gifEnemigo(),
         ])->id;
 
+        // Duelo: queda terminado y el que desafió puede ver la pelea
+        if ($this->esDuelo && $this->dueloId) {
+            Desafio::whereKey($this->dueloId)->update(['estado' => 'completado', 'pelea_id' => $this->ultimaPeleaId]);
+        }
+
         // ⏳ Recuperación al ganar o empatar (la de derrota se calcula arriba, con la poción de recuperación)
-        if ($this->resultadoFinal !== 'Derrota') {
+        if ($this->resultadoFinal !== 'Derrota' && ! $this->esDuelo) {
             $siempreEnPie = collect($this->personaje->post->poderes ?? [])
                 ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
             $this->personaje->fin_exploracion = $siempreEnPie
