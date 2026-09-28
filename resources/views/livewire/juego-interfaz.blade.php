@@ -409,18 +409,52 @@
 
     {{-- Modal banco de oro --}}
     @if($modalGuardarOro)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-        <div class="bg-gray-900 p-4 rounded-xl shadow-lg w-64 space-y-3 text-center">
-            <h2 class="text-lg font-bold text-yellow-400">Banco de Oro</h2>
-            <p class="text-sm text-gray-300">Oro: <span class="text-yellow-500">{{ number_format($personaje->oro) }}</span></p>
-            <p class="text-sm text-gray-400">Guardado: <span class="text-yellow-500">{{ number_format($oroGuardado) }}</span></p>
-            <input type="number" wire:model.defer="montoOro" min="1" placeholder="Cantidad"
-                class="w-full py-1 px-2 rounded bg-gray-800 text-white border border-gray-600 text-sm" />
-            <div class="flex justify-center gap-2">
-                <button wire:click="guardarOro" class="px-3 py-1 bg-yellow-400 text-black rounded hover:bg-yellow-500 text-sm">Guardar</button>
-                <button wire:click="retirarOro" class="px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-sm">Retirar</button>
+    {{-- Modal 3D (mismo estilo que los modales de jugador) --}}
+    <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-2" wire:click="$set('modalGuardarOro', false)">
+        <div wire:click.stop
+             class="relative w-full max-w-xs p-4 rounded-xl border border-black text-white text-center space-y-3
+                    bg-gradient-to-b from-[#1c2533] to-[#0a0e14]
+                    shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+            <button type="button" wire:click="$set('modalGuardarOro', false)" aria-label="Cerrar"
+                class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md border border-black text-white font-bold
+                       bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+                       hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all">&times;</button>
+
+            <h2 class="flex items-center justify-center gap-2 text-xl font-bold text-yellow-300 [text-shadow:0_2px_0_#000]">
+                <img src="{{ asset('images/oro.png') }}" alt="" class="h-5 w-5"> Banco de Oro
+            </h2>
+
+            {{-- Oro encima y guardado --}}
+            <div class="grid grid-cols-2 gap-2 text-sm font-bold">
+                @foreach (['En mano' => $personaje->oro, 'Guardado' => $oroGuardado] as $etiquetaOro => $cantidadOro)
+                    <div class="py-1.5 rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b]
+                                shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
+                        <p class="text-[10px] uppercase tracking-wide text-gray-400">{{ $etiquetaOro }}</p>
+                        <p class="flex items-center justify-center gap-1 text-yellow-300">
+                            <img src="{{ asset('images/oro.png') }}" alt="" class="h-4 w-4">{{ number_format($cantidadOro ?? 0, 0, ',', '.') }}
+                        </p>
+                    </div>
+                @endforeach
             </div>
-            <button wire:click="$set('modalGuardarOro', false)" class="w-full py-1 bg-gray-700 hover:bg-gray-800 text-gray-300 rounded text-sm">Cerrar</button>
+
+            <input type="number" wire:model.defer="montoOro" min="1" placeholder="Cantidad"
+                class="w-full px-3 py-1.5 rounded-lg border border-black bg-black/50 text-white text-center placeholder-gray-500
+                       shadow-[inset_0_2px_6px_rgba(0,0,0,0.9)] focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm" />
+
+            <div class="grid grid-cols-2 gap-2">
+                <button wire:click="guardarOro" wire:loading.attr="disabled"
+                    class="py-1.5 rounded-lg border border-black font-bold text-sm text-white bg-gradient-to-b from-green-500 to-green-800
+                           shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]
+                           hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-50">
+                    Guardar
+                </button>
+                <button wire:click="retirarOro" wire:loading.attr="disabled"
+                    class="py-1.5 rounded-lg border border-black font-bold text-sm text-black bg-gradient-to-b from-yellow-300 to-yellow-600
+                           shadow-[inset_1px_1px_0_rgba(255,255,255,0.5),inset_-1px_-1px_0_rgba(0,0,0,0.4),0_3px_0_#000]
+                           hover:brightness-110 active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-50">
+                    Retirar
+                </button>
+            </div>
         </div>
     </div>
     @endif
