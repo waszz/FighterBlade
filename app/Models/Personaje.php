@@ -169,6 +169,12 @@ protected $casts = [
         return $this->belongsTo(User::class);
     }
 
+    // Excluye a los personajes de cuentas admin (no aparecen en los rankings)
+    public function scopeSinAdmins($query)
+    {
+        return $query->whereDoesntHave('user', fn ($q) => $q->where('role', 'admin'));
+    }
+
     public function ciudadActual()
     {
         return $this->belongsTo(Ciudad::class, 'ciudad_id'); // o el campo que uses

@@ -80,7 +80,7 @@ public function render()
     $clanActual = $personajeActual ? $personajeActual->clan : null;
 
    // Ranking por nivel simple (top 50), ahora ordena por nivel y porcentaje
-$rankingNivel = Personaje::orderBy('nivel', 'desc')
+$rankingNivel = Personaje::sinAdmins()->orderBy('nivel', 'desc')
     ->orderBy('experiencia', 'desc')
     ->take(50)
     ->get();
@@ -91,6 +91,7 @@ $rankingNivel = Personaje::orderBy('nivel', 'desc')
             DB::raw('COALESCE(pvp_perdidas,0) as perdidas'),
             DB::raw('(COALESCE(pvp_ganadas,0) - COALESCE(pvp_perdidas,0)) as puntaje')
         )
+        ->sinAdmins()
         ->orderByDesc('puntaje')
         ->orderByDesc('ganadas')
         ->take(50)
@@ -102,6 +103,7 @@ $rankingNivel = Personaje::orderBy('nivel', 'desc')
             DB::raw('COALESCE(pve_perdidas,0) as perdidas'),
             DB::raw('(COALESCE(pve_ganadas,0) - COALESCE(pve_perdidas,0)) as puntaje')
         )
+        ->sinAdmins()
         ->orderByDesc('puntaje')
         ->orderByDesc('ganadas')
         ->take(50)
@@ -113,6 +115,7 @@ $rankingNivel = Personaje::orderBy('nivel', 'desc')
     // Últimos campeones: los últimos en llegar al nivel 100 (tabla campeones)
     $rankingCampeones = Personaje::join('campeones', 'campeones.personaje_id', '=', 'personajes.id')
         ->select('personajes.*', 'campeones.alcanzado_en as campeon_desde')
+        ->sinAdmins()
         ->orderByDesc('campeones.alcanzado_en')
         ->take(20)
         ->get();

@@ -40,6 +40,7 @@ class HomePosts extends Component
 
         // Traer personajes del ranking con relaciones
         $ranking = Personaje::with(['equipo', 'entrenamiento', 'accesorio'])
+            ->sinAdmins()
             ->orderBy('nivel', 'desc')
             ->orderBy('experiencia', 'desc')
             ->take(10)

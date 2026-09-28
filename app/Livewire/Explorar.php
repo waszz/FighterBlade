@@ -179,6 +179,7 @@ class Explorar extends Component
         // Todos los usuarios de la zona (sin límite)
         $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio'])
             ->where('ciudad_id', $this->ciudadActual->id)
+            ->sinAdmins()
             ->orderByDesc('nivel')
             ->orderByDesc('experiencia')
             ->get();
@@ -795,6 +796,7 @@ if ($estadoParalizado) {
 
         $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio'])
             ->where('ciudad_id', $this->ciudadActual->id)
+            ->sinAdmins()
             ->orderByDesc('nivel')
             ->orderByDesc('experiencia')
             ->get();
