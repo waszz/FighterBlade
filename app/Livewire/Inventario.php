@@ -713,7 +713,20 @@ class Inventario extends Component
             $this->personaje->joya_id,
         ]);
 
-        return collect($this->objetos)->filter(fn($objeto) => ! in_array($objeto->id, $excluirIds));
+        // Ordenados por set (nivel y nombre) y, dentro de cada set, Equipo → Entrenamiento → Accesorio; las joyas al final
+        $ordenParte = ['equipo' => 0, 'entrenamiento' => 1, 'accesorio' => 2, 'joya' => 3];
+
+        return collect($this->objetos)
+            ->filter(fn($objeto) => ! in_array($objeto->id, $excluirIds))
+            ->sortBy([
+                fn($a, $b) => ($a->tipo === 'joya') <=> ($b->tipo === 'joya'),
+                fn($a, $b) => ($a->post->nivel ?? $a->nivel ?? 0) <=> ($b->post->nivel ?? $b->nivel ?? 0),
+                fn($a, $b) => strcasecmp($a->post->titulo ?? $a->nombre ?? '', $b->post->titulo ?? $b->nombre ?? ''),
+                fn($a, $b) => ($a->origen_post_id ?? 0) <=> ($b->origen_post_id ?? 0),
+                fn($a, $b) => ($ordenParte[$a->tipo] ?? 9) <=> ($ordenParte[$b->tipo] ?? 9),
+                fn($a, $b) => $a->id <=> $b->id,
+            ])
+            ->values();
     }
 
     public function agruparObjetosPorOrigen()
