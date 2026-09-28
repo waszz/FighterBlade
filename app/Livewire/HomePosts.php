@@ -36,7 +36,7 @@ class HomePosts extends Component
 
     public function render()
     {
-        $posts = Post::personajesBase()->limit(5)->get();
+        $posts = Post::personajesBase()->with('poderes')->limit(5)->get();
 
         // Traer personajes del ranking con relaciones
         $ranking = Personaje::with(['equipo', 'entrenamiento', 'accesorio'])

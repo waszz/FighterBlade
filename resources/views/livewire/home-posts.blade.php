@@ -62,6 +62,15 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Poderes (al pasar el mouse o tocarlos muestran nombre y descripción) --}}
+        @if ($post->poderes->isNotEmpty())
+            <div class="mt-2 flex flex-wrap justify-center gap-1.5">
+                @foreach ($post->poderes as $poder)
+                    <x-icono-poder :poder="$poder" tam="w-8 h-8" />
+                @endforeach
+            </div>
+        @endif
     </div>
     @endforeach
 </div>
