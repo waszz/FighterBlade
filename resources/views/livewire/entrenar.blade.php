@@ -8,7 +8,7 @@
               shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),0_4px_0_#000,0_6px_12px_rgba(0,0,0,0.7)] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all [text-shadow:0_2px_0_#000]';
 @endphp
 
-<div class="text-white p-2 sm:p-4 max-w-3xl mx-auto">
+<div class="text-white p-2 sm:p-4 max-w-3xl mx-auto" x-data="{ confirmar: false }">
     <h2 class="text-center text-3xl font-extrabold text-orange-400 mb-2 [text-shadow:0_3px_0_#000]">Entrenamiento</h2>
 
     {{-- Escena: la zona de fondo, mi personaje a la izquierda y el maestro a la derecha --}}
@@ -68,7 +68,7 @@
         {{-- Botón / progreso abajo al medio --}}
         <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1">
             @if ($estado === 'libre')
-                <button type="button" wire:click="entrenar" wire:loading.attr="disabled" class="{{ $boton }}">Entrenar</button>
+                <button type="button" x-on:click="confirmar = true" class="{{ $boton }}">Entrenar</button>
             @elseif ($estado === 'entrenando')
                 <div class="w-56 h-3 rounded-full bg-black/70 border border-black overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-orange-600 to-yellow-400"
@@ -83,5 +83,25 @@
         </div>
     </div>
 
-    <p class="mt-2 text-center text-xs text-gray-400">Mientras entrenás podés seguir explorando y peleando. La recompensa es siempre la mitad de la experiencia que pide el nivel en el que estás al reclamarla.</p>
+    <p class="mt-2 text-center text-xs text-gray-400">Mientras entrenás no podés explorar, atacar, hacer misiones, torre ni caza, ni viajar. Te pueden atacar y podés aceptar duelos e intercambios. La recompensa es siempre la mitad de la experiencia que pide el nivel en el que estás al reclamarla.</p>
+
+    {{-- Aviso antes de empezar: qué se bloquea durante las 8 horas --}}
+    <div x-show="confirmar" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3" x-on:click.self="confirmar = false">
+        <div class="relative w-full max-w-sm p-4 rounded-xl border border-black text-white bg-gradient-to-b from-[#1c2533] to-[#0a0e14]
+                    shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+            <h3 class="text-center text-xl font-extrabold text-orange-400 mb-2 [text-shadow:0_2px_0_#000]">¿Empezar a entrenar?</h3>
+            <p class="text-sm text-gray-200 text-center">El entrenamiento dura <b class="text-yellow-300">{{ \App\Livewire\Entrenar::HORAS }} horas</b> y al terminar ganás <b class="text-green-400">{{ $expTexto }} EXP</b>.</p>
+            <ul class="mt-3 space-y-1 text-xs text-gray-300">
+                <li>🚫 No vas a poder explorar, atacar, hacer misiones, torre ni caza, ni viajar.</li>
+                <li>✅ Te pueden atacar y podés aceptar duelos e intercambios.</li>
+                <li>↩️ Podés dejarlo cuando quieras, pero se pierde lo que llevás.</li>
+            </ul>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <button type="button" wire:click="entrenar" x-on:click="confirmar = false" wire:loading.attr="disabled"
+                        class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Aceptar</button>
+                <button type="button" x-on:click="confirmar = false"
+                        class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </div>
