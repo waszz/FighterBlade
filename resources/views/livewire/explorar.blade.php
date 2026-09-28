@@ -184,7 +184,7 @@
         $postSetCompleto = $mostrarGifCompleto ? \App\Models\Post::with('poderes')->find($equipo->origen_post_id) : null;
         $poderesLadoPersonaje = $postSetCompleto?->poderes?->isNotEmpty() ? $postSetCompleto->poderes : ($personaje->post?->poderes ?? collect());
       }
-      $poderesLadoEnemigo = $enemigo ? ($enemigo->poderes ?? collect()) : collect();
+      $poderesLadoEnemigo = $enemigo ? ($this->gifsEnemigo()->poderes ?? collect()) : collect();
       $pildoraPoder = 'block px-2 py-1 rounded border border-black text-xs bg-gradient-to-b from-[#2f5470] to-[#0a1a26] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]';
       @endphp
 
@@ -719,12 +719,12 @@
 
       <!-- Poderes -->
       @php $joyaEnemigo = $enemigo instanceof \App\Models\Personaje ? $enemigo->joya : null; @endphp
-      @if(($enemigo->poderes && $enemigo->poderes->count()) || $joyaEnemigo)
+      @if(($this->gifsEnemigo()->poderes && $this->gifsEnemigo()->poderes->count()) || $joyaEnemigo)
         <div class="rounded-lg border border-black p-2 text-left bg-gradient-to-b from-[#2a3240] to-[#10141b]
                     shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
           {{-- Solo los iconos: el nombre y la descripción aparecen al pasar el mouse o al tocar --}}
           <div class="flex flex-wrap justify-center gap-2">
-            @foreach ($enemigo->poderes ?? [] as $poder)
+            @foreach ($this->gifsEnemigo()->poderes ?? [] as $poder)
               <x-icono-poder :poder="$poder" tam="w-11 h-11" class="cursor-pointer" />
             @endforeach
             @if ($joyaEnemigo)

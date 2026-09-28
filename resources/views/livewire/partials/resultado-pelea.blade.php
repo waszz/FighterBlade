@@ -9,6 +9,14 @@
           el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
        } }" @click="bajar()" title="Tocá para ir al resultado">
   @php
+  // Tipo de daño con el que pelea cada uno: el de su set completo equipado o su set base (igual que el combate),
+  // no el del personaje con el que arrancó
+  $tipoDeCombate = fn ($pj) => $pj instanceof \App\Models\Personaje
+      ? ($pj->postDeCombate()?->tipo ?? $pj->tipo ?? 'fisico')
+      : ($pj->tipo ?? 'fisico');
+  $tipoVistaPersonaje = $tipoDeCombate($personaje);
+  $tipoVistaEnemigo = $tipoDeCombate($enemigo);
+
   $golpesPersonaje = 0;
   $golpesEnemigo = 0;
 
@@ -355,7 +363,7 @@
 
         $danioFisico = $res['danio_fisico'] ?? 0;
         $danioElemental = $res['danio_elemental'] ?? 0;
-        $tipoAtacante = $atacante === 'personaje' ? ($personaje->tipo ?? 'fisico') : ($enemigo->tipo ?? 'fisico');
+        $tipoAtacante = $atacante === 'personaje' ? $tipoVistaPersonaje : $tipoVistaEnemigo;
         @endphp
 
         {{-- <h3 class="text-2xl font-bold mb-2 text-center">Ronda 6</h3> --}}
@@ -418,7 +426,7 @@
           $danioFisico = $res['danio_fisico'] ?? 0;
           $danioElemental = $res['danio_elemental'] ?? 0;
 
-          $tipoAtacante = $atacante === 'personaje' ? ($personaje->tipo ?? 'fisico') : ($enemigo->tipo ?? 'fisico');
+          $tipoAtacante = $atacante === 'personaje' ? $tipoVistaPersonaje : $tipoVistaEnemigo;
           @endphp
 
           <h3 class="text-2xl font-bold mb-2 text-center">Ronda 6</h3>
@@ -488,7 +496,7 @@
           $tipoAtacante = $personaje->post->tipo ?? 'fisico';
           }
           } else {
-          $tipoAtacante = $enemigo->tipo ?? 'fisico';
+          $tipoAtacante = $tipoVistaEnemigo;
           }
           @endphp
 
@@ -594,7 +602,7 @@
           $tipoAtacanteContra = $personaje->post->tipo ?? 'fisico';
           }
           } else {
-          $tipoAtacanteContra = $enemigo->tipo ?? 'fisico';
+          $tipoAtacanteContra = $tipoVistaEnemigo;
           }
 
           $danioFisicoContra = $contra['danio_fisico'] ?? 0;

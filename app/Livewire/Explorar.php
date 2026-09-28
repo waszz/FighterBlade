@@ -1431,7 +1431,12 @@ protected function obtenerPoderesAnulados($combatiente)
             $poderesPersonaje = $this->personaje->post->poderes ?? [];
         }
 
-        $tipoEnemigo = $this->enemigo->tipo ?? 'fisico';
+        // PvP: el rival pelea con el tipo de daño y los poderes de su set completo equipado (o de su set base),
+        // igual que el jugador; no con los del personaje con el que arrancó
+        if ($this->enemigo instanceof Personaje && ($postRival = $this->gifsEnemigo()) instanceof Post) {
+            $this->enemigo->setRelation('poderes', $postRival->poderes);
+        }
+        $tipoEnemigo = $this->gifsEnemigo()?->tipo ?? $this->enemigo->tipo ?? 'fisico';
 
         $calcularDanioFisico = function ($stats, $nivel) {
             $multiplicadorNivel = 1 + ($nivel * self::DANIO_POR_NIVEL);
