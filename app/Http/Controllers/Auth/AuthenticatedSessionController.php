@@ -42,18 +42,9 @@ public function store(LoginRequest $request): RedirectResponse
         return redirect()->route('verification.notice');
     }
 
-    // 🚫 Una sola sesión por cuenta: el último login gana y desconecta al anterior
-    $currentSessionId = $request->session()->getId();
-
-    if ($user->last_session_id && $user->last_session_id !== $currentSessionId
-        && config('session.driver') === 'database') {
-        DB::table(config('session.table', 'sessions'))
-            ->where('id', $user->last_session_id)
-            ->delete();
-    }
-
-    // Guardar la sesión actual
-    $user->last_session_id = $currentSessionId;
+    // 🚫 Una sola sesión por cuenta: el último login gana. La sesión anterior no se borra: en su próxima
+    // petición el middleware SesionUnica ve que ya no es la de la cuenta, la cierra y avisa "te conectaste desde otro lugar"
+    $user->last_session_id = $request->session()->getId();
     $user->save();
 
     // ✅ Redirección según rol

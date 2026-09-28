@@ -1,4 +1,27 @@
 <div class="relative h-screen overflow-hidden" style="height: 100dvh" x-data="{ perfil: false, chat: false }">
+    {{-- Una sola pestaña por navegador: las pestañas comparten la sesión (el servidor no las distingue), así que se avisan
+         entre ellas; al abrir el juego en otra pestaña, esta queda bloqueada. "Jugar acá" la recarga y bloquea a la otra --}}
+    <div wire:ignore x-data="{ otraPestana: false }"
+         x-init="if ('BroadcastChannel' in window) {
+                     const canal = new BroadcastChannel('fighterblade-juego');
+                     canal.onmessage = (e) => { if (e.data === 'abierta') otraPestana = true; };
+                     canal.postMessage('abierta');
+                 }"
+         x-show="otraPestana" x-cloak
+         class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 px-4">
+        <div class="w-full max-w-xs p-5 rounded-xl border border-black text-center text-white bg-gradient-to-b from-[#1c2533] to-[#0a0e14]
+                    shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+            <p class="text-3xl mb-2">⚠️</p>
+            <h2 class="text-lg font-bold text-yellow-300 mb-1 [text-shadow:0_2px_0_#000]">Te conectaste desde otro lugar</h2>
+            <p class="text-sm text-gray-300 mb-4">Abriste el juego en otra pestaña de este navegador. Solo se puede jugar en una a la vez.</p>
+            <button type="button" @click="location.reload()"
+                class="w-full py-2 rounded-lg border border-black font-bold bg-gradient-to-b from-green-500 to-green-800
+                       shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
+                Jugar acá
+            </button>
+        </div>
+    </div>
+
     {{-- Fondo con imagen y capa oscura --}}
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/-juego.jpg') }}');"></div>
     <div class="absolute inset-0 bg-black bg-opacity-40"></div>

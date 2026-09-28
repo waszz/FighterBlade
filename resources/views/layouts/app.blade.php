@@ -112,6 +112,17 @@
                     window.dispatchEvent(new CustomEvent('toast', { detail: { tipo, mensaje } }));
                 };
 
+                // Sesión cerrada porque la cuenta entró desde otro lugar (middleware SesionUnica responde 409):
+                // en vez del cartel de error de Livewire, a la portada, que muestra el aviso
+                Livewire.hook('request', ({ fail }) => {
+                    fail(({ status, preventDefault }) => {
+                        if (status === 409) {
+                            preventDefault();
+                            window.location.href = @js(route('home'));
+                        }
+                    });
+                });
+
                 Livewire.on('error', (p) => emitir('error', leerMensaje(p)));
                 Livewire.on('success', (p) => emitir('success', leerMensaje(p)));
                 Livewire.on('alert', (p) => {
