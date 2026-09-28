@@ -82,47 +82,25 @@
     <div :class="{'block': open, 'hidden': !open}" class="sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('home')">Inicio</x-responsive-nav-link>
-            <x-responsive-nav-link href="#sobre-nosotros">Sobre Nosotros</x-responsive-nav-link>
-
-            <!-- Todas las mascotas en móvil -->
-            <div x-data="{ openMascotasMobile: false }" class="px-4">
-                <button @click="openMascotasMobile = !openMascotasMobile" class="w-full text-left text-gray-700 py-2 flex justify-between items-center">
-                    Todas las Mascotas
-                    <svg :class="{ 'rotate-180': openMascotasMobile }" class="w-4 h-4 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
-                <div x-show="openMascotasMobile" class="px-4">
-                    <x-responsive-nav-link href="{{ route('public.gatos') }}">🐱 Gatos</x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('public.perros') }}">🐶 Perros</x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('public.adoptados') }}">🏡 Adoptados</x-responsive-nav-link>
-                </div>
-            </div>
 
             @auth
                 @if(auth()->user()->is_admin)
-                <!-- Administración en móvil -->
-                <div x-data="{ openAdminMobile: false }" class="px-4">
-                    <button @click="openAdminMobile = !openAdminMobile" class="w-full text-left text-gray-700 py-2 flex justify-between items-center">
-                        Administración
-                        <svg :class="{ 'rotate-180': openAdminMobile }" class="w-4 h-4 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <div x-show="openAdminMobile" class="pl-4">
-                        <x-responsive-nav-link :href="route('posts.index')">Mis Personajes</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('posts.create')">Crear Personajes</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('personajes.especiales')">Personajes especiales</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('news.index')">Mis Ciudades</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('news.create')">Crear Ciudades</x-responsive-nav-link>
-                        <x-responsive-nav-link :href="route('admin.anuncios')">Anuncios</x-responsive-nav-link>                    </div>
+                <!-- Administración en móvil: siempre visible (el desplegable tenía el texto oscuro sobre fondo oscuro y no se veía) -->
+                <div class="border-t border-gray-600 mt-2 pt-2">
+                    <p class="px-4 pt-1 pb-1 text-xs font-bold uppercase tracking-wide text-yellow-400">Administración</p>
+                    <x-responsive-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.index')">Mis Personajes</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('posts.create')" :active="request()->routeIs('posts.create')">Crear Personajes</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('personajes.especiales')" :active="request()->routeIs('personajes.especiales')">Personajes especiales</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('news.index')" :active="request()->routeIs('news.index')">Mis Ciudades</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('news.create')" :active="request()->routeIs('news.create')">Crear Ciudades</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.anuncios')" :active="request()->routeIs('admin.anuncios')">Anuncios</x-responsive-nav-link>
                 </div>
                 @endif
 
                 <!-- Usuario -->
-                <div class="border-t border-gray-200 mt-4 pt-4 px-4">
-                    <div class="text-gray-800 font-semibold">{{ Auth::user()->name }}</div>
-                    <div class="text-gray-500 text-sm">{{ Auth::user()->email }}</div>
+                <div class="border-t border-gray-600 mt-4 pt-4 px-4">
+                    <div class="text-gray-100 font-semibold">{{ Auth::user()->name }}</div>
+                    <div class="text-gray-400 text-sm">{{ Auth::user()->email }}</div>
                 </div>
                 <x-responsive-nav-link :href="route('profile.edit')">Perfil</x-responsive-nav-link>
                 <form method="POST" action="{{ route('logout') }}">

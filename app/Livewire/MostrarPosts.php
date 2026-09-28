@@ -29,19 +29,8 @@ class MostrarPosts extends Component
 
     public function eliminarPost(Post $id)
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
         $id->delete();
-    }
-
-    public function cambiarEstado($postId)
-    {
-        $post = Post::findOrFail($postId);
-
-        // Cambiar el estado del post
-        $post->estado = ($post->estado === 'en_adopcion') ? 'adoptado' : 'en_adopcion';
-        $post->save();
-
-        // Actualizar el estado en la interfaz
-        session()->flash('mensaje', 'Estado del post actualizado correctamente.');
     }
 
    public function render()
