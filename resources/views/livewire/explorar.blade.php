@@ -574,6 +574,7 @@
           Nivel {{ $personajeSeleccionadoModal->nivel }}
         </span>
       </p>
+      <x-barra-exp :personaje="$personajeSeleccionadoModal" class="mb-3" />
       <!-- Oro, diamantes y stats: solo del personaje propio -->
       @if ($esMiPersonaje)
       <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">

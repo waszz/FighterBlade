@@ -132,12 +132,6 @@
         $abreviaturas = ['fuerza' => 'FUE', 'resistencia' => 'RES', 'ataque' => 'ATA', 'defensa' => 'DEF', 'velocidad' => 'VEL', 'energia' => 'ENE'];
 
         $nivel = $personajeSeleccionadoModal->nivel ?? 1;
-        $expActual = $personajeSeleccionadoModal->experiencia ?? 0;
-        $expNivelActual = 10000 * pow($nivel - 1, 2);
-        $expSiguienteNivel = 10000 * pow($nivel, 2);
-        $expProgreso = max(0, $expActual - $expNivelActual);
-        $expNecesaria = $expSiguienteNivel - $expNivelActual;
-        $porcentajeExp = $expNecesaria > 0 ? min(100, ($expProgreso / $expNecesaria) * 100) : 100;
 
         $postModalRanking = $personajeSeleccionadoModal->postDeCombate();
         $gifModalRanking = $gifPersonajeEquipado ?? $postModalRanking?->gif ?? $personajeSeleccionadoModal->post?->gif;
@@ -168,10 +162,7 @@
             </p>
 
             {{-- Experiencia --}}
-            <div class="mx-auto mb-3 w-full h-5 rounded border border-black bg-black/60 overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)]">
-                <div class="h-full bg-gradient-to-b from-emerald-400 to-emerald-700" style="width: {{ $porcentajeExp }}%;"></div>
-                <div class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white [text-shadow:0_1px_0_#000]">EXP {{ number_format($porcentajeExp, 0) }}%</div>
-            </div>
+            <x-barra-exp :personaje="$personajeSeleccionadoModal" class="mb-3" />
 
             {{-- Oro, diamantes y stats: solo del personaje propio --}}
             @if ($esMiPersonajeRanking)
