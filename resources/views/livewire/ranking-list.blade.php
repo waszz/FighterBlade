@@ -73,6 +73,12 @@
                     <span class="text-green-400 font-semibold">{{ $item->pvp_ganadas ?? 0 }}</span>
                     <span class="text-white">/</span>
                     <span class="text-red-400 font-semibold">{{ $item->pvp_perdidas ?? 0 }}</span>
+                    @elseif($tipo === 'Misiones')
+                    {{-- Se lee de la tabla (Livewire relee los personajes y pierde la columna calculada) --}}
+                    @php $misionesPorPj ??= \Illuminate\Support\Facades\DB::table('mision_personaje')->selectRaw('personaje_id, COUNT(*) as c')->groupBy('personaje_id')->pluck('c', 'personaje_id'); @endphp
+                    <span class="text-amber-300 font-bold">📜 {{ $misionesPorPj[$item->id] ?? 0 }} {{ ($misionesPorPj[$item->id] ?? 0) == 1 ? 'misión' : 'misiones' }}</span>
+                    @elseif($tipo === 'Torre')
+                    <span class="text-violet-300 font-bold">🗼 Piso {{ $item->torre_piso ?? 0 }}</span>
                     @else
                     <span class="text-green-400 font-semibold">{{ $item->pve_ganadas ?? 0 }}</span>
                     <span class="text-white">/</span>

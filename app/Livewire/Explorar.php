@@ -920,11 +920,11 @@ if ($estadoParalizado) {
             // Marcamos el resultado como victoria
             $this->resultadoFinal = 'Victoria';
 
-            // Actualizamos las estadísticas de PvP o PvE
+            // Actualizamos las estadísticas de PvP o PvE (PvE: solo exploraciones; misiones y torre tienen su propio ranking)
             if ($this->esPvp) {
                 $this->personaje->pvp_ganadas = ($this->personaje->pvp_ganadas ?? 0) + 1;
                 $this->personaje->pvp_puntos  = ($this->personaje->pvp_puntos ?? 0) + 10;
-            } else {
+            } elseif ($this->esExploracion()) {
                 $this->personaje->pve_ganadas = ($this->personaje->pve_ganadas ?? 0) + 1;
                 $this->personaje->pve_puntos  = ($this->personaje->pve_puntos ?? 0) + 10;
             }
@@ -954,7 +954,7 @@ if ($estadoParalizado) {
 
             if ($this->esPvp) {
                 $this->personaje->pvp_perdidas = ($this->personaje->pvp_perdidas ?? 0) + 1;
-            } else {
+            } elseif ($this->esExploracion()) {
                 $this->personaje->pve_perdidas = ($this->personaje->pve_perdidas ?? 0) + 1;
             }
 
@@ -3451,6 +3451,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     }
 
     // Misión que se está peleando (su rival es el enemigo actual), o null si es un combate normal
+    // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)
+    public function esExploracion(): bool
+    {
+        return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva();
+    }
+
     public function misionActiva(): ?\App\Models\Mision
     {
         if ($this->esPvp || ! $this->enemigo || ! $this->personaje?->mision_activa_id) {
