@@ -450,6 +450,13 @@
 
           @php
             $esYo = $personajeRanking->id === $personaje->id;
+            // Puesto en la zona (mismos colores que el Ranking: oro, plata y bronce)
+            $colorPuesto = match($loop->iteration) {
+                1 => 'from-yellow-300 to-yellow-600 text-black',
+                2 => 'from-gray-200 to-gray-400 text-black',
+                3 => 'from-amber-500 to-amber-800 text-white',
+                default => 'from-neutral-700 to-black text-yellow-400',
+            };
           @endphp
           {{-- Fila simple con una línea abajo que separa a cada usuario --}}
           <div class="flex items-center justify-between gap-2 px-1 py-1.5 cursor-pointer transition hover:bg-white/5
@@ -458,6 +465,7 @@
               wire:click="mostrarModalPersonaje({{ $personajeRanking->id }})">
 
             <div class="flex items-center gap-3 min-w-0">
+              <span class="w-7 h-7 shrink-0 flex items-center justify-center rounded-full border border-black bg-gradient-to-b {{ $colorPuesto }} text-xs font-extrabold shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]">{{ $loop->iteration }}</span>
               @if($img)
                 <img src="{{ asset('storage/' . $img) }}"
                      alt="{{ $personajeRanking->nombre }}"
