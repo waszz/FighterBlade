@@ -466,7 +466,17 @@
               <span class="truncate text-sm font-semibold {{ $personajeRanking->claseNombre() }}">{{ $personajeRanking->nombre }}</span>
             </div>
 
-            <div class="shrink-0 text-xs text-yellow-300 font-bold">Nivel {{ $personajeRanking->nivel }}</div>
+            {{-- Nivel y batallas ganadas / perdidas (PvP + PvE) --}}
+            @php
+              $pvpG = $personajeRanking->pvp_ganadas ?? 0; $pvpP = $personajeRanking->pvp_perdidas ?? 0;
+              $pveG = $personajeRanking->pve_ganadas ?? 0; $pveP = $personajeRanking->pve_perdidas ?? 0;
+            @endphp
+            <div class="shrink-0 text-right text-xs font-bold leading-tight">
+              <div class="text-yellow-300">Nivel {{ $personajeRanking->nivel }}</div>
+              <div title="PvP {{ $pvpG }}/{{ $pvpP }} · PvE {{ $pveG }}/{{ $pveP }}">
+                <span class="text-green-400">{{ $pvpG + $pveG }}</span><span class="text-white">/</span><span class="text-red-400">{{ $pvpP + $pveP }}</span>
+              </div>
+            </div>
           </div>
         @endforeach
       </div>
@@ -564,17 +574,6 @@
           Nivel {{ $personajeSeleccionadoModal->nivel }}
         </span>
       </p>
-      <!-- Batallas ganadas / perdidas (visible para todos) -->
-      <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">
-        @foreach (['PvP' => 'pvp', 'PvE' => 'pve'] as $etiquetaBatallas => $campoBatallas)
-          <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]">
-            <span class="text-gray-300 text-xs">{{ $etiquetaBatallas }}</span>
-            <span class="text-green-400" title="Ganadas">{{ $personajeSeleccionadoModal->{$campoBatallas . '_ganadas'} ?? 0 }}</span>
-            <span class="text-white">/</span>
-            <span class="text-red-400" title="Perdidas">{{ $personajeSeleccionadoModal->{$campoBatallas . '_perdidas'} ?? 0 }}</span>
-          </div>
-        @endforeach
-      </div>
       <!-- Oro, diamantes y stats: solo del personaje propio -->
       @if ($esMiPersonaje)
       <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">
