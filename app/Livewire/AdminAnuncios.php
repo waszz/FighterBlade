@@ -84,6 +84,6 @@ class AdminAnuncios extends Component
     {
         return view('livewire.admin-anuncios', [
             'anuncios' => Anuncio::with('autor')->latest()->get(),
-        ]);
+        ])->layout('layouts.app');
     }
 }
