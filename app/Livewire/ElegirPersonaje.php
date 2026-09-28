@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ElegirPersonaje extends Component
 {
+    // Esmeraldas con las que arranca cada personaje nuevo
+    const ESMERALDAS_INICIALES = 100;
+
     public $personajesBase;       // personajes oficiales base (Post)
     public $personajesUsuario;    // personajes del usuario actual (Personaje)
     public $personajeSeleccionado = null;
@@ -157,6 +160,7 @@ public function mount()
             'gif' => $personajeBase->gif,
             'ciudad_id' => $ciudadInicial?->id,
             'stats' => json_encode($statsBase),
+            'diamante' => self::ESMERALDAS_INICIALES,
         ]);
 
         if ($esPrimerPersonaje) {
