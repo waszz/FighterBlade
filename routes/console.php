@@ -191,3 +191,41 @@ Artisan::command('jugadores:ver-datos {personaje} {--quitar}', function () {
     $personaje->user->forceFill(['ver_datos_jugadores' => ! $this->option('quitar')])->save();
     $this->info(($this->option('quitar') ? 'Permiso quitado a ' : 'Permiso dado a ') . "la cuenta de {$personaje->nombre} ({$personaje->user->email}).");
 })->purpose('Da (o quita con --quitar) el permiso de ver oro, esmeraldas y stats de los demás jugadores');
+
+// GIF de los sets con fondo magenta (#FF00FF) sin transparencia: el magenta pasa a ser transparente.
+// Solo los gif de los sets (no los fondos de las ciudades). Con --probar muestra qué cambiaría sin tocar nada.
+// Antes de cambiar un archivo deja una copia en storage/app/gifs-originales/.
+Artisan::command('gifs:transparentar {--probar}', function () {
+    $disco = \Illuminate\Support\Facades\Storage::disk('public');
+    $rutas = collect();
+    foreach (\App\Models\Post::withoutGlobalScopes()->get(\App\Models\Post::CAMPOS_GIF) as $post) {
+        foreach (\App\Models\Post::CAMPOS_GIF as $campo) {
+            if ($post->$campo && str_ends_with(strtolower($post->$campo), '.gif')) {
+                $rutas->push($post->$campo);
+            }
+        }
+    }
+    $rutas = $rutas->unique()->values();
+
+    $cambiados = 0;
+    foreach ($rutas as $ruta) {
+        if (! $disco->exists($ruta)) {
+            continue;
+        }
+        [$nuevo, $cuadros, $motivo] = \App\Support\GifTransparente::procesar($disco->get($ruta));
+        if ($nuevo === null) {
+            continue;
+        }
+        $cambiados++;
+        $this->line("  {$ruta}: {$motivo}");
+        if (! $this->option('probar')) {
+            $copia = storage_path('app/gifs-originales/' . $ruta);
+            if (! file_exists($copia)) {
+                @mkdir(dirname($copia), 0775, true);
+                copy($disco->path($ruta), $copia);
+            }
+            $disco->put($ruta, $nuevo);
+        }
+    }
+    $this->info(($this->option('probar') ? 'Se cambiarían ' : 'GIF corregidos: ') . "{$cambiados} de {$rutas->count()}");
+})->purpose('Hace transparente el fondo magenta de los GIF de los sets');
