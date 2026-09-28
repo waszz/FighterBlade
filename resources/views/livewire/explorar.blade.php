@@ -221,9 +221,9 @@
         {{-- Enemigo --}}
         @if($enemigo)
         <div class="absolute bottom-1 right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
-          <img src="{{ asset('storage/' . ($enemigo->gif ?? 'default_enemigo.gif')) }}"
+          <img src="{{ asset('storage/' . ($this->gifEnemigo() ?? 'default_enemigo.gif')) }}"
             alt="Enemigo {{ $enemigo->nombre ?? $enemigo->titulo }}"
-            style="{{ \App\Models\Post::estiloGif($enemigo->gif ?? null) }}" class="block max-w-none {{ $enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '' }}" />
+            style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '' }}" />
         </div>
         @endif
       </div> {{-- FIN overflow-hidden --}}
@@ -679,8 +679,8 @@
       <!-- GIF del enemigo -->
       <div class="mx-auto mb-3 h-32 w-40 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50
                   shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
-        <img src="{{ asset('storage/' . ($enemigo->gif ?? 'default_enemigo.gif')) }}" alt="Enemigo"
-             style="{{ \App\Models\Post::estiloGif($enemigo->gif ?? null, 0.8) }}" class="block max-w-none scale-x-[-1]">
+        <img src="{{ asset('storage/' . ($this->gifEnemigo() ?? 'default_enemigo.gif')) }}" alt="Enemigo"
+             style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null, 0.8) }}" class="block max-w-none scale-x-[-1]">
       </div>
 
       <!-- Nombre y nivel -->

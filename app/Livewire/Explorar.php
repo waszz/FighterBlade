@@ -1051,8 +1051,8 @@ if ($tieneSiempreEnPie) {
 
 // Preparar el prefijo para gifs enemigo
         $gifPrefixEnemigo = null;
-        if ($this->enemigo->gif) {
-            $filenameEnemigo  = pathinfo($this->enemigo->gif, PATHINFO_FILENAME); // ej: "1752867224_gif"
+        if ($this->gifEnemigo()) {
+            $filenameEnemigo  = pathinfo($this->gifEnemigo(), PATHINFO_FILENAME); // ej: "1752867224_gif"
             $gifPrefixEnemigo = 'posts/' . preg_replace('/_gif$/', '', $filenameEnemigo);
         }
 
@@ -1098,7 +1098,7 @@ if ($tieneSiempreEnPie) {
             'drop'              => $this->recompensas['drop'] ?? null,
             'diamante'          => $this->recompensas['diamante'] ?? 0,
             'gif_personaje'     => $gifMostrar,
-            'gif_enemigo'       => $this->enemigo->gif ?? null,
+            'gif_enemigo'       => $this->gifEnemigo(),
             'nombre_personaje'  => $this->personaje->nombre,
             'nombre_enemigo'    => $this->enemigo->titulo ?? 'Enemigo',
             'poderes_personaje' => $poderesPersonaje->toArray(),
@@ -1134,7 +1134,7 @@ if ($tieneSiempreEnPie) {
             'datos_combate' => $datosCombateCompleto,
             'ciudad_actual' => $this->personaje->ciudad_actual ?? 'Desconocida',
             'gif_personaje' => $gifMostrar,
-            'gif_enemigo'   => $this->enemigo->gif ?? null,
+            'gif_enemigo'   => $this->gifEnemigo(),
         ]);
 
         // ⏳ Recuperación al ganar o empatar (la de derrota se calcula arriba, con la poción de recuperación)
@@ -3538,6 +3538,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             return $this->cacheGifsEnemigo ??= ($this->enemigo->postDeCombate() ?? $this->enemigo);
         }
         return $this->enemigo;
+    }
+
+    // Gif principal del enemigo: en PvP el del set completo que tiene equipado (no el del personaje con el que arrancó)
+    public function gifEnemigo(): ?string
+    {
+        return $this->gifsEnemigo()?->gif ?? $this->enemigo?->gif;
     }
 
     // Caza lista cuya presa es el enemigo actual (null si es un combate normal)
