@@ -49,6 +49,12 @@ class Inventario extends Component
     public $pocionesAgrupadas             = [];
     protected $listeners                  = ['actualizarInventario' => 'actualizarObjetoEquipado'];
 
+    // Objeto del inventario de este personaje (los ids vienen del navegador: nunca buscar objetos de otros)
+    private function miObjeto($objetoId): ?Objeto
+    {
+        return Objeto::where('personaje_id', $this->personaje->id)->find($objetoId);
+    }
+
     public function mount($personajeId)
     {
         $this->personaje = Personaje::with('post')->findOrFail($personajeId);
@@ -93,7 +99,7 @@ class Inventario extends Component
 
     public function abrirModalEquiparPocion($objetoId)
     {
-        $objeto = Objeto::find($objetoId);
+        $objeto = $this->miObjeto($objetoId);
         if (! $objeto) {
             $this->mensajeErrorEquiparPocion = '❌ Poción no encontrada.';
             return;
@@ -285,7 +291,7 @@ class Inventario extends Component
 
     public function abrirModalVenderPocion($objetoId)
     {
-        $this->pocionParaVender          = Objeto::find($objetoId);
+        $this->pocionParaVender          = $this->miObjeto($objetoId);
         $this->precioVentaPocion         = $this->pocionParaVender->precio_venta ?? null;
         $this->mensajeErrorVentaPocion   = null;
         $this->modalEquiparPocionAbierto = false; // cerrar modal equipar
@@ -294,7 +300,7 @@ class Inventario extends Component
 
     public function actualizarPrecioVentaPocion($idPocion)
     {
-        $pocion = Objeto::find($idPocion);
+        $pocion = $this->miObjeto($idPocion);
 
         if (! $pocion) {
             $this->addError('general', 'Poción no encontrada');
@@ -575,7 +581,7 @@ class Inventario extends Component
 
     public function guardarEnClan($objetoId)
     {
-        $objeto = Objeto::find($objetoId);
+        $objeto = $this->miObjeto($objetoId);
 
         if (! $objeto) {
             session()->flash('error', '❌ Objeto no encontrado.');
@@ -731,7 +737,7 @@ class Inventario extends Component
 
     public function mostrarOpciones($objetoId)
     {
-        $objeto                          = $this->procesarObjeto(Objeto::find($objetoId));
+        $objeto                          = $this->procesarObjeto($this->miObjeto($objetoId));
         $this->mensajeErrorEquipar       = null;
         $this->mensajeErrorEquiparPocion = null; // si usás para pociones
 
@@ -759,9 +765,13 @@ class Inventario extends Component
 
     public function actualizarPrecioVenta($objetoId)
     {
-        $objeto = Objeto::find($objetoId);
+        $objeto = $this->miObjeto($objetoId);
         if (! $objeto) {
             $this->mensajeErrorEquipar = "Objeto no encontrado.";
+            return;
+        }
+        if ($objeto->tipo === 'cofre') {
+            $this->mensajeErrorEquipar = "Los cofres no se pueden vender.";
             return;
         }
 
@@ -788,7 +798,7 @@ class Inventario extends Component
 
     public function equiparObjeto($objetoId)
     {
-        $objeto = $this->procesarObjeto(Objeto::find($objetoId));
+        $objeto = $this->procesarObjeto($this->miObjeto($objetoId));
         if (! $objeto) {
             return;
         }
@@ -890,7 +900,7 @@ class Inventario extends Component
     {
         $this->objetosSeleccionadosParaTirar = [];
         $this->objetoParaTirarId             = $objetoId;
-        $this->objetoSeleccionado            = $this->procesarObjeto(Objeto::find($objetoId));
+        $this->objetoSeleccionado            = $this->procesarObjeto($this->miObjeto($objetoId));
         $this->modalTirarObjetosAbierto      = true;
     }
 
@@ -929,7 +939,7 @@ class Inventario extends Component
         $oroGanado = 0;
 
         if ($this->objetoParaTirarId) {
-            $objeto = Objeto::find($this->objetoParaTirarId);
+            $objeto = $this->miObjeto($this->objetoParaTirarId);
             if (! $objeto) {
                 return;
             }
@@ -978,7 +988,7 @@ class Inventario extends Component
         $oroTotal = 0;
 
         foreach ($this->objetosSeleccionadosParaTirar as $objetoId) {
-            $objeto = Objeto::find($objetoId);
+            $objeto = $this->miObjeto($objetoId);
             if ($objeto) {
                 if ($this->personaje->objeto_consumible_id === $objeto->id) {
                     $this->personaje->objeto_consumible_id = null;
@@ -1177,10 +1187,15 @@ class Inventario extends Component
         }
 
         // 2. Buscar el objeto por ID
-        $objeto = Objeto::find($objetoId);
+        $objeto = $this->miObjeto($objetoId);
 
         if (! $objeto) {
             session()->flash('error', 'Objeto no encontrado.');
+            return;
+        }
+
+        if ($objeto->tipo === 'cofre') {
+            session()->flash('error', 'Los cofres no se pueden vender.');
             return;
         }
 
@@ -1202,7 +1217,7 @@ class Inventario extends Component
 
     public function quitarVentaObjeto($objetoId)
     {
-        $objeto = Objeto::find($objetoId);
+        $objeto = $this->miObjeto($objetoId);
         if (! $objeto) {
             $this->dispatch('error', ['message' => 'Objeto no encontrado']);
             return;
