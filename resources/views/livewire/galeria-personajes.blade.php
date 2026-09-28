@@ -12,7 +12,7 @@
     <p class="text-gray-300 mt-1 [text-shadow:0_1px_0_#000]">Tu colección de personajes equipados</p>
   </div>
 
-  <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 p-2">
+  <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 p-2">
     @foreach($personajesDisponibles as $post)
     @php
     $esEquipado = (
@@ -32,13 +32,13 @@
     {{-- Carta 3D: las disponibles con borde dorado y brillo; las bloqueadas en gris --}}
     <div wire:key="galeria-{{ $post->id }}"
       @if($tieneLuz) wire:click="abrirModalPost({{ $post->id }})" @endif
-      class="relative flex flex-col items-center p-1.5 rounded-lg select-none transition duration-200 {{ $panel3d }}
+      class="relative flex flex-col items-center p-1 rounded-md select-none transition duration-200 {{ $panel3d }}
              {{ $tieneLuz ? 'cursor-pointer !border-yellow-400 glow-personaje hover:brightness-125 hover:-translate-y-1' : 'cursor-default grayscale opacity-60 hover:grayscale-0 hover:opacity-100' }}">
       <div class="w-full aspect-square rounded-md overflow-hidden border-2 border-black bg-black/50 shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
         <img src="{{ asset('storage/' . $post->imagen) }}" alt="{{ $nombreCarta }}" class="w-full h-full object-cover" loading="lazy" />
       </div>
-      <p class="mt-1 w-full text-center text-white text-xs font-bold truncate [text-shadow:0_1px_0_#000]">{{ $nombreCarta }}</p>
-      <span class="mt-0.5 inline-flex items-center gap-1 px-1.5 py-px rounded-full text-[9px] font-bold text-yellow-300 {{ $etiqueta3d }}">
+      <p class="mt-0.5 w-full text-center text-white text-[10px] leading-tight font-bold truncate [text-shadow:0_1px_0_#000]">{{ $nombreCarta }}</p>
+      <span class="mt-0.5 inline-flex items-center gap-1 px-1 py-px rounded-full text-[8px] font-bold text-yellow-300 {{ $etiqueta3d }}">
         Nv {{ $post->nivel }}
       </span>
     </div>
