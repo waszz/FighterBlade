@@ -51,7 +51,13 @@
         </div>
 
         <h3 class="mt-2 font-bold text-yellow-300 truncate [text-shadow:0_2px_0_#000]">{{ $post->titulo }}</h3>
-        <p class="text-xs font-semibold {{ $colorTipoInicial[$post->tipo] ?? 'text-gray-400' }}"><x-icono-tipo :tipo="$post->tipo" tam="w-5 h-5" :con-nombre="true" /></p>
+        {{-- Tipo de daño y, al lado, los poderes (al pasar el mouse o tocarlos muestran nombre y descripción) --}}
+        <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs font-semibold {{ $colorTipoInicial[$post->tipo] ?? 'text-gray-400' }}">
+            <x-icono-tipo :tipo="$post->tipo" tam="w-5 h-5" :con-nombre="true" />
+            @foreach ($post->poderes as $poder)
+                <x-icono-poder :poder="$poder" tam="w-5 h-5" />
+            @endforeach
+        </div>
 
         {{-- Stats con etiquetas 3D (como el panel de atributos) --}}
         <div class="mt-2 grid grid-cols-2 gap-1 font-mono text-xs">
@@ -62,15 +68,6 @@
                 </div>
             @endforeach
         </div>
-
-        {{-- Poderes (al pasar el mouse o tocarlos muestran nombre y descripción) --}}
-        @if ($post->poderes->isNotEmpty())
-            <div class="mt-2 flex flex-wrap justify-center gap-1.5">
-                @foreach ($post->poderes as $poder)
-                    <x-icono-poder :poder="$poder" tam="w-8 h-8" />
-                @endforeach
-            </div>
-        @endif
     </div>
     @endforeach
 </div>
