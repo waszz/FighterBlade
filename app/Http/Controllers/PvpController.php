@@ -27,6 +27,11 @@ class PvpController extends Controller
             return $volver->with('toast_error', "{$objetivo->nombre} es un jugador nuevo: no se lo puede atacar todavía.");
         }
 
+        // Solo se ataca a jugadores de la misma zona
+        if ((int) $objetivo->ciudad_id !== (int) $personaje->ciudad_id) {
+            return $volver->with('toast_error', "{$objetivo->nombre} está en otra zona: viajá a " . ($objetivo->ciudadActual?->nombre ?? 'su zona') . ' para atacarlo.');
+        }
+
         if ($motivo = $this->motivoBloqueo($personaje)) {
             return $volver->with('toast_error', $motivo);
         }
