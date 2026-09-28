@@ -403,7 +403,7 @@
         <div :class="chat ? '!flex fixed inset-0 z-50 !w-full' : ''" class="w-[380px] h-full hidden lg:flex flex-col bg-[#0c202e]">
             <button type="button" @click="chat = false" aria-label="Cerrar chat"
                 class="lg:hidden self-end m-2 w-8 h-8 shrink-0 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white font-bold shadow-[0_2px_0_#000]">&times;</button>
-            @livewire('chat-sidebar')
+            @livewire('chat-sidebar', ['personajeId' => $personaje->id])
         </div>
     </div>
 

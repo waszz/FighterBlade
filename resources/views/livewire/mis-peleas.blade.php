@@ -143,7 +143,10 @@
               </span>
             </p>
             <p class="text-gray-400 text-[11px] mt-0.5">{{ $pelea->realizada_en->diffForHumans() }}</p>
-            <button wire:click="verPelea({{ $pelea->id }})" class="mt-1.5 {{ $boton3d }} !py-1 !text-xs">Ver</button>
+            <div class="mt-1.5 flex justify-center gap-1.5">
+              <button wire:click="verPelea({{ $pelea->id }})" class="{{ $boton3d }} !py-1 !text-xs">Ver</button>
+              <button wire:click="compartirPelea({{ $pelea->id }})" wire:loading.attr="disabled" title="Compartir en el chat" class="{{ $boton3d }} !py-1 !text-xs">💬 Compartir</button>
+            </div>
           </div>
 
           {{-- Enemigo --}}

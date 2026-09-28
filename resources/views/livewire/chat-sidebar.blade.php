@@ -3,7 +3,7 @@
     {{-- Chat visible sólo si no está minimizado --}}
     @unless($minimizado)
         <div class="h-full min-h-0">
-            @livewire('chat-component')
+            @livewire('chat-component', ['personajeId' => $personajeId])
         </div>
     @endunless
 </div>

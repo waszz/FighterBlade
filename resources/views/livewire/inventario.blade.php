@@ -586,6 +586,10 @@
 
       {{-- CARD 2: menú de acciones (separado) --}}
       <div class="flex flex-col w-[85%] mt-2 rounded-lg overflow-hidden border border-black shadow-[0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.7)]">
+          <button wire:click="compartirEnChat({{ $pocionSeleccionada->id }})" wire:loading.attr="disabled"
+            class="w-full py-1.5 bg-gradient-to-b from-indigo-600 to-indigo-900 hover:brightness-125 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_0_rgba(0,0,0,0.6)] active:translate-y-px font-bold text-sm text-white transition border-t border-black [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
+             💬 Compartir en el chat
+          </button>
 
         @if(!$pocionSeleccionada->precio_venta)
           <button type="button" wire:click="equiparPocion"
@@ -924,6 +928,10 @@
 
         {{-- CARD 2: menú de acciones (separado) --}}
         <div class="flex flex-col w-[85%] mt-2 rounded-lg overflow-hidden border border-black shadow-[0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.7)]">
+          <button wire:click="compartirEnChat({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled"
+            class="w-full py-1.5 bg-gradient-to-b from-indigo-600 to-indigo-900 hover:brightness-125 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_0_rgba(0,0,0,0.6)] active:translate-y-px font-bold text-sm text-white transition border-t border-black [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
+             💬 Compartir en el chat
+          </button>
 
           @if(!$objetoSeleccionado->precio_venta && $objetoSeleccionado->tipo === 'cofre')
           <button wire:click="abrirCofre({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled"

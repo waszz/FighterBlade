@@ -139,6 +139,19 @@ if ($enemigo->gif) {
         $this->peleaVistaId = $pelea->id;
     }
 
+    // Comparte una pelea propia (exploración, PvP, misión, torre o caza) en el chat general
+    public function compartirPelea($id)
+    {
+        $pelea = Pelea::where('personaje_id', $this->personajeId)->find($id);
+        $personaje = \App\Models\Personaje::where('user_id', auth()->id())->find($this->personajeId);
+        if (! $pelea || ! $personaje) {
+            return;
+        }
+        \App\Support\ChatCompartir::pelea($personaje, $pelea);
+        $this->dispatch('chatCompartido');
+        $this->dispatch('success', ['message' => 'Compartiste la pelea en el chat.']);
+    }
+
     public function volverALista()
     {
         $this->peleaVistaId = null;

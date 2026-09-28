@@ -140,6 +140,18 @@ class Inventario extends Component
         $this->modalAgregarParteAbierto = true;
     }
 
+    // Comparte en el chat general un objeto propio (parte de set, poción, joya o cofre)
+    public function compartirEnChat($objetoId)
+    {
+        $objeto = $this->miObjeto($objetoId);
+        if (! $objeto) {
+            return;
+        }
+        \App\Support\ChatCompartir::objeto($this->personaje, $objeto);
+        $this->dispatch('chatCompartido');
+        $this->dispatch('success', ['message' => 'Compartiste ' . $objeto->nombre . ' en el chat.']);
+    }
+
     // Cofre de la Torre: se abre y deja su contenido en el inventario
     public function abrirCofre($objetoId)
     {
