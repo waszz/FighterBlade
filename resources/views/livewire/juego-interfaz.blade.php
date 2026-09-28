@@ -1,4 +1,4 @@
-<div class="relative h-screen overflow-hidden">
+<div class="relative h-screen overflow-hidden" style="height: 100dvh" x-data="{ perfil: false, chat: false }">
     {{-- Fondo con imagen y capa oscura --}}
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/-juego.jpg') }}');"></div>
     <div class="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -7,8 +7,18 @@
     <div class="relative flex flex-col lg:flex-row h-full text-white">
 
         {{-- Sidebar personaje (izquierda) --}}
-    <aside class="sidebar-pj w-full md:w-56 shrink-0 p-1 flex flex-col items-center space-y-1 [&>*]:shrink-0 min-h-0 max-h-full overflow-y-auto overflow-x-hidden text-xs select-none text-white border-x-2 border-[#3d7fd6] shadow-[inset_0_0_12px_rgba(0,0,0,0.45)]"
+    {{-- Fondo oscuro detrás de los paneles del celular (perfil / chat) --}}
+    <div x-show="perfil || chat" x-cloak x-transition.opacity @click="perfil = false; chat = false"
+         class="lg:hidden fixed inset-0 z-40 bg-black/70"></div>
+
+    {{-- En PC fijo a la izquierda; en celular es un panel que se abre con el botón de perfil --}}
+    <aside :class="perfil ? '!flex fixed inset-y-0 left-0 z-50 w-64' : ''"
+        class="sidebar-pj hidden lg:flex lg:w-56 shrink-0 p-1 flex-col items-center space-y-1 [&>*]:shrink-0 min-h-0 max-h-full overflow-y-auto overflow-x-hidden text-xs select-none text-white border-x-2 border-[#3d7fd6] shadow-[inset_0_0_12px_rgba(0,0,0,0.45)]"
         style="background-image: url('{{ asset('images/-juego.jpg') }}'); background-size: cover; background-position: 77% center; background-color: #0c202e;">
+            {{-- Cerrar (solo celular) --}}
+            <button type="button" @click="perfil = false" aria-label="Cerrar"
+                class="lg:hidden self-end w-7 h-7 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white text-sm font-bold shadow-[0_2px_0_#000]">&times;</button>
+
             {{-- Nombre estilo retro --}}
             <div class="w-full bg-gradient-to-b from-neutral-800 to-black border-2 border-black rounded px-1 py-0.5 font-mono shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]">
                 <h2 class="text-xs font-bold uppercase truncate w-full text-center text-red-500 tracking-wide"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre ?? 'Sin nombre' }}</span></h2>
@@ -202,9 +212,58 @@
         </aside>
 
         {{-- Contenedor columna principal: Nav y sección principal --}}
-        <div class="flex flex-col flex-grow overflow-hidden">
+        <div class="flex flex-col flex-grow min-h-0 overflow-hidden">
+            @php
+                // Botones del celular: redondos, a los costados (izquierda / derecha)
+                $botonesMovilIzq = [
+                    ['seccion' => 'inventario', 'nombre' => 'Inventario', 'icono' => 'fa-bag-shopping'],
+                    ['seccion' => 'viajar', 'nombre' => 'Viajar', 'icono' => 'fa-plane'],
+                    ['seccion' => 'mercado', 'nombre' => 'Mercado', 'icono' => 'fa-store'],
+                    ['seccion' => 'extra', 'nombre' => 'Extras', 'icono' => 'fa-star'],
+                ];
+                $botonesMovilDer = [
+                    ['seccion' => 'ranking', 'nombre' => 'Ranking', 'icono' => 'fa-trophy'],
+                    ['seccion' => 'clan', 'nombre' => 'Clan', 'icono' => 'fa-shield-halved'],
+                    ['seccion' => 'casino', 'nombre' => 'Casino', 'icono' => 'fa-dice'],
+                    ['seccion' => 'peleas', 'nombre' => 'Mis Peleas', 'icono' => 'fa-hand-fist'],
+                    ['seccion' => 'drops', 'nombre' => 'Mis Drops', 'icono' => 'fa-gem'],
+                    ['seccion' => 'galeria', 'nombre' => 'Mis Personajes', 'icono' => 'fa-users'],
+                ];
+                $botonRedondo = 'flex items-center justify-center rounded-full border-2 border-black text-white bg-gradient-to-b shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[2px] transition-all';
+                $botonCuadrado = 'w-11 h-11 shrink-0 flex items-center justify-center rounded-lg border-2 border-black text-white text-lg bg-gradient-to-b from-green-500 to-green-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] active:translate-y-[2px] transition-all';
+            @endphp
+
+            {{-- Barra superior (solo celular): Ciudad · nombre, nivel, oro y esmeraldas · perfil --}}
+            <div class="lg:hidden relative z-30 flex items-center gap-2 px-2 py-1.5 border-b-2 border-black bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[0_3px_0_#000]">
+                <button type="button" wire:click="cambiarSeccion('inicio')" aria-label="Ciudad" class="{{ $botonCuadrado }}">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <div class="flex-1 min-w-0 text-center font-mono leading-tight">
+                    <p class="truncate text-sm font-bold"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre }}</span> <span class="text-sky-300">Nv. {{ $personaje->nivel ?? 1 }}</span></p>
+                    <p class="flex items-center justify-center gap-3 text-xs font-bold">
+                        <span class="flex items-center gap-1 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="Oro" class="h-3.5">{{ number_format($personaje->oro, 0, ',', '.') }}</span>
+                        <span class="flex items-center gap-1 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5">{{ number_format($personaje->diamante, 0, ',', '.') }}</span>
+                    </p>
+                </div>
+                <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonCuadrado }}">
+                    <i class="fa-solid fa-user"></i>
+                </button>
+            </div>
+
+            {{-- Botones redondos a los costados (solo celular); la sección abierta queda en verde --}}
+            @foreach (['left-1' => $botonesMovilIzq, 'right-1' => $botonesMovilDer] as $lado => $botonesLado)
+                <div class="lg:hidden fixed {{ $lado }} top-[4.25rem] z-30 flex flex-col gap-2">
+                    @foreach ($botonesLado as $boton)
+                        <button type="button" wire:click="cambiarSeccion('{{ $boton['seccion'] }}')" title="{{ $boton['nombre'] }}" aria-label="{{ $boton['nombre'] }}"
+                            class="{{ $botonRedondo }} w-11 h-11 text-lg {{ $seccion === $boton['seccion'] ? 'from-green-500 to-green-800' : 'from-red-700 to-red-950' }}">
+                            <i class="fa-solid {{ $boton['icono'] }}"></i>
+                        </button>
+                    @endforeach
+                </div>
+            @endforeach
+
             {{-- Nav arriba con fondo de la landing --}}
-            <nav class="relative flex flex-col gap-2 p-2 sm:p-3 shadow-md border border-gray-700 w-full rounded-md text-xs sm:text-sm bg-cover bg-center"
+            <nav class="relative hidden lg:flex flex-col gap-2 p-2 sm:p-3 shadow-md border border-gray-700 w-full rounded-md text-xs sm:text-sm bg-cover bg-center"
                 style="background-image: url('{{ asset('images/fondo.jpg') }}');">
                 <div class="absolute inset-0 bg-black bg-opacity-80 rounded-md"></div>
                 <div class="relative z-10 flex flex-col gap-2">
@@ -305,10 +364,22 @@
                 @livewire('mis-peleas', ['personajeId' => $personaje->id], key('peleas-'.$reloadCounters['peleas']))
                 @endif
             </main>
+
+            {{-- Barra inferior (solo celular): perfil · chat --}}
+            <div class="lg:hidden relative z-30 flex items-center justify-between px-3 py-1.5 border-t-2 border-black bg-gradient-to-b from-[#1c2533] to-[#0a0e14]">
+                <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
+                    <i class="fa-solid fa-user"></i>
+                </button>
+                <button type="button" @click="chat = true" aria-label="Chat" class="{{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
+                    <i class="fa-solid fa-comments"></i>
+                </button>
+            </div>
         </div>
 
         {{-- Chat lateral derecho (solo PC) --}}
-        <div class="w-[380px] h-full hidden lg:flex flex-col bg-[#0c202e]">
+        <div :class="chat ? '!flex fixed inset-0 z-50 !w-full' : ''" class="w-[380px] h-full hidden lg:flex flex-col bg-[#0c202e]">
+            <button type="button" @click="chat = false" aria-label="Cerrar chat"
+                class="lg:hidden self-end m-2 w-8 h-8 shrink-0 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white font-bold shadow-[0_2px_0_#000]">&times;</button>
             @livewire('chat-sidebar')
         </div>
     </div>
