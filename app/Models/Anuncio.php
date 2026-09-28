@@ -9,16 +9,22 @@ class Anuncio extends Model
 {
     protected $table = 'anuncios';
 
-    protected $fillable = ['user_id', 'titulo', 'texto', 'activo'];
+    protected $fillable = ['user_id', 'titulo', 'detalle', 'texto', 'llamado', 'activo'];
 
     protected $casts = ['activo' => 'boolean'];
 
-    // Los que se muestran en el juego (los más nuevos primero)
-    const MAXIMO_EN_PANEL = 5;
+    // Los que se muestran en el juego (los más nuevos primero; el panel tiene scroll)
+    const MAXIMO_EN_PANEL = 10;
 
     public function autor()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Cuentas que le dieron "me gusta"
+    public function likes()
+    {
+        return $this->belongsToMany(User::class, 'anuncio_likes')->withTimestamps();
     }
 
     public function scopeActivos($query)

@@ -433,6 +433,15 @@ public function colorBarraPorStat($valor)
         session()->forget('combate_activo');
     }
 
+    // "Me gusta" en un anuncio del panel (uno por cuenta; volver a tocarlo lo saca)
+    public function meGustaAnuncio(int $anuncioId)
+    {
+        $anuncio = \App\Models\Anuncio::where('activo', true)->find($anuncioId);
+        if ($anuncio && auth()->id()) {
+            $anuncio->likes()->toggle(auth()->id());
+        }
+    }
+
     // Fin de la recuperación (la cuenta regresiva del panel lateral): si le toca el enemigo especial de bienvenida,
     // se recarga la página para que aparezca (el mount lo asigna)
     public function onRecuperacionTerminada()

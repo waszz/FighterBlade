@@ -19,10 +19,22 @@
             @error('titulo') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
         <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Detalle <span class="font-normal text-gray-500">(opcional, se ve destacado: fecha u hora del evento)</span></label>
+            <input type="text" wire:model="detalle" maxlength="120" placeholder="Ej: Martes 29/09 16:00"
+                   class="p-2 border border-gray-300 rounded-md w-full">
+            @error('detalle') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+        <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Texto</label>
             <textarea wire:model="texto" rows="3" maxlength="1000" placeholder="Qué querés contarles a los jugadores"
                       class="p-2 border border-gray-300 rounded-md w-full"></textarea>
             @error('texto') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Llamado <span class="font-normal text-gray-500">(opcional, en naranja al final)</span></label>
+            <input type="text" wire:model="llamado" maxlength="80" placeholder="Ej: ¡Anotate YA!"
+                   class="p-2 border border-gray-300 rounded-md w-full">
+            @error('llamado') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
         <div class="flex gap-2">
             <button type="submit" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
@@ -49,8 +61,10 @@
                                 <span class="ml-1 px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 text-xs font-medium">Oculto</span>
                             @endunless
                         </p>
+                        @if ($anuncio->detalle)<p class="text-sm font-semibold text-gray-800">{{ $anuncio->detalle }}</p>@endif
                         <p class="text-sm text-gray-700 whitespace-pre-line">{{ $anuncio->texto }}</p>
-                        <p class="mt-1 text-xs text-gray-500">{{ $anuncio->autor?->name ?? 'Sin autor' }} · {{ $anuncio->created_at->format('d/m/Y H:i') }}</p>
+                        @if ($anuncio->llamado)<p class="text-sm font-semibold text-orange-600">{{ $anuncio->llamado }}</p>@endif
+                        <p class="mt-1 text-xs text-gray-500">{{ $anuncio->autor?->name ?? 'Sin autor' }} · {{ $anuncio->created_at->format('d/m/Y H:i') }} · ♥ {{ $anuncio->likes_count }}</p>
                     </div>
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2 text-sm">

@@ -481,37 +481,53 @@
     @endif
   </div>
 
-  {{-- Anuncios (esquina derecha) --}}
+  {{-- Anuncios (esquina derecha): los publican los admins en Administración → Anuncios --}}
   @php
-    // Los publican los admins en Administración → Anuncios. Arriba, la foto del admin que publicó el último
-    $anuncios = \App\Models\Anuncio::activos()->with('autor')->take(\App\Models\Anuncio::MAXIMO_EN_PANEL)->get();
-    $fotoAnunciante = $anuncios->first()?->fotoAutor();
+    $anuncios = \App\Models\Anuncio::activos()->with('autor')->withCount('likes')
+      ->withExists(['likes as me_gusta' => fn ($q) => $q->where('users.id', auth()->id())])
+      ->take(\App\Models\Anuncio::MAXIMO_EN_PANEL)->get();
   @endphp
-  {{-- Anuncios: panel 3D --}}
-  <div class="w-full md:w-[24rem] rounded-xl p-5 text-white text-sm border border-yellow-600
+  {{-- Anuncios: panel 3D con tarjetas (foto del autor, título, detalle, texto, llamado y "me gusta") --}}
+  <div class="w-full md:w-[24rem] rounded-xl p-4 text-white text-sm border border-yellow-600
               bg-gradient-to-b from-[#1c2533]/95 to-[#0a0e14]/95
               shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_8px_16px_rgba(0,0,0,0.7)]">
-    <h2 class="flex items-center justify-center gap-2 text-xl font-bold text-yellow-300 text-center mb-4 [text-shadow:0_2px_0_#000]">
-      @if ($fotoAnunciante)
-        <img src="{{ asset('storage/' . $fotoAnunciante) }}" alt="{{ $anuncios->first()->autor?->name }}" title="{{ $anuncios->first()->autor?->name }}"
-             class="w-9 h-9 rounded-full object-cover border-2 border-yellow-400 shadow-[0_2px_0_#000]">
-      @else
-        📢
-      @endif
-      Anuncios
-    </h2>
+    <h2 class="text-xl font-bold text-yellow-300 text-center mb-3 [text-shadow:0_2px_0_#000]">📢 Anuncios</h2>
 
-    @if(count($anuncios) > 0)
-      <div class="space-y-3">
+    @if($anuncios->isNotEmpty())
+      <div class="max-h-[26rem] overflow-y-auto sidebar-pj pr-1 pl-3 pt-3 space-y-5">
         @foreach($anuncios as $anuncio)
-          <div class="p-3 rounded-lg border border-black border-l-4 border-l-yellow-400
+          @php $fotoAutor = $anuncio->fotoAutor(); @endphp
+          <div wire:key="anuncio-{{ $anuncio->id }}" class="relative pl-7 pr-3 pt-2 pb-2 rounded-xl border border-black
                       bg-gradient-to-b from-[#2a3240] to-[#10141b]
-                      shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-base text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio->titulo }}</span>
-              <span class="shrink-0 ml-2 text-gray-400 text-xs">{{ $anuncio->created_at->format('d/m') }}</span>
+                      shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
+            {{-- Foto del autor, asomando por la esquina --}}
+            <div class="absolute -left-3 -top-3 w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400 bg-black shadow-[0_2px_0_#000]">
+              @if ($fotoAutor)
+                <img src="{{ asset('storage/' . $fotoAutor) }}" alt="{{ $anuncio->autor?->name }}" class="w-full h-full object-cover">
+              @else
+                <span class="w-full h-full flex items-center justify-center text-lg">📢</span>
+              @endif
             </div>
-            <p class="mt-1 text-gray-200 whitespace-pre-line">{{ $anuncio->texto }}</p>
+
+            {{-- Autor · me gusta --}}
+            <div class="flex items-center justify-between gap-2">
+              <p class="min-w-0 truncate font-bold text-yellow-300 [text-shadow:0_1px_0_#000]">{{ $anuncio->autor?->name ?? 'Admin' }} <span class="text-sm">📢</span></p>
+              <button type="button" wire:click="meGustaAnuncio({{ $anuncio->id }})" aria-label="Me gusta"
+                      class="shrink-0 flex items-center gap-1 text-sm font-bold transition-transform active:scale-90 {{ $anuncio->me_gusta ? 'text-red-500' : 'text-gray-300 hover:text-red-400' }}">
+                <i class="{{ $anuncio->me_gusta ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
+                @if ($anuncio->likes_count > 0)<span class="text-white">{{ $anuncio->likes_count }}</span>@endif
+              </button>
+            </div>
+
+            <p class="mt-0.5 font-bold text-orange-400 [text-shadow:0_1px_0_#000]">{{ $anuncio->titulo }}</p>
+            @if ($anuncio->detalle)
+              <p class="mt-1 text-xs font-bold text-white">{{ $anuncio->detalle }}</p>
+            @endif
+            <p class="text-xs text-gray-200 whitespace-pre-line">{{ $anuncio->texto }}</p>
+            @if ($anuncio->llamado)
+              <p class="mt-1 font-bold text-orange-400 [text-shadow:0_1px_0_#000]">{{ $anuncio->llamado }}</p>
+            @endif
+            <p class="mt-1 text-right text-[10px] text-gray-400">{{ $anuncio->created_at->format('d/m/Y H:i') }}</p>
           </div>
         @endforeach
       </div>

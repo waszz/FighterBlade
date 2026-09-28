@@ -9,7 +9,9 @@ use Livewire\Component;
 class AdminAnuncios extends Component
 {
     public string $titulo = '';
+    public string $detalle = '';
     public string $texto = '';
+    public string $llamado = '';
     public ?int $editandoId = null;
 
     public function mount()
@@ -20,8 +22,10 @@ class AdminAnuncios extends Component
     protected function rules(): array
     {
         return [
-            'titulo' => 'required|string|max:120',
-            'texto'  => 'required|string|max:1000',
+            'titulo'  => 'required|string|max:120',
+            'detalle' => 'nullable|string|max:120',
+            'texto'   => 'required|string|max:1000',
+            'llamado' => 'nullable|string|max:80',
         ];
     }
 
@@ -36,6 +40,9 @@ class AdminAnuncios extends Component
     {
         abort_unless(auth()->user()?->isAdmin(), 403);
         $datos = $this->validate();
+        // Los opcionales vacíos se guardan como null
+        $datos['detalle'] = trim($datos['detalle'] ?? '') ?: null;
+        $datos['llamado'] = trim($datos['llamado'] ?? '') ?: null;
 
         if ($this->editandoId) {
             Anuncio::findOrFail($this->editandoId)->update($datos);
@@ -54,12 +61,14 @@ class AdminAnuncios extends Component
         $anuncio = Anuncio::findOrFail($id);
         $this->editandoId = $anuncio->id;
         $this->titulo = $anuncio->titulo;
+        $this->detalle = $anuncio->detalle ?? '';
         $this->texto = $anuncio->texto;
+        $this->llamado = $anuncio->llamado ?? '';
     }
 
     public function cancelar()
     {
-        $this->reset(['titulo', 'texto', 'editandoId']);
+        $this->reset(['titulo', 'detalle', 'texto', 'llamado', 'editandoId']);
         $this->resetValidation();
     }
 
@@ -83,7 +92,7 @@ class AdminAnuncios extends Component
     public function render()
     {
         return view('livewire.admin-anuncios', [
-            'anuncios' => Anuncio::with('autor')->latest()->get(),
+            'anuncios' => Anuncio::with('autor')->withCount('likes')->latest()->get(),
         ])->layout('layouts.app');
     }
 }
