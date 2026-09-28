@@ -461,6 +461,13 @@ public function colorBarraPorStat($valor)
         $personaje = $this->personaje->fresh();
         if ($personaje && $personaje->nivel <= self::NIVEL_MAX_ENEMIGO_ESPECIAL && ! $personaje->enemigo_actual_id) {
             $this->dispatch('recargar-pagina');
+            return;
+        }
+
+        // Terminó la espera: vuelve a aparecer el botón Explorar sin recargar la página
+        if ($personaje && ! $personaje->exploracion_duracion && (! $personaje->fin_exploracion || now()->gte($personaje->fin_exploracion))) {
+            $this->personaje->fin_exploracion = null;
+            $this->tiempoExploracion = null;
         }
     }
 
