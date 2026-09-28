@@ -575,8 +575,8 @@
         </span>
       </p>
       <x-barra-exp :personaje="$personajeSeleccionadoModal" class="mb-3" />
-      <!-- Oro, diamantes y stats: solo del personaje propio -->
-      @if ($esMiPersonaje)
+      <!-- Oro, diamantes y stats: del personaje propio, o de todos para admins y cuentas con permiso -->
+      @if ($esMiPersonaje || auth()->user()?->puedeVerDatosDeOtros())
       <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">
         <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]">
           <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4">

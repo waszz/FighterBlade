@@ -73,6 +73,13 @@ public function isAdmin()
 {
     return $this->role === 'admin';
 }
+
+// Ve el oro, las esmeraldas y los stats de los demás en los modales de jugador (admins o cuentas con el permiso;
+// se da con: php artisan jugadores:ver-datos {personaje})
+public function puedeVerDatosDeOtros(): bool
+{
+    return $this->isAdmin() || (bool) $this->ver_datos_jugadores;
+}
 public function personajes()
 {
     return $this->hasMany(Personaje::class);

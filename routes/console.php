@@ -179,3 +179,15 @@ Artisan::command('bots:nivel {nivel=3}', function () {
     }
     $this->info("Bots actualizados: " . $bots->count());
 })->purpose('Sube los bots a un nivel (por defecto 3) con exp y stats de ese nivel');
+
+// Permiso para ver el oro, las esmeraldas y los stats de los demás en los modales de jugador.
+// Se da a la cuenta del personaje: php artisan jugadores:ver-datos Vanger   (--quitar para sacarlo)
+Artisan::command('jugadores:ver-datos {personaje} {--quitar}', function () {
+    $personaje = \App\Models\Personaje::with('user')->where('nombre', $this->argument('personaje'))->first();
+    if (! $personaje?->user) {
+        $this->error("No existe el personaje {$this->argument('personaje')}.");
+        return 1;
+    }
+    $personaje->user->forceFill(['ver_datos_jugadores' => ! $this->option('quitar')])->save();
+    $this->info(($this->option('quitar') ? 'Permiso quitado a ' : 'Permiso dado a ') . "la cuenta de {$personaje->nombre} ({$personaje->user->email}).");
+})->purpose('Da (o quita con --quitar) el permiso de ver oro, esmeraldas y stats de los demás jugadores');

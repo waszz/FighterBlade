@@ -170,8 +170,8 @@
             {{-- Experiencia --}}
             <x-barra-exp :personaje="$personajeSeleccionadoModal" class="mb-3" />
 
-            {{-- Oro, diamantes y stats: solo del personaje propio --}}
-            @if ($esMiPersonajeRanking)
+            {{-- Oro, diamantes y stats: del personaje propio, o de todos para admins y cuentas con permiso --}}
+            @if ($esMiPersonajeRanking || auth()->user()?->puedeVerDatosDeOtros())
             <div class="grid grid-cols-2 gap-2 mb-3 text-sm font-bold">
                 <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg {{ $caja3d }}">
                     <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4">
