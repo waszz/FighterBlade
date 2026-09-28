@@ -29,8 +29,10 @@ class ChatComponent extends Component
 
     // Privado abierto con este personaje (null = chat general)
     public ?int $conId = null;
-    // Panel desplegado arriba: 'casilla' | 'online' | null
+    // Panel abierto: 'casilla' (desplegable) | 'online' (modal) | null
     public ?string $panel = null;
+    // Mensaje con un objeto compartido que se está viendo en el modal
+    public ?int $objetoVistoId = null;
 
     protected $listeners = ['chatCompartido' => '$refresh'];
 
@@ -101,6 +103,20 @@ class ChatComponent extends Component
             $this->conId = $personajeId;
         }
         $this->panel = null;
+    }
+
+    // Modal con el detalle de un objeto compartido (solo de un mensaje que la persona puede ver)
+    public function verObjeto(int $mensajeId)
+    {
+        $mensaje = Mensaje::where('tipo', 'objeto')->find($mensajeId);
+        $visible = $mensaje && (! $mensaje->destinatario_id
+            || in_array($this->personajeId, [$mensaje->personaje_id, $mensaje->destinatario_id], true));
+        $this->objetoVistoId = $visible ? $mensaje->id : null;
+    }
+
+    public function cerrarObjeto()
+    {
+        $this->objetoVistoId = null;
     }
 
     public function volverGeneral()
@@ -181,12 +197,24 @@ class ChatComponent extends Component
 
         $conectados = $this->conectados();
 
+        // Objeto que se está viendo: los datos guardados al compartirlo y, del set, el tipo de daño y los poderes
+        $objetoVisto = $this->objetoVistoId ? Mensaje::with('personaje')->find($this->objetoVistoId) : null;
+        $setVisto = null;
+        if ($objetoVisto) {
+            $adj = $objetoVisto->adjunto ?? [];
+            $setVisto = ! empty($adj['set_id'])
+                ? \App\Models\Post::conRivales()->with('poderes')->find($adj['set_id'])
+                : (! empty($adj['set']) ? \App\Models\Post::conRivales()->with('poderes')->where('titulo', $adj['set'])->first() : null);
+        }
+
         return view('livewire.chat-component', [
             'mensajes'       => $mensajes,
             'con'            => $con,
             'conversaciones' => $conversaciones,
             'sinLeer'        => $sinLeer,
             'conectados'     => $conectados,
+            'objetoVisto'    => $objetoVisto,
+            'setVisto'       => $setVisto,
         ]);
     }
 }

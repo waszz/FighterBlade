@@ -45,12 +45,11 @@
             </button>
         </div>
 
-        {{-- Panel desplegable: casilla o conectados (tocando uno se abre el privado) --}}
-        @if ($panel)
+        {{-- Casilla: desplegable con las conversaciones privadas --}}
+        @if ($panel === 'casilla')
             <div class="absolute left-3 right-3 top-14 z-30 max-h-72 overflow-y-auto sidebar-pj p-2 rounded-xl border border-black
                         bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),0_6px_0_#000,0_10px_20px_rgba(0,0,0,0.8)]">
-                <p class="px-1 pb-1.5 text-[11px] font-bold uppercase tracking-wide text-yellow-300">{{ $panel === 'casilla' ? 'Mensajes privados' : 'Conectados' }}</p>
-                @if ($panel === 'casilla')
+                <p class="px-1 pb-1.5 text-[11px] font-bold uppercase tracking-wide text-yellow-300">Mensajes privados</p>
                     @forelse ($conversaciones as $conv)
                         @php $otro = $conv['personaje']; $ultimo = $conv['ultimo']; @endphp
                         <button type="button" wire:click="abrirPrivado({{ $otro->id }})" wire:key="conv-{{ $otro->id }}"
@@ -69,25 +68,6 @@
                     @empty
                         <p class="px-1 py-2 text-xs text-gray-400 italic">Todavía no tenés mensajes privados. Tocá "Online" para escribirle a alguien.</p>
                     @endforelse
-                @else
-                    @forelse ($conectados as $pjOnline)
-                        @php $soyYo = $pjOnline->id === $personajeId || $pjOnline->user_id === auth()->id(); @endphp
-                        <button type="button" @unless ($soyYo) wire:click="abrirPrivado({{ $pjOnline->id }})" @endunless wire:key="online-{{ $pjOnline->id }}"
-                            class="w-full flex items-center gap-2 p-1.5 rounded-lg text-left {{ $soyYo ? 'cursor-default' : 'hover:bg-white/5' }}">
-                            <span class="relative shrink-0">
-                                <img src="{{ asset('storage/' . $foto($pjOnline)) }}" alt="" class="w-9 h-9 rounded-full object-cover">
-                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
-                            </span>
-                            <span class="min-w-0 flex-1">
-                                <span class="block truncate text-sm font-bold {{ $colorNombre($pjOnline) }}">{{ $pjOnline->nombre }}{{ $soyYo ? ' (vos)' : '' }}</span>
-                                <span class="block text-[11px] text-yellow-300">Nivel {{ $pjOnline->nivel }}</span>
-                            </span>
-                            @unless ($soyYo)<i class="fa-regular fa-envelope text-gray-400 text-sm"></i>@endunless
-                        </button>
-                    @empty
-                        <p class="px-1 py-2 text-xs text-gray-400 italic">No hay nadie conectado.</p>
-                    @endforelse
-                @endif
             </div>
         @endif
 
@@ -131,7 +111,8 @@
 
                             @case('objeto')
                                 {{-- Objeto compartido: foto, nombre, set · parte · nivel y stats --}}
-                                <div class="mt-1 mb-1 flex items-center gap-2 p-1.5 pr-3 rounded-lg border border-black border-l-4 {{ $bordeParte[$adj['tipo'] ?? ''] ?? 'border-l-gray-500' }} bg-black/30">
+                                <button type="button" wire:click="verObjeto({{ $msg->id }})" title="Ver el objeto"
+                                    class="mt-1 mb-1 flex items-center gap-2 p-1.5 pr-3 rounded-lg border border-black border-l-4 text-left {{ $bordeParte[$adj['tipo'] ?? ''] ?? 'border-l-gray-500' }} bg-black/30 hover:bg-white/5 transition">
                                     @if (! empty($adj['imagen']))
                                         <img src="{{ asset($adj['imagen']) }}" alt="" loading="lazy"
                                              class="w-11 h-11 shrink-0 rounded-md object-cover bg-black/50 border-2 {{ $bordeParte[$adj['tipo'] ?? ''] ?? 'border-black' }}">
@@ -149,7 +130,7 @@
                                             <p class="text-[11px] text-gray-300">{{ $adj['descripcion'] }}</p>
                                         @endif
                                     </div>
-                                </div>
+                                </button>
                                 @break
 
                             @case('pelea')
@@ -221,5 +202,97 @@
                 </button>
             @endif
         </form>
+        {{-- Modal: conectados (tocando a alguien se abre el privado) --}}
+        @if ($panel === 'online')
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3" wire:click="alternarPanel('online')">
+                <div wire:click.stop class="relative w-full max-w-xs max-h-[80vh] flex flex-col p-4 rounded-xl border border-black text-white
+                            bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+                    <button type="button" wire:click="alternarPanel('online')" aria-label="Cerrar"
+                        class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md border border-black font-bold bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000] hover:brightness-125">&times;</button>
+                    <h2 class="flex items-center justify-center gap-2 mb-3 text-lg font-bold text-yellow-300 [text-shadow:0_2px_0_#000]">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]"></span>
+                        Conectados · {{ $conectados->count() }}
+                    </h2>
+                    <div class="min-h-0 overflow-y-auto sidebar-pj space-y-1 pr-1">
+                    @forelse ($conectados as $pjOnline)
+                        @php $soyYo = $pjOnline->id === $personajeId || $pjOnline->user_id === auth()->id(); @endphp
+                        <button type="button" @unless ($soyYo) wire:click="abrirPrivado({{ $pjOnline->id }})" @endunless wire:key="online-{{ $pjOnline->id }}"
+                            class="w-full flex items-center gap-2 p-1.5 rounded-lg text-left {{ $soyYo ? 'cursor-default' : 'hover:bg-white/5' }}">
+                            <span class="relative shrink-0">
+                                <img src="{{ asset('storage/' . $foto($pjOnline)) }}" alt="" class="w-9 h-9 rounded-full object-cover">
+                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block truncate text-sm font-bold {{ $colorNombre($pjOnline) }}">{{ $pjOnline->nombre }}{{ $soyYo ? ' (vos)' : '' }}</span>
+                                <span class="block text-[11px] text-yellow-300">Nivel {{ $pjOnline->nivel }}</span>
+                            </span>
+                            @unless ($soyYo)<i class="fa-regular fa-envelope text-gray-400 text-sm"></i>@endunless
+                        </button>
+                    @empty
+                        <p class="px-1 py-2 text-xs text-gray-400 italic">No hay nadie conectado.</p>
+                    @endforelse
+                    </div>
+                    <p class="mt-2 text-center text-[10px] text-gray-400">Tocá a un jugador para escribirle en privado.</p>
+                </div>
+            </div>
+        @endif
+
+        {{-- Modal: objeto compartido --}}
+        @if ($objetoVisto)
+            @php
+                $ov = $objetoVisto->adjunto ?? [];
+                $tipoOv = $ov['tipo'] ?? '';
+                $nombreParteOv = $tipoOv === 'pocion' ? 'Poción' : (\App\Support\ChatCompartir::NOMBRE_PARTE[$tipoOv] ?? ucfirst($tipoOv));
+                $textoParte = ['equipo' => 'text-indigo-300', 'entrenamiento' => 'text-green-300', 'accesorio' => 'text-pink-300', 'joya' => 'text-amber-300', 'cofre' => 'text-amber-400', 'pocion' => 'text-fuchsia-300'][$tipoOv] ?? 'text-gray-300';
+                $etiqueta3d = 'border border-black rounded bg-gradient-to-b from-[#2f5470] to-[#0a1a26] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]';
+            @endphp
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3" wire:click="cerrarObjeto">
+                <div wire:click.stop class="relative w-full max-w-xs max-h-[85vh] overflow-auto p-4 rounded-xl border border-black text-white text-center
+                            bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+                    <button type="button" wire:click="cerrarObjeto" aria-label="Cerrar"
+                        class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md border border-black font-bold bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000] hover:brightness-125">&times;</button>
+
+                    @if (! empty($ov['imagen']))
+                        <img src="{{ asset($ov['imagen']) }}" alt="{{ $ov['nombre'] ?? '' }}"
+                             class="mx-auto mt-2 mb-3 w-28 h-28 rounded-lg bg-black/50 border-[3px] {{ $bordeParte[$tipoOv] ?? 'border-black' }} {{ $tipoOv === 'pocion' ? 'object-contain p-2' : 'object-cover' }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)]">
+                    @endif
+                    <h2 class="text-lg font-bold text-white [text-shadow:0_2px_0_#000]">{{ $ov['nombre'] ?? 'Objeto' }}</h2>
+                    <p class="text-xs font-bold uppercase tracking-wide {{ $textoParte }}">{{ $nombreParteOv }}</p>
+                    <p class="mt-0.5 text-xs text-gray-300">
+                        {{ collect([! empty($ov['set']) ? 'Set ' . $ov['set'] : null, ! empty($ov['nivel']) ? 'Nivel ' . $ov['nivel'] : null])->filter()->implode(' · ') }}
+                    </p>
+
+                    {{-- Tipo de daño y poderes del set (al pasar el mouse o tocarlos, nombre y descripción) --}}
+                    @if ($setVisto)
+                        <div class="mt-3">
+                            @include('livewire.partials.iconos-tipo-poderes', ['tipoIconos' => $setVisto->tipo, 'poderesIconos' => $setVisto->poderes])
+                        </div>
+                    @endif
+
+                    @if (! empty($ov['stats']))
+                        <div class="mt-3 font-mono rounded-lg p-2 grid grid-cols-2 gap-x-3 gap-y-1.5 border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
+                            @foreach ($ov['stats'] as $stat => $valor)
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="w-8 h-6 shrink-0 flex items-center justify-center font-bold text-yellow-300 {{ $etiqueta3d }}">{{ $abrev[$stat] ?? strtoupper(substr($stat, 0, 3)) }}</span>
+                                    <span class="font-bold text-white">+{{ $valor }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if (! empty($ov['requisitos']))
+                        <p class="mt-2 text-xs italic text-purple-300">
+                            Requisitos: {{ collect($ov['requisitos'])->map(fn ($v, $s) => $v . ' ' . ($abrev[$s] ?? strtoupper(substr($s, 0, 3))))->implode(', ') }}
+                        </p>
+                    @endif
+
+                    @if (! empty($ov['descripcion']))
+                        <p class="mt-3 text-sm text-gray-200">{{ $ov['descripcion'] }}</p>
+                    @endif
+
+                    <p class="mt-3 text-[11px] text-gray-400">Compartido por {{ $objetoVisto->personaje->nombre ?? 'alguien' }} · {{ $objetoVisto->created_at->format('d/m H:i') }}</p>
+                </div>
+            </div>
+        @endif
     </div>
 </div>

@@ -20,6 +20,8 @@ class ChatCompartir
         $esPocion = $objeto->pocion || $objeto->tipo === 'pocion';
         $stats = is_array($objeto->stats) ? $objeto->stats : (json_decode($objeto->stats ?? '[]', true) ?: []);
         $set = $objeto->origen_post_id ? \App\Models\Post::conRivales()->find($objeto->origen_post_id) : null;
+        $requisitos = in_array($objeto->tipo, ['equipo', 'entrenamiento', 'accesorio'], true) ? ($objeto->{'requisitos_' . $objeto->tipo} ?? []) : [];
+        $requisitos = is_array($requisitos) ? $requisitos : (json_decode($requisitos ?: '[]', true) ?: []);
 
         return self::publicar($personaje, 'objeto', [
             'nombre'      => $objeto->nombre,
@@ -28,7 +30,9 @@ class ChatCompartir
             // Ruta dentro de public/ (las pociones están en images/, el resto en storage/posts/)
             'imagen'      => $objeto->imagen ? ($esPocion ? 'images/' : 'storage/posts/') . $objeto->imagen : null,
             'set'         => $set?->titulo,
+            'set_id'      => $set?->id,
             'danio'       => $set?->tipo,
+            'requisitos'  => array_filter(array_map('intval', $requisitos), fn ($v) => $v > 0),
             'stats'       => $esPocion ? [] : array_filter(array_map('intval', $stats), fn ($v) => $v > 0),
             'descripcion' => $esPocion ? ($objeto->descripcion ?: null) : null,
         ]);
