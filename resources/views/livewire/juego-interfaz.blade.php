@@ -22,6 +22,9 @@
         </div>
     </div>
 
+    {{-- Tutorial: se abre con los botones "?" y solo la primera vez a los personajes nuevos --}}
+    <x-tutorial :personaje="$personaje" />
+
     {{-- Fondo con imagen y capa oscura --}}
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/-juego.jpg') }}');"></div>
     <div class="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -268,6 +271,8 @@
                         <span class="flex items-center gap-1 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5">{{ number_format($personaje->diamante, 0, ',', '.') }}</span>
                     </p>
                 </div>
+                <button type="button" @click="$dispatch('abrir-tutorial')" title="Cómo jugar" aria-label="Cómo jugar"
+                    class="w-9 h-9 text-lg shrink-0 flex items-center justify-center rounded-full border-2 border-black text-white font-extrabold bg-gradient-to-b from-sky-500 to-sky-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[2px] transition-all">?</button>
                 <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonCuadrado }}">
                     <i class="fa-solid fa-user"></i>
                 </button>
@@ -289,6 +294,10 @@
             <nav class="relative hidden lg:flex flex-col gap-2 p-2 sm:p-3 shadow-md border border-gray-700 w-full rounded-md text-xs sm:text-sm bg-cover bg-center"
                 style="background-image: url('{{ asset('images/fondo.jpg') }}');">
                 <div class="absolute inset-0 bg-black bg-opacity-80 rounded-md"></div>
+                <div class="absolute top-2 right-2 z-20">
+                    <button type="button" @click="$dispatch('abrir-tutorial')" title="Cómo jugar" aria-label="Cómo jugar"
+                    class="w-9 h-9 text-lg shrink-0 flex items-center justify-center rounded-full border-2 border-black text-white font-extrabold bg-gradient-to-b from-sky-500 to-sky-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[2px] transition-all">?</button>
+                </div>
                 <div class="relative z-10 flex flex-col gap-2">
                 {{-- Fila 1 --}}
                 <div class="flex flex-wrap justify-center items-center gap-1 sm:gap-2">
