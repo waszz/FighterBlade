@@ -17,7 +17,10 @@ return new class extends Migration
         }
         DB::table('posts')->whereIn('id', $ids)->update(['tipo' => $tipo]);
         DB::table('personajes')->whereIn('post_id', $ids)->update(['tipo' => $tipo]);
-        DB::table('objetos')->whereIn('origen_post_id', $ids)->whereNotNull('estilo')->update(['estilo' => $tipo]);
+        // Las partes toman el tipo del set; solo si la columna "estilo" existe (no está en todas las bases)
+        if (\Illuminate\Support\Facades\Schema::hasColumn('objetos', 'estilo')) {
+            DB::table('objetos')->whereIn('origen_post_id', $ids)->whereNotNull('estilo')->update(['estilo' => $tipo]);
+        }
     }
 
     public function up(): void
