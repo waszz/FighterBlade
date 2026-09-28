@@ -18,9 +18,9 @@ class Explorar extends Component
     const DANIO_POR_NIVEL = 0.02;
 
     // Enemigo especial de bienvenida (Wolverine): aparece hasta este nivel y cada victoria da esta fracción
-    // de la exp del nivel (1 = un nivel entero por pelea)
+    // de la exp del nivel (1 = un nivel entero por pelea). Con 2: dos peleas, del nivel 1 al 3
     const ENEMIGO_ESPECIAL = Post::ENEMIGO_ESPECIAL;
-    const NIVEL_MAX_ENEMIGO_ESPECIAL = 3;
+    const NIVEL_MAX_ENEMIGO_ESPECIAL = 2;
     const EXP_ENEMIGO_ESPECIAL = 1;
 
     // PvP: exp por victoria según la diferencia de nivel con el rival
