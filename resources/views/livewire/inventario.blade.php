@@ -550,8 +550,8 @@
         {{-- Compartir en el chat (esquina de la tarjeta) --}}
           <button type="button" wire:click="compartirEnChat({{ $pocionSeleccionada->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
             title="Compartir en el chat" aria-label="Compartir en el chat"
-            class="absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-black text-white text-xs
-                   bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+            class="absolute -top-3 -left-3 z-20 w-9 h-9 flex items-center justify-center rounded-full border-2 border-black text-white text-sm
+                   bg-gradient-to-b from-red-700 to-red-950 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_8px_rgba(0,0,0,0.7)]
                    hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
             <i class="fa-solid fa-share-nodes"></i>
           </button>
@@ -847,8 +847,8 @@
           {{-- Compartir en el chat (esquina de la tarjeta) --}}
           <button type="button" wire:click="compartirEnChat({{ $objetoSeleccionado->id }})" wire:loading.attr="disabled" wire:target="compartirEnChat"
             title="Compartir en el chat" aria-label="Compartir en el chat"
-            class="absolute top-2 left-2 z-10 w-7 h-7 flex items-center justify-center rounded-full border border-black text-white text-xs
-                   bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+            class="absolute -top-3 -left-3 z-20 w-9 h-9 flex items-center justify-center rounded-full border-2 border-black text-white text-sm
+                   bg-gradient-to-b from-red-700 to-red-950 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_8px_rgba(0,0,0,0.7)]
                    hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50">
             <i class="fa-solid fa-share-nodes"></i>
           </button>
