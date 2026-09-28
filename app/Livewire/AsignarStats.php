@@ -186,6 +186,7 @@ public function quitarEstado($nombreEstado)
             $this->personaje->equipo,
             $this->personaje->entrenamiento,
             $this->personaje->accesorio,
+            $this->personaje->joya, // anillo de la Torre / Misiones (en las peleas ya se sumaba)
         ];
 
         // Sumamos los stats de objetos
