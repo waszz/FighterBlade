@@ -6,6 +6,29 @@
         de realizar cualquier tipo de compra por internet.
     </div>
 
+    {{-- Recarga diaria de esmeraldas (Personaje::recargarEsmeraldasDiarias): se hace sola al entrar al juego --}}
+    @php
+        $proximaRecarga = $personaje->proximaRecargaEsmeraldas();
+        $segundosRecarga = $proximaRecarga ? max(0, $proximaRecarga->timestamp - now()->timestamp) : 0;
+    @endphp
+    <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-3 rounded-xl border border-emerald-500 text-center text-sm space-y-1">
+        <h2 class="text-lg font-bold text-emerald-300 flex items-center justify-center gap-2">
+            <img src="{{ asset('images/diamante.png') }}" alt="" class="h-5 w-5"> Recarga diaria de esmeraldas
+        </h2>
+        <p class="text-gray-300">Cada 24 horas, si tenés menos de {{ \App\Models\Personaje::ESMERALDAS_DIARIAS }}, al entrar al juego se te completan hasta {{ \App\Models\Personaje::ESMERALDAS_DIARIAS }}.</p>
+        @if ($segundosRecarga > 0)
+            <p class="font-bold text-yellow-300"
+               x-data="{ fin: Date.now() / 1000 + {{ $segundosRecarga }}, s: {{ $segundosRecarga }} }"
+               x-init="const t = setInterval(() => { s = Math.max(0, Math.ceil(fin - Date.now() / 1000)); if (s <= 0) clearInterval(t); }, 1000)">
+                Próxima recarga: <span x-text="s > 0 ? String(Math.floor(s / 3600)).padStart(2, '0') + ':' + String(Math.floor(s % 3600 / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0') : 'disponible (volvé a entrar)'">{{ gmdate('H:i:s', $segundosRecarga) }}</span>
+            </p>
+        @elseif ((int) $personaje->diamante >= \App\Models\Personaje::ESMERALDAS_DIARIAS)
+            <p class="font-bold text-emerald-300">Tenés {{ \App\Models\Personaje::ESMERALDAS_DIARIAS }} o más: cuando bajes de {{ \App\Models\Personaje::ESMERALDAS_DIARIAS }}, la recarga ya está disponible.</p>
+        @else
+            <p class="font-bold text-emerald-300">Disponible: se te da al volver a entrar al juego.</p>
+        @endif
+    </div>
+
 
 
     <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-4 rounded-xl border border-yellow-500 space-y-4">

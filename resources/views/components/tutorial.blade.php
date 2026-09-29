@@ -16,7 +16,7 @@
         ]],
         ['Primeros pasos', 'fa-seedling', [
             'Al empezar tenés un regalo y una ayuda:',
-            ['En tu inventario hay un Cofre de Bienvenida: abrilo gratis y te da un set completo de nivel 5.', 'Arrancás con 100 esmeraldas.', "Hasta el nivel " . ($nivelMaxNovato + 1) . " te enfrentás a Wolverine en la Ciudad: cada victoria te sube un nivel entero. Aparece solo, no hace falta explorar.", "Mientras seas nivel 1 o 2 estás protegido: nadie te puede atacar (y vos tampoco podés atacar a otros jugadores)."],
+            ['En tu inventario hay un Cofre de Bienvenida: abrilo gratis y te da un set completo de nivel 5.', 'Arrancás con 100 esmeraldas. Cada 24 horas, si tenés menos de 100, al entrar al juego se te completan hasta 100 (con 90 recibís 10).', "Hasta el nivel " . ($nivelMaxNovato + 1) . " te enfrentás a Wolverine en la Ciudad: cada victoria te sube un nivel entero. Aparece solo, no hace falta explorar.", "Mientras seas nivel 1 o 2 estás protegido: nadie te puede atacar (y vos tampoco podés atacar a otros jugadores)."],
         ]],
         ['Tu panel', 'fa-id-card', [
             'A la izquierda (en el celular, con el botón de perfil) está tu personaje:',
@@ -56,7 +56,7 @@
         ]],
         ['Pociones', 'fa-flask', [
             'Las pociones se equipan y se gastan al pelear:',
-            ['Poción de Búsqueda: la parte del enemigo te cae seguro.', 'Poción de Recuperación: la espera después de perder queda en 15 segundos como máximo.', 'Pociones de atributo: multiplican un atributo durante la pelea.', 'Poción de Oro y de Esmeraldas: te dan 100 de oro o de esmeraldas.'],
+            ['Poción de Búsqueda: la parte del enemigo te cae seguro.', 'Poción de Recuperación: la espera después de perder queda en 15 segundos como máximo.', 'Pociones de atributo: multiplican un atributo durante la pelea.', 'Poción de Oro: duplica el oro de la próxima pelea que ganes.', 'Poción de Esmeraldas: te da 100 esmeraldas en la próxima pelea que ganes.'],
             'Las conseguís explorando, en el Mercado, en los cofres, en el Casino y en Extras (las Super Pociones).',
         ]],
         ['Joyas y cofres', 'fa-gem', [

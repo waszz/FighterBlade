@@ -70,6 +70,7 @@ protected $casts = [
     'casino_vidas_desde' => 'datetime',
     'caza_cargas' => 'integer',
     'caza_cargas_desde' => 'datetime',
+    'recarga_esmeraldas_en' => 'datetime', // última recarga diaria de esmeraldas (ver recargarEsmeraldasDiarias)
 ];
 
   
@@ -151,6 +152,43 @@ protected $casts = [
             $segundos = max($segundos, \Carbon\Carbon::parse($this->fin_recuperacion)->timestamp - now()->timestamp);
         }
         return max(0, $segundos);
+    }
+
+    // Recarga diaria: cada 24 horas, si tiene menos de 100 esmeraldas, se le completan hasta 100
+    // (con 99 recibe 1, no 100 más). Con 100 o más no recibe nada y la recarga queda disponible para
+    // cuando baje de 100. Se hace sola al entrar al juego (ver JuegoInterfaz). Devuelve cuántas recibió
+    const ESMERALDAS_DIARIAS = 100;
+    const HORAS_RECARGA_ESMERALDAS = 24;
+
+    public function recargarEsmeraldasDiarias(): int
+    {
+        if ((int) $this->diamante >= self::ESMERALDAS_DIARIAS || $this->proximaRecargaEsmeraldas()?->isFuture()) {
+            return 0;
+        }
+
+        $recibe = self::ESMERALDAS_DIARIAS - (int) $this->diamante;
+        $ahora = now();
+        // Con las condiciones en la consulta: si llegan dos pedidos juntos, solo uno la cobra
+        $actualizado = static::whereKey($this->id)
+            ->where('diamante', '<', self::ESMERALDAS_DIARIAS)
+            ->where(fn ($q) => $q->whereNull('recarga_esmeraldas_en')
+                ->orWhere('recarga_esmeraldas_en', '<=', $ahora->copy()->subHours(self::HORAS_RECARGA_ESMERALDAS)))
+            ->update(['diamante' => self::ESMERALDAS_DIARIAS, 'recarga_esmeraldas_en' => $ahora]);
+        if (! $actualizado) {
+            return 0;
+        }
+
+        $this->diamante = self::ESMERALDAS_DIARIAS;
+        $this->recarga_esmeraldas_en = $ahora;
+        $this->syncOriginalAttributes(['diamante', 'recarga_esmeraldas_en']);
+
+        return $recibe;
+    }
+
+    // Desde cuándo se puede volver a recargar (null = ya se puede)
+    public function proximaRecargaEsmeraldas(): ?\Carbon\Carbon
+    {
+        return $this->recarga_esmeraldas_en?->copy()->addHours(self::HORAS_RECARGA_ESMERALDAS);
     }
 
     // Set con el que pelea (sus gifs y apariencia): el del set completo equipado, o su set base

@@ -3377,7 +3377,8 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         if ($statsOriginal && is_array($statsOriginal)) {
             switch ($statsOriginal['afecta'] ?? '') {
                 case 'oro':
-                    $oro += 100;
+                    // Poción de Oro: duplica el oro de esta victoria
+                    $oro *= 2;
                     break;
                 case 'diamante':
                     $diamantesExtra += 100;
@@ -3469,11 +3470,11 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $pocionOro = [
                 'nombre'         => 'Poción de Oro',
                 'afecta'         => 'oro',
-                'multiplicador'  => 1,
+                'multiplicador'  => 2,
                 'usos_restantes' => 1,
                 'usos_totales'   => 1,
                 'imagen'         => 'pocion-oro.png',
-                'descripcion'    => 'Otorga 100 de oro',
+                'descripcion'    => 'Duplica el oro de la próxima victoria',
             ];
 
                                      // 🎯 Probabilidades
@@ -3532,11 +3533,11 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
                     'stats'       => [
                         'usos_restantes' => 1,
                         'usos_totales'   => 1,
-                        'multiplicador'  => 1,
+                        'multiplicador'  => 2,
                         'afecta'         => 'oro',
                     ],
                     'imagen'      => 'pocion-oro.png',
-                    'descripcion' => 'Otorga 100 oro',
+                    'descripcion' => 'Duplica el oro de la próxima victoria',
                     'nivel'       => 1,
                     'requisitos'  => [],
                 ];

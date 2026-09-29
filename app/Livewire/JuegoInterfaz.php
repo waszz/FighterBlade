@@ -86,6 +86,7 @@ public function toggleChat()
 
         $this->ciudadActual = $this->personaje->ciudadActual ?? null;
 
+        $this->darRecargaEsmeraldas();
         $this->cargarStatsDesdePersonaje();
         $this->oroGuardado = $this->personaje->oro_guardado ?? 0;
          $this->cargarBuffsExperiencia();
@@ -358,7 +359,17 @@ foreach ($poderes as $poder) {
     public function recargarPersonaje()
     {
         $this->personaje = Personaje::find($this->personaje->id);
+        $this->darRecargaEsmeraldas();
         $this->cargarStatsDesdePersonaje();
+    }
+
+    // Recarga diaria de esmeraldas (hasta 100, cada 24 h): ver Personaje::recargarEsmeraldasDiarias
+    protected function darRecargaEsmeraldas(): void
+    {
+        $recibe = $this->personaje->recargarEsmeraldasDiarias();
+        if ($recibe > 0) {
+            $this->dispatch('success', ['message' => "💚 Recarga diaria: recibiste {$recibe} " . ($recibe === 1 ? 'esmeralda' : 'esmeraldas') . ' (ahora tenés ' . Personaje::ESMERALDAS_DIARIAS . ').']);
+        }
     }
 
     public function mostrarViajar()

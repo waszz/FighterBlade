@@ -32,7 +32,7 @@ class RecompensasTorre
     // Contenido posible de un cofre (uno al azar)
     const POCIONES_COFRE = [
         'drop'     => ['nombre' => 'Poción de Búsqueda',  'imagen' => 'pocion-busqueda.png',  'afecta' => 'drop_partes', 'descripcion' => '100% de probabilidad de drop'],
-        'oro'      => ['nombre' => 'Poción de Oro',       'imagen' => 'pocion-oro.png',       'afecta' => 'oro',         'descripcion' => 'Otorga 100 de oro'],
+        'oro'      => ['nombre' => 'Poción de Oro',       'imagen' => 'pocion-oro.png',       'afecta' => 'oro',         'descripcion' => 'Duplica el oro de la próxima victoria'],
         'diamante' => ['nombre' => 'Poción de Esmeraldas', 'imagen' => 'pocion-diamantes.png', 'afecta' => 'diamante',    'descripcion' => 'Otorga 100 esmeraldas'],
     ];
 
