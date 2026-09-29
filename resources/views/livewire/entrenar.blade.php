@@ -8,7 +8,7 @@
               shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),0_4px_0_#000,0_6px_12px_rgba(0,0,0,0.7)] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all [text-shadow:0_2px_0_#000]';
 @endphp
 
-<div class="text-white p-2 sm:p-4 max-w-3xl mx-auto" x-data="{ confirmar: false }">
+<div class="text-white p-2 sm:p-4 max-w-3xl mx-auto" x-data="{ confirmar: false, dejar: false }">
     <h2 class="text-center text-3xl font-extrabold text-orange-400 mb-2 [text-shadow:0_3px_0_#000]">Entrenamiento</h2>
 
     {{-- Escena: la zona de fondo, mi personaje a la izquierda y el maestro a la derecha --}}
@@ -75,7 +75,7 @@
                          style="width: {{ round(100 - $segundos / (\App\Livewire\Entrenar::HORAS * 3600) * 100, 1) }}%"
                          :style="'width:' + (100 - s / {{ \App\Livewire\Entrenar::HORAS * 3600 }} * 100) + '%'"></div>
                 </div>
-                <button type="button" wire:click="cancelar" wire:confirm="¿Dejar el entrenamiento? Se pierde lo que llevás."
+                <button type="button" x-on:click="dejar = true"
                         class="text-[11px] text-gray-300 underline hover:text-white [text-shadow:0_1px_0_#000]">Dejar el entrenamiento</button>
             @elseif ($estado === 'terminado')
                 <button type="button" wire:click="reclamar" wire:loading.attr="disabled" class="{{ $boton }} !text-green-400">Reclamar +{{ $expTexto }} EXP</button>
@@ -101,6 +101,21 @@
                         class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Aceptar</button>
                 <button type="button" x-on:click="confirmar = false"
                         class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Aviso antes de dejar el entrenamiento --}}
+    <div x-show="dejar" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3" x-on:click.self="dejar = false">
+        <div class="relative w-full max-w-xs p-4 text-center rounded-xl border border-black text-white bg-gradient-to-b from-[#1c2533] to-[#0a0e14]
+                    shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+            <h3 class="text-lg font-extrabold text-red-400 [text-shadow:0_2px_0_#000]">¿Dejar el entrenamiento?</h3>
+            <p class="mt-1 text-sm text-gray-300">Se pierde lo que llevás y no ganás la experiencia.</p>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <button type="button" wire:click="cancelar" x-on:click="dejar = false"
+                        class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Sí, dejar</button>
+                <button type="button" x-on:click="dejar = false"
+                        class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-gray-600 to-gray-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Seguir</button>
             </div>
         </div>
     </div>

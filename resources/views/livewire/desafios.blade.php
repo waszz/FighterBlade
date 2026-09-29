@@ -205,11 +205,23 @@
                     </div>
                 </div>
 
-                <div class="mt-3 grid grid-cols-2 gap-2">
+                <div class="mt-3 grid grid-cols-2 gap-2" x-data="{ preguntar: false }">
                     <button type="button" wire:click="confirmar" wire:loading.attr="disabled" @disabled($di['yoListo'])
                             class="{{ $boton }} from-emerald-500 to-emerald-800">{{ $di['yoListo'] ? 'Esperando al otro…' : 'Confirmar' }}</button>
-                    <button type="button" wire:click="cancelar({{ $intercambio->id }})" wire:confirm="¿Cerrar el intercambio? No se pasa nada."
-                            class="{{ $boton }} from-red-500 to-red-800">Cancelar</button>
+                    <button type="button" x-on:click="preguntar = true" class="{{ $boton }} from-red-500 to-red-800">Cancelar</button>
+
+                    {{-- Aviso antes de cerrar el intercambio (con el estilo del juego) --}}
+                    <div x-show="preguntar" x-cloak x-transition.opacity x-on:click.self="preguntar = false"
+                         class="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-3">
+                        <div class="w-full max-w-xs p-4 text-center {{ $panel3d }}">
+                            <h3 class="text-lg font-extrabold text-red-400 [text-shadow:0_2px_0_#000]">¿Cerrar el intercambio?</h3>
+                            <p class="mt-1 text-sm text-gray-300">No se pasa nada: cada uno se queda con lo suyo.</p>
+                            <div class="mt-4 grid grid-cols-2 gap-2">
+                                <button type="button" wire:click="cancelar({{ $intercambio->id }})" x-on:click="preguntar = false" class="{{ $boton }} from-red-500 to-red-800">Sí, cerrar</button>
+                                <button type="button" x-on:click="preguntar = false" class="{{ $boton }} from-gray-600 to-gray-800">Seguir</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
