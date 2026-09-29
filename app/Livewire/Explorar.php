@@ -1245,6 +1245,9 @@ if ($tieneSiempreEnPie) {
             // El set con el que peleó cada uno: al volver a verla se muestra ese, no el que tengan equipado después
             'post_personaje_id' => $this->personaje->postDeCombate()?->id,
             'post_enemigo_id'   => $this->gifsEnemigo()?->id,
+            // Tipo de daño con el que peleó cada uno (al volver a verla no se toma el del set que tenga equipado después)
+            'tipo_personaje'    => $this->personaje->postDeCombate()?->tipo ?? 'fisico',
+            'tipo_enemigo'      => $this->gifsEnemigo()?->tipo ?? $this->enemigo->tipo ?? 'fisico',
             'ciudad_id'         => $this->ciudadActual->id ?? null,
             // Para "Mis Drops": de dónde salió la pelea y cuántos minutos se exploró
             'origen'            => match (true) {

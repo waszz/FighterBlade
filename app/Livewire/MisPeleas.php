@@ -240,6 +240,8 @@ if ($enemigo->gif) {
         return $vista + [
             'postPjRepeticion' => $setDeLaPelea($datos['post_personaje_id'] ?? null, $datos['gif_personaje'] ?? null),
             'postEnRepeticion' => $setDeLaPelea($datos['post_enemigo_id'] ?? null, $datos['gif_enemigo'] ?? null),
+            // Tipo de daño de cada uno ese día (las peleas viejas no lo tienen: el partial lo saca de las rondas)
+            'tiposRepeticion'  => ['personaje' => $datos['tipo_personaje'] ?? null, 'enemigo' => $datos['tipo_enemigo'] ?? null],
             'pelea'            => $pelea,
             // Botón Compartir abajo de la pelea: solo en las propias (las de otros se ven desde el chat)
             'idPeleaCompartir' => (int) $pelea->personaje_id === (int) $this->personajeId ? $pelea->id : null,

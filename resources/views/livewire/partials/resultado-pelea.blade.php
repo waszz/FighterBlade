@@ -20,6 +20,28 @@
   $tipoVistaPersonaje = $postPjRep->tipo ?? $tipoDeCombate($personaje);
   $tipoVistaEnemigo = $postEnRep->tipo ?? $tipoDeCombate($enemigo);
 
+  // Pelea guardada: el tipo de daño con el que peleó cada uno ese día, no el del set que tenga equipado ahora.
+  // Las peleas nuevas lo guardan (tipo_personaje / tipo_enemigo); en las viejas se saca de los daños de las rondas
+  if (isset($tiposRepeticion)) {
+      $tipoPorRondas = function (string $lado) use ($resultadosRondas) {
+          $fisico = $elemental = 0;
+          foreach ($resultadosRondas as $r) {
+              if (is_array($r) && ($r['atacante'] ?? null) === $lado && ($r['ronda'] ?? null) !== 'Final') {
+                  $fisico += (int) ($r['danio_fisico'] ?? 0);
+                  $elemental += (int) ($r['danio_elemental'] ?? 0);
+              }
+          }
+          return match (true) {
+              $fisico > 0 && $elemental > 0 => 'hibrido',
+              $elemental > 0 => 'elemental',
+              $fisico > 0 => 'fisico',
+              default => null,
+          };
+      };
+      $tipoVistaPersonaje = $tiposRepeticion['personaje'] ?? $tipoPorRondas('personaje') ?? $tipoVistaPersonaje;
+      $tipoVistaEnemigo = $tiposRepeticion['enemigo'] ?? $tipoPorRondas('enemigo') ?? $tipoVistaEnemigo;
+  }
+
   $golpesPersonaje = 0;
   $golpesEnemigo = 0;
 
