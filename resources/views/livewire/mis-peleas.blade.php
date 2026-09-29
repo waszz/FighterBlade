@@ -143,12 +143,10 @@
           $nombreEnemigo = $pelea->nombreRival();
           $resultadoMio = $pelea->resultado;
 
-          // Pelea que inició otro jugador contra mí (ataque o duelo): se ve desde mi lado,
-          // yo a la izquierda y el resultado al revés; no me dio exp ni oro
+          // Pelea que inició otro jugador contra mí (ataque o duelo): el que atacó queda a la izquierda y yo a la derecha
+          // (así se distingue de las que ataqué yo); el resultado es el mío (al revés del guardado) y no me dio exp ni oro
           $meAtacaron = (int) $pelea->personaje_id !== (int) $personajeId;
           if ($meAtacaron) {
-              [$gifPersonaje, $gifEnemigo] = [$gifEnemigo, $gifPersonaje];
-              [$nombrePersonaje, $nombreEnemigo] = [$nombreEnemigo, $nombrePersonaje];
               $resultadoMio = match ($pelea->resultado) { 'victoria' => 'derrota', 'derrota' => 'victoria', default => 'empate' };
           }
           $esDuelo = ($datosCombate['origen'] ?? null) === 'duelo';
