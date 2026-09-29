@@ -37,6 +37,12 @@ public function store(LoginRequest $request): RedirectResponse
 
     $user = Auth::user();
 
+    // Clave nueva de "Recordarme": la cookie que quedó en los otros dispositivos deja de valer, así no vuelven
+    // a entrar solos (y le sacan la sesión a este) cuando se les vence la sesión. Este dispositivo recibe la nueva
+    $user->setRememberToken(\Illuminate\Support\Str::random(60));
+    $user->save();
+    Auth::guard('web')->login($user, $request->boolean('remember'));
+
     // 🔒 Verifica si el correo está verificado
     if (!$user->hasVerifiedEmail()) {
         return redirect()->route('verification.notice');

@@ -30,7 +30,8 @@ class SesionUnica
                 $user->last_session_id = $currentSessionId;
                 $user->save();
             } elseif ($user->last_session_id !== $currentSessionId) {
-                Auth::guard('web')->logout();
+                // Solo este dispositivo: logout() cambiaría la clave de "Recordarme" y le cortaría el recordarme al que entró último
+                Auth::guard('web')->logoutCurrentDevice();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 // El aviso queda en la sesión nueva (vacía) y lo muestra la portada
