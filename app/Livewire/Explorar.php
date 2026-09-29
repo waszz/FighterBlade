@@ -2121,13 +2121,17 @@ if ($nombrePoder === 'FURIA CIEGA') {
             $prioridadPersonaje = ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje + rand(0, 2);
             $prioridadEnemigo   = ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo + rand(0, 2);
 
-            $primeroEnAtacar = $prioridadPersonaje >= $prioridadEnemigo ? 'personaje' : 'enemigo';
-
-            // PvP (y duelos): en cada ronda pegan los dos, primero el más rápido.
-            // Contra los enemigos del juego sigue pegando solo el más rápido.
-            $ordenAtaques = $this->esPvp
-                ? [$primeroEnAtacar, $primeroEnAtacar === 'personaje' ? 'enemigo' : 'personaje']
-                : [$primeroEnAtacar];
+            // Pega uno solo por ronda. Contra los enemigos del juego pega el más rápido.
+            // En PvP (y duelos) el turno se sortea con peso según velocidad + nivel: el más rápido pega más seguido,
+            // pero no todas las rondas (si no, con un punto más de velocidad ganaba siempre el mismo)
+            if ($this->esPvp) {
+                $pesoPersonaje = max(1, ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje);
+                $pesoEnemigo   = max(1, ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo);
+                $primeroEnAtacar = mt_rand(1, $pesoPersonaje + $pesoEnemigo) <= $pesoPersonaje ? 'personaje' : 'enemigo';
+            } else {
+                $primeroEnAtacar = $prioridadPersonaje >= $prioridadEnemigo ? 'personaje' : 'enemigo';
+            }
+            $ordenAtaques = [$primeroEnAtacar];
 
             foreach ($ordenAtaques as $atacante) {
             if ($atacante === 'personaje') {
@@ -2209,7 +2213,9 @@ if ($tipoAtaque === 'defensa') {
     $tipoAtaque          = 'bloqueo';
 
 } else {
-    $puedeDefender = ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
+    // Contra los enemigos del juego: si el ataque no supera la defensa, se bloquea entero.
+    // En PvP no hay bloqueo total: la defensa reduce el daño en proporción (ver más abajo), así cuentan los stats
+    $puedeDefender = ! $this->esPvp && ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
 
     if ($puedeDefender && $tipoAtaque !== 'critico') {
         $danioFisicoFinal    = 0;
@@ -2230,6 +2236,15 @@ if ($tipoAtaque === 'defensa') {
         } else {
             $danioFisicoFinal = $this->aplicarReduccionDanioPorTipo($danios['fisico'], $poderesDefensor, 'fisico');
             $danioElementalFinal = 0;
+        }
+
+        // PvP: la defensa (que sube un poco con el nivel) baja el daño en proporción: daño × 100 / (100 + defensa).
+        // El crítico atraviesa la mitad de la defensa
+        if ($this->esPvp) {
+            $defensaEfectiva = ($statsDefensor['defensa'] ?? 0) * (1 + $nivelDefensor * 0.02) * ($tipoAtaque === 'critico' ? 0.5 : 1);
+            $factorDefensa   = 100 / (100 + max(0, $defensaEfectiva));
+            $danioFisicoFinal    = round($danioFisicoFinal * $factorDefensa);
+            $danioElementalFinal = round($danioElementalFinal * $factorDefensa);
         }
 
         $danioFinal     = $danioFisicoFinal + $danioElementalFinal;
@@ -2328,7 +2343,7 @@ if ($contraataqueOcurre) {
         'texto_tipo_danio' => $textoDanio,
     ];
 }
-            } // fin de los ataques de la ronda (en PvP pegan los dos)
+            } // fin del ataque de la ronda
 
         }
 
