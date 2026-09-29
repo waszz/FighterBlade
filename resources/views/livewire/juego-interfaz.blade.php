@@ -153,6 +153,42 @@
             @endif
             </div>
 
+            {{-- Cazando: cuenta regresiva del rastreo de la presa. Al terminar, el botón lleva a la Caza para enfrentarla --}}
+            @php
+                $cazaRastreo = \App\Models\Caza::activaDe($personaje->id);
+                $cazaRastreo = $cazaRastreo?->estado === 'rastreando' ? $cazaRastreo : null;
+                $segundosCaza = $cazaRastreo ? max(0, $cazaRastreo->fin_rastreo->timestamp - now()->timestamp) : 0;
+                $presaRastreo = $cazaRastreo ? \App\Models\Post::conRivales()->find($cazaRastreo->post_id) : null;
+            @endphp
+            <div wire:key="panel-cazando" class="contents">
+            @if ($cazaRastreo)
+                <div wire:key="cazando-{{ $cazaRastreo->id }}-{{ $cazaRastreo->fin_rastreo->timestamp }}"
+                     x-data="{ fin: Date.now() / 1000 + {{ $segundosCaza }}, s: {{ $segundosCaza }} }"
+                     x-init="if (s > 0) { const t = setInterval(() => { s = Math.max(0, Math.ceil(fin - Date.now() / 1000)); if (s <= 0) clearInterval(t); }, 250) }"
+                     class="w-full p-2 rounded-lg border border-black text-center font-mono
+                            bg-gradient-to-b from-[#123320] to-[#04140a]
+                            shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]">
+                    <p class="text-xs font-bold text-emerald-300 uppercase tracking-wide">🎯 Cazando</p>
+                    @if ($presaRastreo)
+                        <p class="text-[11px] font-bold truncate {{ $cazaRastreo->rareza === 'legendaria' ? 'text-amber-300' : ($cazaRastreo->rareza === 'rara' ? 'text-sky-300' : 'text-gray-300') }}">
+                            {{ $cazaRastreo->rarezaInfo()['nombre'] }}: {{ $presaRastreo->titulo }}
+                        </p>
+                    @endif
+                    <p class="text-lg font-bold text-white" x-show="s > 0"
+                       x-text="(s >= 3600 ? Math.floor(s / 3600) + ':' : '') + String(Math.floor(s % 3600 / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')">
+                        {{ $segundosCaza >= 3600 ? gmdate('G:i:s', $segundosCaza) : gmdate('i:s', $segundosCaza) }}
+                    </p>
+                    <p class="text-sm font-bold text-yellow-300" x-show="s <= 0" @if ($segundosCaza > 0) x-cloak @endif>¡Encontraste la presa!</p>
+                    <button wire:click="cambiarSeccion('caza')" x-show="s <= 0" @if ($segundosCaza > 0) x-cloak @endif
+                            class="mt-1 w-full py-1 rounded border border-black text-xs font-bold text-white
+                                   bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+                                   hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all">
+                        Ir a enfrentarla
+                    </button>
+                </div>
+            @endif
+            </div>
+
             {{-- Recuperándose después de una pelea: cuenta regresiva y recuperar con oro --}}
             @php
                 // (también mientras explora, si lo atacaron en PvP: ver Personaje::segundosRecuperacion)

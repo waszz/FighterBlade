@@ -84,6 +84,8 @@ class Caza extends Component
 
         $this->presaId = null;
         $this->dispatch('success', ['message' => "Saliste a rastrear a {$resultado['ok']}."]);
+        // El panel del personaje muestra la cuenta regresiva del rastreo
+        $this->dispatch('statsActualizados');
     }
 
     // Termina el rastreo: la presa pasa a ser el enemigo actual y se pelea en la Ciudad
@@ -124,6 +126,7 @@ class Caza extends Component
             // Abandonar el rastreo no devuelve la carga
             $caza->update(['estado' => 'perdida']);
             $this->dispatch('success', ['message' => 'Abandonaste la caza.']);
+            $this->dispatch('statsActualizados');
         }
     }
 
