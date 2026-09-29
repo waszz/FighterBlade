@@ -235,7 +235,7 @@
                 🧭 Está en {{ $personajeSeleccionadoModal->ciudadActual?->nombre ?? 'otra zona' }}: viajá ahí para atacarlo
             </p>
             @elseif (! $esMiPersonajeRanking && $personajeActual)
-            <x-boton-atacar :personaje="$personajeActual"
+            <x-boton-atacar :personaje="$personajeActual" :objetivo="$personajeSeleccionadoModal"
                 :href="route('atacar.personaje', ['personajeId' => $personajeActual->id, 'objetivoId' => $personajeSeleccionadoModal->id])" />
             @endif
             @if (! $esMiPersonajeRanking && $personajeActual)

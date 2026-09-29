@@ -36,6 +36,12 @@ class PvpController extends Controller
             return $volver->with('toast_error', $motivo);
         }
 
+        // Al que acaba de pelear (lo atacaron o atacó) no se lo puede volver a atacar hasta que se recupere,
+        // aunque el que ataca se haya recuperado con oro
+        if ($objetivo->segundosRecuperacion() > 0) {
+            return $volver->with('toast_error', "{$objetivo->nombre} se está recuperando de una pelea. Esperá para atacarlo.");
+        }
+
         $personaje->enemigo_actual_personaje_id = $objetivo->id;
         $personaje->enemigo_actual_id = null;
         $personaje->save();

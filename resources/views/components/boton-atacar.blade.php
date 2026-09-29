@@ -1,6 +1,6 @@
-{{-- Botón Atacar (PvP). Mientras el atacante explora o se recupera queda gris con la cuenta regresiva y se prende solo al terminar
-     (el servidor igual lo vuelve a controlar al atacar) --}}
-@props(['personaje', 'href'])
+{{-- Botón Atacar (PvP). Mientras el atacante explora o se recupera, o el atacado se está recuperando de una pelea,
+     queda gris con la cuenta regresiva y se prende solo al terminar (el servidor igual lo vuelve a controlar al atacar) --}}
+@props(['personaje', 'href', 'objetivo' => null])
 @php
     $segundosEspera = $personaje->fin_exploracion
         ? max(0, \Carbon\Carbon::parse($personaje->fin_exploracion)->timestamp - now()->timestamp)
@@ -10,6 +10,10 @@
     if ($personaje->segundosEntreno() > $segundosEspera) {
         $segundosEspera = $personaje->segundosEntreno();
         $motivoEspera = '🏋️ Estás entrenando';
+    }
+    if ($objetivo && $objetivo->segundosRecuperacion() > $segundosEspera) {
+        $segundosEspera = $objetivo->segundosRecuperacion();
+        $motivoEspera = '⏳ ' . $objetivo->nombre . ' se está recuperando';
     }
 @endphp
 <div wire:key="boton-atacar-{{ $segundosEspera }}"

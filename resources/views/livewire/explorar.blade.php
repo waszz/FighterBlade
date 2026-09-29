@@ -664,7 +664,7 @@
           🛡️ {{ $personaje->esNovato() ? 'Podés atacar jugadores desde el nivel ' . (\App\Livewire\Explorar::NIVEL_MAX_ENEMIGO_ESPECIAL + 1) : 'Jugador nuevo: todavía no se lo puede atacar' }}
         </p>
       @elseif (! $esMiPersonaje)
-        <x-boton-atacar :personaje="$personaje"
+        <x-boton-atacar :personaje="$personaje" :objetivo="$personajeSeleccionadoModal"
             :href="route('atacar.personaje', ['personajeId' => $personaje->id, 'objetivoId' => $personajeSeleccionadoModal->id])" />
       @endif
       @if (! $esMiPersonaje)
