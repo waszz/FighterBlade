@@ -64,11 +64,6 @@
             @if($imagen)
             <img src="{{ asset('storage/' . $imagen) }}" alt="Imagen de {{ $item->nombre }}" class="w-10 h-10 shrink-0 rounded-full object-cover" />
             @endif
-            @if($item->clan)
-            <img src="{{ asset('storage/' . $item->clan->imagen) }}" alt="Clan {{ $item->clan->nombre }}" title="{{ $item->clan->nombre }}"
-                 class="w-6 h-6 shrink-0 rounded-full object-cover border border-yellow-400" />
-            @endif
-
             <div class="flex-1 min-w-0 text-center">
                 <p class="text-sm font-bold truncate {{ $esYoRanking ? 'text-yellow-300' : 'text-white' }}">
                     <span class="{{ $item instanceof \App\Models\Personaje ? $item->claseNombre() : '' }}">{{ $item->nombre }}</span>
@@ -97,6 +92,10 @@
                     <span class="text-green-400 font-semibold">{{ $item->pve_ganadas ?? 0 }}</span>
                     <span class="text-white">/</span>
                     <span class="text-red-400 font-semibold">{{ $item->pve_perdidas ?? 0 }}</span>
+                    @endif
+                    {{-- Clan: su etiqueta entre corchetes --}}
+                    @if($item->clan)
+                    <span class="ml-1 font-bold text-sky-300" title="Clan {{ $item->clan->nombre }}">[{{ $item->clan->tag ?? $item->clan->nombre }}]</span>
                     @endif
                 </p>
             </div>
