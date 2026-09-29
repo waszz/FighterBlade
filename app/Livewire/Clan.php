@@ -376,6 +376,11 @@ public function retirarObjetoDelClan()
         return;
     }
 
+    if (! $personaje->tieneLugar()) {
+        session()->flash('mensaje', '🎒 ' . Personaje::MENSAJE_INVENTARIO_LLENO);
+        return;
+    }
+
     $objeto = $this->objetoSeleccionado->objeto;
     $objeto->personaje_id = $personaje->id;
     $objeto->save();
@@ -444,6 +449,11 @@ public function enviarObjetoAUsuario()
 
     if (!$objeto) {
         session()->flash('mensaje', 'Objeto no encontrado.');
+        return;
+    }
+
+    if (! $personajeDestino->tieneLugar()) {
+        session()->flash('mensaje', "🎒 {$personajeDestino->nombre} tiene el inventario lleno.");
         return;
     }
 

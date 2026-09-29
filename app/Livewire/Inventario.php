@@ -6,6 +6,7 @@ use App\Models\ClanInventario;
 use App\Models\Objeto;
 use App\Models\Personaje;
 use App\Models\Post;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Inventario extends Component
@@ -160,6 +161,12 @@ class Inventario extends Component
             return;
         }
 
+        // Da hasta 3 objetos y el cofre libera su lugar: hacen falta 2 lugares libres
+        if (! Personaje::find($this->personaje->id)->tieneLugar(2)) {
+            $this->dispatch('error', ['message' => '🎒 Necesitás 2 lugares libres en el inventario para abrir el cofre.']);
+            return;
+        }
+
         // Abrirlo cuesta oro según su nivel (se descuenta solo si alcanza, en una sola consulta). El de bienvenida es gratis
         $costo = \App\Support\RecompensasTorre::costoCofre($cofre);
         if ($costo > 0) {
@@ -175,6 +182,33 @@ class Inventario extends Component
         $this->objetoSeleccionado = null;
         $this->actualizarObjetos();
         $this->dispatch('success', ['message' => $texto]);
+    }
+
+    // Comprar 3 lugares más en el inventario (5000 de oro la primera vez y 1000 más cada vez, hasta 200)
+    public function comprarSlots()
+    {
+        $pj = Personaje::where('user_id', auth()->id())->find($this->personaje->id);
+        if (! $pj) {
+            return;
+        }
+        $precio = $pj->precioProximosSlots();
+        if ($precio === null) {
+            $this->dispatch('error', ['message' => 'Ya tenés el máximo de ' . Personaje::SLOTS_MAX . ' lugares.']);
+            return;
+        }
+        $suma = min(Personaje::SLOTS_POR_COMPRA, Personaje::SLOTS_MAX - $pj->capacidadInventario());
+
+        // Se descuenta solo si alcanza (en una sola consulta, así no se paga dos veces con dos clicks)
+        $pagado = Personaje::whereKey($pj->id)->where('oro', '>=', $precio)->where('slots_extra', $pj->slots_extra)
+            ->update(['oro' => DB::raw('oro - ' . (int) $precio), 'slots_extra' => DB::raw('slots_extra + ' . (int) $suma)]);
+        if (! $pagado) {
+            $this->dispatch('error', ['message' => 'Necesitás ' . number_format($precio, 0, ',', '.') . ' de oro.']);
+            return;
+        }
+
+        $this->personaje = $this->personaje->fresh();
+        $this->dispatch('success', ['message' => "🎒 ¡+{$suma} lugares! Ahora tenés " . $this->personaje->capacidadInventario() . '.']);
+        $this->dispatch('statsActualizados'); // el oro del panel lateral
     }
 
     public function cerrarModalAgregarParte()

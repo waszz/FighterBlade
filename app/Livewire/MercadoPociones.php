@@ -78,6 +78,17 @@ public function comprarPocion($pocionId)
         return;
     }
 
+    // 🎒 Cada poción ocupa un lugar del inventario
+    if (! $this->personaje->tieneLugar($cantidad)) {
+        $libres = $this->personaje->lugaresLibres();
+        $this->mensajeTemporal = $libres > 0
+            ? "Solo te quedan {$libres} lugares libres en el inventario."
+            : \App\Models\Personaje::MENSAJE_INVENTARIO_LLENO;
+        $this->esError = true;
+        $this->dispatch('ocultar-mensaje');
+        return;
+    }
+
     $moneda = $pocion->moneda ?? 'oro';
     $precioTotal = $pocion->precio * $cantidad;
 

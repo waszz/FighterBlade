@@ -160,6 +160,13 @@ class Casino extends Component
             return null;
         }
 
+        // Tiene que haber lugar para el premio más grande (las pociones o un set de 3 partes)
+        $lugaresPremio = max(self::POCIONES_PREMIO, self::POCIONES_ESMERALDA_PREMIO, 3);
+        if (! Personaje::find($this->personajeId)?->tieneLugar($lugaresPremio)) {
+            $this->dispatch('error', ['message' => "🎒 Necesitás {$lugaresPremio} lugares libres en el inventario para girar (por si ganás objetos)."]);
+            return null;
+        }
+
         $resultado = DB::transaction(function () use ($moneda, $apuesta, $vida) {
             $personaje = Personaje::where('id', $this->personajeId)
                 ->where('user_id', Auth::id())

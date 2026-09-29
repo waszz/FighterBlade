@@ -254,6 +254,11 @@ public function comprarParteAleatoria($index)
         return;
     }
 
+    if (! $this->personaje->tieneLugar()) {
+        $this->dispatch('error', ['message' => '🎒 ' . Personaje::MENSAJE_INVENTARIO_LLENO]);
+        return;
+    }
+
     $this->personaje->oro -= $costo;
     $this->personaje->save();
 
@@ -348,6 +353,12 @@ if ($nivelPost === 5) {
         return;
     }
 
+    // El set completo son 3 partes
+    if (! $this->personaje->tieneLugar(3)) {
+        $this->dispatch('error', ['message' => '🎒 Necesitás 3 lugares libres en el inventario para el set completo.']);
+        return;
+    }
+
     $this->personaje->diamante -= $costo;
     $this->personaje->save();
 
@@ -425,6 +436,11 @@ public function comprarObjeto($objetoId)
 
     if ($this->personaje->oro < $objeto->precio_venta) {
         $this->dispatch('error', ['message' => 'No tienes suficiente oro']);
+        return;
+    }
+
+    if (! $this->personaje->tieneLugar()) {
+        $this->dispatch('error', ['message' => '🎒 ' . Personaje::MENSAJE_INVENTARIO_LLENO]);
         return;
     }
 

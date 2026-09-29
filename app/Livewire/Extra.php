@@ -143,6 +143,11 @@ public function comprarSuperPocion($pocionId)
         return;
     }
 
+    if (! $this->personaje->tieneLugar()) {
+        $this->dispatch('error', ['message' => '🎒 ' . \App\Models\Personaje::MENSAJE_INVENTARIO_LLENO]);
+        return;
+    }
+
     // Descontar diamantes
     $this->personaje->diamante -= $pocion->precio;
     $this->personaje->save();

@@ -3522,6 +3522,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $drop = \App\Support\RecompensasTorre::premio($nivelPremioMision);
         }
 
+        // Inventario lleno: el drop se pierde (y se avisa)
+        if ($drop && ! $this->personaje->tieneLugar()) {
+            $this->dispatch('error', ['message' => '🎒 Inventario lleno: se perdió ' . ($drop['nombre'] ?? 'el objeto') . '. Hacé lugar o comprá más lugares.']);
+            $drop = null;
+        }
+
         // Crear el objeto en BD si hay drop
         if ($drop) {
             Objeto::create([

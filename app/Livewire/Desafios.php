@@ -256,10 +256,10 @@ class Desafios extends Component
                 }
             }
 
-            // Lugar en el inventario (100 lugares, como en el Inventario)
+            // Lugar en el inventario de cada uno (con los lugares que compró)
             foreach ([[$pjDe, $ofPara, $ofDe], [$pjPara, $ofDe, $ofPara]] as [$pj, $recibe, $entrega]) {
-                $ocupados = $this->objetosIntercambiables($pj)->count();
-                if ($ocupados - count($entrega['objetos'] ?? []) + count($recibe['objetos'] ?? []) > 100) {
+                $ocupados = $pj->objetosEnInventario();
+                if ($ocupados - count($entrega['objetos'] ?? []) + count($recibe['objetos'] ?? []) > $pj->capacidadInventario()) {
                     $error = "{$pj->nombre} no tiene lugar en el inventario.";
                     return;
                 }

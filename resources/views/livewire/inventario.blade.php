@@ -513,20 +513,60 @@
         ->filter(fn($p) => ! $objetoEquipado || $objetoEquipado->id !== $p->id);
 
     $cantidadGuardados = $objetosVisibles->count() + $pocionesEnInventario->count();
-    $totalSlots = 100;
+    // Lugares: 100 + los comprados (hasta 200)
+    $totalSlots = $personaje->capacidadInventario();
     $espaciosDisponibles = max($totalSlots - $cantidadGuardados, 0);
     $grupos = $objetosVisibles->groupBy('origen_post_id');
+    $precioSlots = $personaje->precioProximosSlots();
+    $sumaSlots = min(\App\Models\Personaje::SLOTS_POR_COMPRA, \App\Models\Personaje::SLOTS_MAX - $totalSlots);
     @endphp
 
-    <div class="mt-6 max-w-7xl mx-auto p-3 sm:p-5 rounded-xl border-2 border-gray-500/70 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)]">
+    <div class="mt-6 max-w-7xl mx-auto p-3 sm:p-5 rounded-xl border-2 border-gray-500/70 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)]"
+         x-data="{ comprarLugares: false }">
 
-      <h3 class="text-lg font-extrabold uppercase tracking-wide mb-1 text-yellow-400 [text-shadow:1px_1px_0_#000]">
-        📦 Inventario ({{ $cantidadGuardados }}/{{ $totalSlots }})
-      </h3>
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <h3 class="text-lg font-extrabold uppercase tracking-wide text-yellow-400 [text-shadow:1px_1px_0_#000]">
+          📦 Inventario ({{ $cantidadGuardados }}/{{ $totalSlots }})
+        </h3>
+        {{-- Comprar 3 lugares más --}}
+        @if ($precioSlots !== null)
+          <button type="button" x-on:click="comprarLugares = true"
+            class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-black text-sm font-bold text-black bg-gradient-to-b from-yellow-300 to-yellow-600
+                   shadow-[inset_1px_1px_0_rgba(255,255,255,0.5),inset_-1px_-1px_0_rgba(0,0,0,0.4),0_3px_0_#000] hover:brightness-110 active:translate-y-[3px] active:shadow-none transition-all">
+            ➕ {{ $sumaSlots }} lugares ·
+            <img src="{{ asset('images/oro.png') }}" alt="" class="h-4">{{ number_format($precioSlots, 0, ',', '.') }}
+          </button>
+        @else
+          <span class="text-xs font-bold text-emerald-300">Máximo de lugares ({{ \App\Models\Personaje::SLOTS_MAX }})</span>
+        @endif
+      </div>
 
-      <p class="text-xs sm:text-sm text-green-400 mb-3">
+      <p class="text-xs sm:text-sm mb-3 {{ $espaciosDisponibles > 0 ? 'text-green-400' : 'text-red-400' }}">
         Espacios disponibles: <strong>{{ $espaciosDisponibles }}</strong>
+        @if ($espaciosDisponibles === 0) · ¡Inventario lleno! Los objetos que caigan se pierden. @endif
       </p>
+
+      {{-- Aviso antes de comprar lugares --}}
+      @if ($precioSlots !== null)
+        <div x-show="comprarLugares" x-cloak x-transition.opacity x-on:click.self="comprarLugares = false"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3">
+          <div class="w-full max-w-xs p-4 text-center rounded-xl border border-black text-white bg-gradient-to-b from-[#1c2533] to-[#0a0e14]
+                      shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]">
+            <h3 class="text-lg font-extrabold text-yellow-300 [text-shadow:0_2px_0_#000]">¿Comprar {{ $sumaSlots }} lugares?</h3>
+            <p class="mt-1 text-sm text-gray-300">
+              Pasás de {{ $totalSlots }} a <b class="text-white">{{ $totalSlots + $sumaSlots }}</b> lugares por
+              <b class="text-yellow-400">{{ number_format($precioSlots, 0, ',', '.') }} de oro</b>.
+            </p>
+            <p class="mt-1 text-[11px] text-gray-400">Cada compra cuesta {{ number_format(\App\Models\Personaje::SLOTS_PRECIO_AUMENTO, 0, ',', '.') }} de oro más. Máximo {{ \App\Models\Personaje::SLOTS_MAX }} lugares.</p>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" wire:click="comprarSlots" x-on:click="comprarLugares = false" wire:loading.attr="disabled"
+                      class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Comprar</button>
+              <button type="button" x-on:click="comprarLugares = false"
+                      class="py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      @endif
 
       @if($mensajeOroObtenido)
       <div class="mt-3 text-yellow-400 text-base font-semibold text-center animate-pulse" x-data

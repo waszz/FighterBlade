@@ -80,6 +80,50 @@ protected $casts = [
         return $this->belongsToMany(Poder::class, 'poder_post', 'post_id', 'poder_id', 'post_id', 'id');
     }
 
+    // Inventario: 100 lugares; se compran de a 3 con oro (5000 la primera y 1000 más cada vez) hasta 200.
+    // Lleno: no se puede comprar ni recibir objetos y los drops se pierden.
+    const SLOTS_BASE = 100;
+    const SLOTS_MAX = 200;
+    const SLOTS_POR_COMPRA = 3;
+    const SLOTS_PRECIO_INICIAL = 5000;
+    const SLOTS_PRECIO_AUMENTO = 1000;
+    const MENSAJE_INVENTARIO_LLENO = 'Tu inventario está lleno. Hacé lugar o comprá más lugares en el Inventario.';
+
+    public function capacidadInventario(): int
+    {
+        return min(self::SLOTS_MAX, self::SLOTS_BASE + (int) $this->slots_extra);
+    }
+
+    // Objetos que ocupan lugar: todo lo que tiene menos lo equipado (partes, joya y poción equipada)
+    public function objetosEnInventario(): int
+    {
+        $equipados = array_filter([$this->equipo_id, $this->entrenamiento_id, $this->accesorio_id, $this->joya_id, $this->objeto_consumible_id]);
+
+        return Objeto::where('personaje_id', $this->id)->whereNotIn('id', $equipados)->count();
+    }
+
+    public function lugaresLibres(): int
+    {
+        return max(0, $this->capacidadInventario() - $this->objetosEnInventario());
+    }
+
+    // ¿Entran $cantidad objetos más?
+    public function tieneLugar(int $cantidad = 1): bool
+    {
+        return $this->lugaresLibres() >= $cantidad;
+    }
+
+    // Precio de la próxima compra de lugares (null si ya tiene el máximo)
+    public function precioProximosSlots(): ?int
+    {
+        if ($this->capacidadInventario() >= self::SLOTS_MAX) {
+            return null;
+        }
+        $comprasHechas = (int) ceil((int) $this->slots_extra / self::SLOTS_POR_COMPRA);
+
+        return self::SLOTS_PRECIO_INICIAL + $comprasHechas * self::SLOTS_PRECIO_AUMENTO;
+    }
+
     // Entrenamiento con el maestro (App\Livewire\Entrenar): mientras dura no puede explorar, atacar,
     // hacer misiones, torre ni caza, ni viajar (pero sí lo pueden atacar, y puede aceptar duelos e intercambios)
     const MENSAJE_ENTRENANDO = 'Estás entrenando: no podés hacer esto hasta que termine el entrenamiento.';
