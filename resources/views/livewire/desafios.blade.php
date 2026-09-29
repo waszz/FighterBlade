@@ -6,6 +6,15 @@
         $boton = 'px-3 py-1.5 rounded-lg border border-black text-sm font-bold text-white bg-gradient-to-b shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all disabled:opacity-50 disabled:active:translate-y-0';
         $nombreTipo = ['duelo' => '⚔️ Duelo', 'intercambio' => '🔁 Intercambio'];
         $imgObjeto = fn ($o) => $o->pocion ? asset('images/' . $o->imagen) : asset('storage/posts/' . $o->imagen);
+        // Color de cada parte (los mismos del Inventario): [borde, texto, nombre corto]
+        $colorParte = fn ($o) => match ($o->pocion ? 'pocion' : $o->tipo) {
+            'equipo'        => ['border-indigo-500', 'text-indigo-300', 'Equipo'],
+            'entrenamiento' => ['border-green-500', 'text-green-300', 'Entrenam.'],
+            'accesorio'     => ['border-pink-500', 'text-pink-300', 'Accesorio'],
+            'joya'          => ['border-yellow-400', 'text-yellow-300', 'Joya'],
+            'pocion'        => ['border-orange-400', 'text-orange-300', 'Poción'],
+            default         => ['border-gray-500', 'text-gray-300', ucfirst((string) $o->tipo)],
+        };
         // Cuenta regresiva (se calcula contra la hora de fin, así no se atrasa entre actualizaciones)
         $cuenta = fn ($segundos) => "{ fin: Date.now() / 1000 + $segundos, s: $segundos }";
         $cuentaInit = "setInterval(() => s = Math.max(0, Math.ceil(fin - Date.now() / 1000)), 250)";
@@ -85,7 +94,7 @@
             $gifDe = fn ($pj) => $pj?->postDeCombate()?->gif ?? $pj?->post?->gif;
         @endphp
         <div wire:key="intercambio-{{ $intercambio->id }}" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 px-2">
-            <div class="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto p-3 sm:p-4 {{ $panel3d }}"
+            <div class="relative w-full max-w-3xl max-h-[94vh] overflow-y-auto p-3 sm:p-5 {{ $panel3d }}"
                  x-data="{{ $cuenta($intercambio->segundosRestantes()) }}" x-init="{{ $cuentaInit }}">
                 <h2 class="text-center text-lg font-bold text-yellow-300 [text-shadow:0_2px_0_#000]">🔁 Intercambio</h2>
                 <p class="text-center text-[11px] text-gray-300 mb-3">
@@ -110,18 +119,25 @@
                             </p>
 
                             {{-- 3 lugares para objetos --}}
-                            <div class="mt-1 grid grid-cols-3 gap-1">
+                            <div class="mt-2 grid grid-cols-3 gap-1.5 sm:gap-2">
                                 @for ($i = 0; $i < \App\Models\Desafio::MAX_OBJETOS; $i++)
-                                    @php $obj = $lado['objetos'][$i] ?? null; @endphp
-                                    <div class="aspect-square rounded-md border border-black bg-black/50 flex items-center justify-center overflow-hidden relative"
-                                         @if ($obj) title="{{ $obj->nombre }} · Nv {{ $obj->nivel }}" @endif>
-                                        @if ($obj)
-                                            <img src="{{ $imgObjeto($obj) }}" alt="{{ $obj->nombre }}" class="w-full h-full object-cover">
-                                            @if ($lado['soyYo'])
-                                                <button type="button" wire:click="alternarObjeto({{ $obj->id }})" aria-label="Sacar"
-                                                        class="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-bl-md bg-red-700 text-white text-xs font-bold">&times;</button>
+                                    @php
+                                        $obj = $lado['objetos'][$i] ?? null;
+                                        [$bordeParte, $textoParte, $nombreParte] = $obj ? $colorParte($obj) : ['border-black', '', ''];
+                                    @endphp
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-full aspect-square rounded-lg border-[3px] {{ $obj ? $bordeParte : 'border-black border-dashed' }} bg-black/50 flex items-center justify-center overflow-hidden relative"
+                                             @if ($obj) title="{{ $obj->nombre }} · Nv {{ $obj->nivel }}" @endif>
+                                            @if ($obj)
+                                                <img src="{{ $imgObjeto($obj) }}" alt="{{ $obj->nombre }}" class="w-full h-full object-cover">
+                                                <span class="absolute bottom-0 inset-x-0 text-[10px] font-bold text-yellow-300 bg-black/70 text-center leading-tight">Nv {{ $obj->nivel }}</span>
+                                                @if ($lado['soyYo'])
+                                                    <button type="button" wire:click="alternarObjeto({{ $obj->id }})" aria-label="Sacar"
+                                                            class="absolute top-0 right-0 w-6 h-6 flex items-center justify-center rounded-bl-md bg-red-700 text-white text-sm font-bold">&times;</button>
+                                                @endif
                                             @endif
-                                        @endif
+                                        </div>
+                                        <span class="mt-0.5 h-4 text-[10px] font-bold truncate max-w-full {{ $textoParte }}">{{ $nombreParte }}</span>
                                     </div>
                                 @endfor
                             </div>
@@ -159,16 +175,29 @@
 
                 {{-- Mini inventario: tocando un objeto se pone o se saca (hasta 3) --}}
                 <div class="mt-3">
-                    <p class="text-xs font-bold text-yellow-300 mb-1">Tu inventario <span class="text-gray-400 font-normal">· tocá hasta {{ \App\Models\Desafio::MAX_OBJETOS }} objetos</span></p>
-                    <div class="max-h-40 overflow-y-auto sidebar-pj pr-1 grid grid-cols-6 sm:grid-cols-8 gap-1">
+                    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-1">
+                        <p class="text-xs font-bold text-yellow-300">Tu inventario <span class="text-gray-400 font-normal">· tocá hasta {{ \App\Models\Desafio::MAX_OBJETOS }} objetos</span></p>
+                        {{-- Leyenda de colores --}}
+                        <p class="flex flex-wrap gap-2 text-[10px] font-bold">
+                            <span class="flex items-center gap-1 text-indigo-300"><span class="w-2.5 h-2.5 rounded-sm border-2 border-indigo-500"></span>Equipo</span>
+                            <span class="flex items-center gap-1 text-green-300"><span class="w-2.5 h-2.5 rounded-sm border-2 border-green-500"></span>Entrenamiento</span>
+                            <span class="flex items-center gap-1 text-pink-300"><span class="w-2.5 h-2.5 rounded-sm border-2 border-pink-500"></span>Accesorio</span>
+                            <span class="flex items-center gap-1 text-yellow-300"><span class="w-2.5 h-2.5 rounded-sm border-2 border-yellow-400"></span>Joya</span>
+                            <span class="flex items-center gap-1 text-orange-300"><span class="w-2.5 h-2.5 rounded-sm border-2 border-orange-400"></span>Poción</span>
+                        </p>
+                    </div>
+                    <div class="max-h-60 overflow-y-auto sidebar-pj p-1 grid grid-cols-5 sm:grid-cols-7 gap-1.5 sm:gap-2">
                         @forelse ($di['inventario'] as $obj)
-                            @php $puesto = in_array($obj->id, $di['miOferta']['objetos'] ?? [], true); @endphp
+                            @php
+                                $puesto = in_array($obj->id, $di['miOferta']['objetos'] ?? [], true);
+                                [$bordeParte, $textoParte, $nombreParte] = $colorParte($obj);
+                            @endphp
                             <button type="button" wire:click="alternarObjeto({{ $obj->id }})" wire:key="inv-{{ $obj->id }}"
-                                    title="{{ $obj->nombre }} · Nv {{ $obj->nivel }}"
-                                    class="relative aspect-square rounded-md overflow-hidden border-2 {{ $puesto ? 'border-emerald-400 ring-2 ring-emerald-400/60' : 'border-black hover:border-yellow-400' }} bg-black/50">
-                                <img src="{{ $imgObjeto($obj) }}" alt="{{ $obj->nombre }}" class="w-full h-full object-cover {{ $puesto ? 'opacity-60' : '' }}">
-                                <span class="absolute bottom-0 inset-x-0 text-[8px] font-bold text-yellow-300 bg-black/70 leading-tight">Nv {{ $obj->nivel }}</span>
-                                @if ($puesto)<span class="absolute inset-0 flex items-center justify-center text-emerald-300 text-lg font-extrabold">✔</span>@endif
+                                    title="{{ $nombreParte }} · {{ $obj->nombre }} · Nv {{ $obj->nivel }}"
+                                    class="relative aspect-square rounded-lg overflow-hidden border-[3px] {{ $bordeParte }} {{ $puesto ? 'ring-2 ring-white' : 'hover:brightness-125' }} bg-black/50">
+                                <img src="{{ $imgObjeto($obj) }}" alt="{{ $obj->nombre }}" class="w-full h-full object-cover {{ $puesto ? 'opacity-50' : '' }}">
+                                <span class="absolute bottom-0 inset-x-0 text-[10px] font-bold text-yellow-300 bg-black/70 leading-tight">Nv {{ $obj->nivel }}</span>
+                                @if ($puesto)<span class="absolute inset-0 flex items-center justify-center text-white text-2xl font-extrabold [text-shadow:0_2px_0_#000]">✔</span>@endif
                             </button>
                         @empty
                             <p class="col-span-full text-xs text-gray-400 italic">No tenés objetos para intercambiar (los equipados y los que están a la venta no cuentan).</p>
