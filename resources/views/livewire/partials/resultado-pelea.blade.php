@@ -489,26 +489,8 @@
 
           $bloqueadoYContra = $tipoAtaque === 'normal' && $res['danio'] == 0 && $hayContra && isset($res['defensor']);
 
-          // Tipo atacante dinámico para ataque normal
-          if ($res['atacante'] === 'personaje') {
-          $equipo = $personaje->equipo;
-          $entrenamiento = $personaje->entrenamiento;
-          $accesorio = $personaje->accesorio;
-
-          if (
-          $equipo && $entrenamiento && $accesorio &&
-          $equipo->origen_post_id &&
-          $equipo->origen_post_id === $entrenamiento->origen_post_id &&
-          $equipo->origen_post_id === $accesorio->origen_post_id
-          ) {
-          $postOrigen = \App\Models\Post::find($equipo->origen_post_id);
-          $tipoAtacante = $postOrigen?->tipo ?? 'fisico';
-          } else {
-          $tipoAtacante = $personaje->post->tipo ?? 'fisico';
-          }
-          } else {
-          $tipoAtacante = $tipoVistaEnemigo;
-          }
+          // Tipo de daño del que ataca: el de la pelea (ver $tipoVistaPersonaje arriba), no el del set equipado ahora
+          $tipoAtacante = $res['atacante'] === 'personaje' ? $tipoVistaPersonaje : $tipoVistaEnemigo;
           @endphp
 
           {{-- <h3 class="text-2xl font-bold mb-2 text-center">Ronda {{ $res['ronda'] }}</h3> --}}
