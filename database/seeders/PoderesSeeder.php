@@ -47,12 +47,12 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'ATURDIR',//!!HECHO!!
-                'descripcion'   => '35% de chances de dejar Aturdido al contrincante en pelea',
+                'descripcion'   => '10% de chances de dejar Aturdido al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'    => 'estado',
                         'estado'  => 'Aturdido',
-                        'chance'  => 35,
+                        'chance'  => 10,
                     ],
                 ]),
                 'imagen'        => 'aturdir.png',
@@ -83,7 +83,7 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'CONGELAR',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ENE. 35% de chances de dejar Congelado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ENE. 10% de chances de dejar Congelado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
@@ -93,7 +93,7 @@ class PoderesSeeder extends Seeder
                     [
                         'tipo'   => 'estado',
                         'estado' => 'Congelado',
-                        'chance' => 35,
+                        'chance' => 10,
                     ],
                 ]),
                 'imagen'        => 'congelar.png',
@@ -163,19 +163,19 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'ENVENENAR',//!!HECHO!!
-                'descripcion'   => '20% de chances de dejar Envenenado al contrincante en pelea',
+                'descripcion'   => '10% de chances de dejar Envenenado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo' => 'estado',
                         'estado' => 'Envenenado',
-                        'chance' => 100,
+                        'chance' => 10,
                     ],
                 ]),
                 'imagen'        => 'envenenar.png',
             ],
             [
                 'nombre'        => 'ESPINAS', //!!HECHO!!
-                'descripcion'   => 'Devuelve un 45% del daño recibido. 35% de chances de dejar Envenenado al contrincante en pelea',
+                'descripcion'   => 'Devuelve un 45% del daño recibido. 10% de chances de dejar Envenenado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
@@ -184,7 +184,7 @@ class PoderesSeeder extends Seeder
                     [
                         'tipo' => 'estado',
                         'estado' => 'Envenenado',
-                        'chance' => 35,
+                        'chance' => 10,
                     
                     ],
                 ]),
@@ -244,7 +244,7 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'HEMORRAGIA',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 35% de una tirada de ATA. 35% de chances de dejar Desangrado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 35% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
@@ -254,7 +254,7 @@ class PoderesSeeder extends Seeder
                     [
                         'tipo' => 'estado',
                         'estado' => 'Desangrado',
-                        'chance' => 35,
+                        'chance' => 10,
                         
                     ],
                 ]),
@@ -351,12 +351,12 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'PARALIZAR',//!!HECHO!!
-                'descripcion'   => '20% de chances de dejar Paralizado al contrincante en pelea',
+                'descripcion'   => '10% de chances de dejar Paralizado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo' => 'estado',
                         'estado' => 'Paralizado',
-                        'chance' => 35,
+                        'chance' => 10,
                         
                     ],
                 ]),
@@ -390,7 +390,7 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'QUEMAR',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 35% de chances de dejar Quemado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 10% de chances de dejar Quemado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
@@ -400,7 +400,7 @@ class PoderesSeeder extends Seeder
                     [
                         'tipo' => 'estado',
                         'estado' => 'Quemado',
-                        'chance' => 35,
+                        'chance' => 10,
                         
                     ],
                 ]),
@@ -471,7 +471,7 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'SANGRADO',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 20% de chances de dejar Desangrado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
@@ -481,7 +481,7 @@ class PoderesSeeder extends Seeder
                     [
                         'tipo' => 'estado',
                         'estado' => 'Desangrado',
-                        'chance' => 20,
+                        'chance' => 10,
                         
                     ],
                 ]),
