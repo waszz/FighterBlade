@@ -169,11 +169,9 @@ class Caza extends Component
             return 'Ya tenés una caza en curso.';
         }
 
-        $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
-        foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {
-            if ($estados->contains($estado)) {
-                return "No podés cazar porque estás $estado.";
-            }
+        // Aturdido o Paralizado no dejan pelear (Congelado sí: solo impide viajar). Ver Personaje::ESTADOS_QUE_BLOQUEAN
+        if ($estado = $personaje->estadoQueBloquea('pelear')) {
+            return "No podés cazar porque estás $estado.";
         }
 
         if ($personaje->viajando_hasta && now()->lt($personaje->viajando_hasta)) {

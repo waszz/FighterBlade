@@ -154,6 +154,23 @@ protected $casts = [
         return max(0, $segundos);
     }
 
+    // Qué impide cada estado (los que no están en ninguna lista, como Envenenado, Desangrado y Quemado, no impiden nada):
+    //  - pelear: explorar, misiones, torre, caza y atacar a otro jugador → Aturdido y Paralizado
+    //  - viajar: viajar y teletransportarse → Congelado y Paralizado
+    const ESTADOS_QUE_BLOQUEAN = [
+        'pelear' => ['Aturdido', 'Paralizado'],
+        'viajar' => ['Congelado', 'Paralizado'],
+    ];
+
+    // Estado activo que le impide hacer esa acción ('pelear' o 'viajar'), o null si puede
+    public function estadoQueBloquea(string $accion): ?string
+    {
+        $bloquean = self::ESTADOS_QUE_BLOQUEAN[$accion] ?? [];
+        return $this->estadosTemporales
+            ->filter(fn ($e) => $e->estaActivo() && in_array($e->estado, $bloquean, true))
+            ->first()?->estado;
+    }
+
     // Recarga diaria: cada 24 horas, si tiene menos de 100 esmeraldas, se le completan hasta 100
     // (con 99 recibe 1, no 100 más). Con 100 o más no recibe nada y la recarga queda disponible para
     // cuando baje de 100. Se hace sola al entrar al juego (ver JuegoInterfaz). Devuelve cuántas recibió

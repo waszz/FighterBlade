@@ -650,35 +650,11 @@ public function colorBarraPorStat($valor)
             return;
         }
 
-         // Bloquear si está aturdido
-    $estadoAturdido = $this->personaje->estadosTemporales
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->firstWhere('estado', 'Aturdido');
-
-    if ($estadoAturdido) {
-        $this->mensajeExploracion = 'No puedes explorar porque estás Aturdido.';
-        return;
-    }
-
-    // Bloquear si está congelado
-$estadoCongelado = $this->personaje->estadosTemporales
-    ->filter(fn($estado) => $estado->estaActivo())
-    ->firstWhere('estado', 'Congelado');
-
-if ($estadoCongelado) {
-    $this->mensajeExploracion = 'No puedes explorar porque estás Congelado.';
-    return;
-}
-
-    // Bloquear si está congelado
-$estadoParalizado = $this->personaje->estadosTemporales
-    ->filter(fn($estado) => $estado->estaActivo())
-    ->firstWhere('estado', 'Paralizado');
-
-if ($estadoParalizado) {
-    $this->mensajeExploracion = 'No puedes explorar porque estás Paralizado.';
-    return;
-}
+        // Aturdido o Paralizado no dejan explorar (Congelado sí: solo impide viajar). Ver Personaje::ESTADOS_QUE_BLOQUEAN
+        if ($estado = $this->personaje->estadoQueBloquea('pelear')) {
+            $this->mensajeExploracion = "No puedes explorar porque estás $estado.";
+            return;
+        }
 
         // Bloquear si tiene una misión en curso
         if ($this->personaje->mision_activa_id) {

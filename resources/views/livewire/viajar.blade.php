@@ -84,18 +84,7 @@
     </div>
 @endif
 
-@if($personaje->estadosTemporales->where('estado', 'Aturdido')->filter(fn($e) => $e->estaActivo())->isNotEmpty())
-    <div class="text-red-200 text-xs font-semibold bg-red-900 bg-opacity-30 border border-red-400 rounded px-3 py-2 mb-3 text-center">
-    💫 Estás Aturdido y no puedes viajar por el momento.
-    </div>
-@endif
-
-@if($personaje->estadosTemporales->where('estado', 'Envenenado')->filter(fn($e) => $e->estaActivo())->isNotEmpty())
-    <div class="text-green-200 text-xs font-semibold bg-green-900 bg-opacity-30 border border-green-400 rounded px-3 py-2 mb-3 text-center">
-    ☠️ Estás Envenenado y no puedes viajar por el momento.
-    </div>
-@endif
-
+{{-- Aturdido, Envenenado y Desangrado sí pueden viajar (ver Personaje::ESTADOS_QUE_BLOQUEAN) --}}
 @if($personaje->estadosTemporales->where('estado', 'Paralizado')->filter(fn($e) => $e->estaActivo())->isNotEmpty())
     <div class="text-yellow-200 text-xs font-semibold bg-yellow-900 bg-opacity-30 border border-yellow-400 rounded px-3 py-2 mb-3 text-center">
     ⚡ Estás Paralizado y no puedes viajar por el momento.

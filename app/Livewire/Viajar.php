@@ -84,32 +84,10 @@ class Viajar extends Component
     // Combate activo
     $combateActivo = session('combate_activo', false);
 
-    //  Ver si tiene estado "Congelado" activo
-    $congelado = $this->personaje->estadosTemporales
-        ->where('estado', 'Congelado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
+    // Congelado o Paralizado (Aturdido, Envenenado y Desangrado sí pueden viajar). Ver Personaje::ESTADOS_QUE_BLOQUEAN
+    $estadoQueBloquea = $this->personaje->estadoQueBloquea('viajar');
 
-
-       //  Estado Aturdido activo
-    $aturdido = $this->personaje->estadosTemporales
-        ->where('estado', 'Aturdido')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         //Estado envenenado
-    $envenenado = $this->personaje->estadosTemporales
-        ->where('estado', 'Envenenado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         //Estado paralizado
-    $paralizado = $this->personaje->estadosTemporales
-        ->where('estado', 'Paralizado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-    return $explorando || $combateActivo || $congelado || $aturdido || $envenenado || $paralizado;
+    return $explorando || $combateActivo || $estadoQueBloquea !== null;
 }
 
     public function viajarA($ciudadId)
@@ -122,47 +100,13 @@ class Viajar extends Component
             return;
         }
 
-            // Verificación específica para congelado
-    $congelado = $this->personaje->estadosTemporales
-        ->where('estado', 'Congelado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-    if ($congelado) {
-        session()->flash('error', 'No puedes viajar mientras estás Congelado..');
-        return;
-    }
-
-    $aturdido = $this->personaje->estadosTemporales
-    ->where('estado', 'Aturdido')
-    ->filter(fn($estado) => $estado->estaActivo())
-    ->isNotEmpty();
-
-    if($aturdido) {
-        session()->flash('error', 'No puedes viajar mientras estás Aturdido...');
-        return;
-    }
-
-     $envenenado = $this->personaje->estadosTemporales
-        ->where('estado', 'Envenenado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         if($envenenado) {
-        session()->flash('error', 'No puedes viajar mientras estás Envenenado...');
-        return;
-    }
+        // Congelado o Paralizado no dejan viajar (Aturdido, Envenenado y Desangrado sí). Ver Personaje::ESTADOS_QUE_BLOQUEAN
+        if ($estado = $this->personaje->estadoQueBloquea('viajar')) {
+            session()->flash('error', "No puedes viajar mientras estás $estado.");
+            return;
+        }
 
     
-     $paralizado = $this->personaje->estadosTemporales
-        ->where('estado', 'Paralizado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         if($paralizado) {
-        session()->flash('error', 'No puedes viajar mientras estás Paralizado...');
-        return;
-    }
 
         if ($this->noPuedeViajar()) {
             session()->flash('error', 'No puedes viajar mientras estás explorando o en combate.');
@@ -227,46 +171,11 @@ class Viajar extends Component
             return;
         }
 
-            // Verificación específica para congelado
-    $congelado = $this->personaje->estadosTemporales
-        ->where('estado', 'Congelado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-    if ($congelado) {
-        session()->flash('error', 'No puedes teletransportarte mientras estás congelado..');
-        return;
-    }
-
-    $aturdido = $this->personaje->estadosTemporales
-    ->where('estado', 'Aturdido')
-    ->filter(fn($estado) => $estado->estaActivo())
-    ->isNotEmpty();
-
-    if($aturdido) {
-        session()->flash('error', 'No puedes teletransportarte mientras estás Aturdido...');
-        return;
-    }
-
-     $envenenado = $this->personaje->estadosTemporales
-        ->where('estado', 'Envenenado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         if($envenenado) {
-        session()->flash('error', 'No puedes teletransportarte mientras estás Envenenado...');
-        return;
-    }
-
-       $paralizado = $this->personaje->estadosTemporales
-        ->where('estado', 'Paralizado')
-        ->filter(fn($estado) => $estado->estaActivo())
-        ->isNotEmpty();
-
-         if($paralizado) {
-        session()->flash('error', 'No puedes teletransportarte mientras estás Paralizado...');
-        return;
-    }
+        // Congelado o Paralizado no dejan teletransportarse (Aturdido, Envenenado y Desangrado sí)
+        if ($estado = $this->personaje->estadoQueBloquea('viajar')) {
+            session()->flash('error', "No puedes teletransportarte mientras estás $estado.");
+            return;
+        }
 
         if ($this->noPuedeViajar()) {
             session()->flash('error', 'No puedes teletransportarte mientras estás explorando o en combate.');

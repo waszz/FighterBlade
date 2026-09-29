@@ -58,11 +58,9 @@ class Torre extends Component
         if ($personaje->estaEntrenando()) {
             return Personaje::MENSAJE_ENTRENANDO;
         }
-        $estados = $personaje->estadosTemporales->filter(fn ($e) => $e->estaActivo())->pluck('estado');
-        foreach (['Aturdido', 'Congelado', 'Paralizado'] as $estado) {
-            if ($estados->contains($estado)) {
-                return "No podés pelear porque estás $estado.";
-            }
+        // Aturdido o Paralizado no dejan pelear (Congelado sí: solo impide viajar). Ver Personaje::ESTADOS_QUE_BLOQUEAN
+        if ($estado = $personaje->estadoQueBloquea('pelear')) {
+            return "No podés pelear porque estás $estado.";
         }
         if ($personaje->viajando_hasta && now()->lt($personaje->viajando_hasta)) {
             return 'Estás viajando. Peleá cuando llegues.';

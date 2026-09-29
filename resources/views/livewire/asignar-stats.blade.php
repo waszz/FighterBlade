@@ -2,6 +2,7 @@
 @if($estadosTemporalesActivos->contains('estado', 'Congelado'))
       <div class="text-center text-blue-300 text-xs font-semibold bg-blue-900 bg-opacity-30 p-1.5 rounded mb-2 border border-blue-400">
         <div class="text-blue-200 font-bold text-sm mb-1">❄️ Congelado</div>
+        <div class="text-[11px] text-blue-100 mb-0.5">No podés viajar. Sí podés explorar y pelear.</div>
         
         <div class="text-[11px] text-blue-300">
             Tiempo restante: <span id="contador-congelado">--:--</span>
@@ -16,6 +17,7 @@
     @if($estadosTemporalesActivos->contains('estado', 'Aturdido'))
     <div class="text-center text-red-200 text-xs font-semibold bg-red-900 bg-opacity-30 p-1.5 rounded mb-2 border border-red-400">
         <div class="text-red-100 font-bold text-sm mb-1">💫 Aturdido</div>
+        <div class="text-[11px] text-red-100 mb-0.5">No podés explorar ni pelear. Sí podés viajar.</div>
 
         <div class="text-[11px] text-red-200">
             Tiempo restante: <span id="contador-aturdido">--:--</span>
@@ -30,6 +32,7 @@
 @if($estadosTemporalesActivos->contains('estado', 'Envenenado'))
     <div class="text-center text-green-300 text-xs font-semibold bg-green-900 bg-opacity-30 p-1.5 rounded mb-2 border border-green-400">
         <div class="text-green-200 font-bold text-sm mb-1">☠️ Envenenado</div>
+        <div class="text-[11px] text-green-100 mb-0.5">Podés hacer todo normalmente.</div>
         
         <div class="text-[11px] text-green-300">
             Tiempo restante: <span id="contador-envenenado">--:--</span>
@@ -44,6 +47,7 @@
 @if($estadosTemporalesActivos->contains('estado', 'Desangrado'))
     <div class="text-center text-purple-300 text-xs font-semibold bg-purple-900 bg-opacity-30 p-1.5 rounded mb-2 border border-purple-400">
         <div class="text-purple-200 font-bold text-sm mb-1">🩸 Desangrado</div>
+        <div class="text-[11px] text-purple-100 mb-0.5">Podés hacer todo normalmente.</div>
         
         <div class="text-[11px] text-purple-300">
             Tiempo restante: <span id="contador-desangrado">--:--</span>
@@ -58,6 +62,7 @@
 @if($estadosTemporalesActivos->contains('estado', 'Paralizado'))
     <div class="text-center text-yellow-300 text-xs font-semibold bg-yellow-900 bg-opacity-30 p-1.5 rounded mb-2 border border-yellow-400">
         <div class="text-yellow-200 font-bold text-sm mb-1">⚡ Paralizado</div>
+        <div class="text-[11px] text-yellow-100 mb-0.5">No podés explorar, pelear ni viajar.</div>
         
         <div class="text-[11px] text-yellow-300">
             Tiempo restante: <span id="contador-paralizado">--:--</span>
