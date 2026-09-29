@@ -653,10 +653,21 @@ foreach ($this->estadosTemporalesActivos as $estado) {
         $this->puntos_stats = $this->personaje->puntos_stats;
     }
 
+    // Costo del reset de stats: 100 de oro por nivel (nivel 14 = 1400) o esmeraldas desde el nivel 5 (1, 2, 3...)
+    public static function costoResetOro(int $nivel): int
+    {
+        return max(1, $nivel) * 100;
+    }
+
+    public static function costoResetEsmeraldas(int $nivel): int
+    {
+        return max(1, $nivel - 4);
+    }
+
     public function resetearStats($recurso = 'oro')
     {
         $personaje = $this->personaje;
-        $costo     = $personaje->nivel * 10;
+        $costo     = $recurso === 'diamante' ? self::costoResetEsmeraldas((int) $personaje->nivel) : self::costoResetOro((int) $personaje->nivel);
 
         // Verificar oro o diamantes
         if ($recurso === 'oro') {

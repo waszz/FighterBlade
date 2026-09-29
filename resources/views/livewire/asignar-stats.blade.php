@@ -300,9 +300,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <h2 class="text-base font-bold">¿Resetear stats?</h2>
 
             @php
-                $costo = $personaje->nivel * 10;
-                $oroSuficiente = $personaje->oro >= $costo;
-                $diamantesSuficientes = $personaje->diamante >= $costo;
+                // 100 de oro por nivel o esmeraldas desde el nivel 5 (ver AsignarStats::costoReset...)
+                $costoOro = \App\Livewire\AsignarStats::costoResetOro((int) $personaje->nivel);
+                $costoEsmeraldas = \App\Livewire\AsignarStats::costoResetEsmeraldas((int) $personaje->nivel);
+                $oroSuficiente = $personaje->oro >= $costoOro;
+                $diamantesSuficientes = $personaje->diamante >= $costoEsmeraldas;
             @endphp
 
             
@@ -313,14 +315,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     {{ $oroSuficiente ? 'from-yellow-300 to-yellow-600 text-yellow-950 cursor-pointer hover:brightness-110 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.5)]' : 'from-yellow-200 to-yellow-400 text-yellow-700 opacity-50 cursor-not-allowed' }}"
                     @if($oroSuficiente) wire:click="resetearStats('oro')" @endif>
                     <img src="{{ asset('images/oro.png') }}" class="h-5 w-5" />
-                    <span class="text-sm font-semibold">{{ $costo }} Oro</span>
+                    <span class="text-sm font-semibold">{{ number_format($costoOro, 0, ",", ".") }} Oro</span>
                 </div>
 
                 <div class="flex items-center gap-2 px-4 py-2 rounded w-full justify-center bg-gradient-to-b border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.5),0_3px_0_#000] transition-all duration-100
                     {{ $diamantesSuficientes ? 'from-blue-500 to-blue-800 text-blue-50 cursor-pointer hover:brightness-110 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.5)]' : 'from-blue-300 to-blue-500 text-blue-100 opacity-50 cursor-not-allowed' }}"
                     @if($diamantesSuficientes) wire:click="resetearStats('diamante')" @endif>
                     <img src="{{ asset('images/diamante.png') }}" class="h-5 w-5" />
-                    <span class="text-sm font-semibold">{{ $costo }} Esmeraldas</span>
+                    <span class="text-sm font-semibold">{{ $costoEsmeraldas }} {{ $costoEsmeraldas === 1 ? "Esmeralda" : "Esmeraldas" }}</span>
                 </div>
             </div>
 
