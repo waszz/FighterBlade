@@ -68,12 +68,16 @@ class Explorar extends Component
         return max(self::EXP_ZONA_MINIMO, 1 - $diferencia * self::EXP_ZONA_BAJA_POR_NIVEL);
     }
 
-    // Espera después de una pelea: hasta nivel 20, 5 s si ganás y 15 s si perdés; desde el 21, 1 minuto.
+    // Espera después de una pelea: hasta nivel 20, 10 s; desde el 21, 1 minuto. Si empatás, siempre 5 s.
     // (Se puede saltear pagando oro: recuperarConOro)
-    public static function segundosRecuperacion(int $nivel, bool $gano): int
+    // $resultado: 'Victoria' | 'Derrota' | 'Empate'. El empate siempre son 5 s, a cualquier nivel
+    public static function segundosRecuperacion(int $nivel, string $resultado): int
     {
+        if ($resultado === 'Empate') {
+            return 5;
+        }
         if ($nivel <= 20) {
-            return $gano ? 5 : 15;
+            return 10;
         }
         return 60;
     }
@@ -1098,7 +1102,7 @@ if ($tieneSiempreEnPie) {
         $this->personaje->fin_exploracion = now();
     } else {
             // Recuperación por derrota según el nivel; la poción de recuperación la deja en 15 s como máximo
-            $segundos = self::segundosRecuperacion($this->personaje->nivel, false);
+            $segundos = self::segundosRecuperacion($this->personaje->nivel, 'Derrota');
             if ($usarPocionRecuperacion) {
                 $segundos = min($segundos, 15);
             }
@@ -1227,7 +1231,7 @@ if ($tieneSiempreEnPie) {
                 ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
             $this->personaje->fin_exploracion = $siempreEnPie
                 ? now()
-                : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, $this->resultadoFinal === 'Victoria'));
+                : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal));
         }
         // Mostrar el contador de recuperación sin recargar la página
         $restante = $this->personaje->fin_exploracion ? now()->diffInSeconds($this->personaje->fin_exploracion, false) : 0;

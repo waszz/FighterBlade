@@ -36,7 +36,7 @@
         ['Pelear', 'fa-khanda', [
             'Cuando aparece un enemigo elegís "Atacar" o "Huir". La pelea se juega sola, por rondas: los atributos, el tipo de daño y los poderes de cada uno deciden quién gana.',
             'Después de cada pelea hay un tiempo de recuperación:',
-            ['Hasta el nivel 20: 5 segundos si ganás y 15 si perdés.', 'Desde el nivel 21: 1 minuto.', 'Podés saltearlo pagando oro con "Recuperar ya".'],
+            ['Hasta el nivel 20: 10 segundos.', 'Desde el nivel 21: 1 minuto.', 'Si empatás: 5 segundos, a cualquier nivel.', 'Podés saltearlo pagando oro con "Recuperar ya".'],
             'En Mis Peleas tenés tus últimas peleas: podés volver a verlas o compartirlas en el chat.',
         ]],
         ['Sets y partes', 'fa-shirt', [
