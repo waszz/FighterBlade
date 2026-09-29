@@ -23,12 +23,11 @@ class NewsView extends Component
     }
    public function render()
 {
-    $news = News::where('user_id', auth()->id())
-        ->orderBy('created_at', 'desc')
+    // Solo entran admins (ver mount) y ven todas las noticias y ciudades, las haya creado quien sea
+    $news = News::orderBy('created_at', 'desc')
         ->paginate(10);
 
-    $ciudades = Ciudad::where('user_id', auth()->id())
-        ->orderBy('created_at', 'desc')
+    $ciudades = Ciudad::orderBy('created_at', 'desc')
         ->get();
         
 

@@ -192,6 +192,24 @@ Artisan::command('jugadores:ver-datos {personaje} {--quitar}', function () {
     $this->info(($this->option('quitar') ? 'Permiso quitado a ' : 'Permiso dado a ') . "la cuenta de {$personaje->nombre} ({$personaje->user->email}).");
 })->purpose('Da (o quita con --quitar) el permiso de ver oro, esmeraldas y stats de los demás jugadores');
 
+// Hace admin a una cuenta (por su email): ve y edita todos los sets, noticias y ciudades, los haya creado quien sea.
+// Las pantallas de admin piden el email verificado: si no lo estaba, lo marca. Con --quitar la vuelve usuario normal.
+//   php artisan usuarios:admin alguien@mail.com
+Artisan::command('usuarios:admin {email} {--quitar}', function () {
+    $user = \App\Models\User::where('email', $this->argument('email'))->first();
+    if (! $user) {
+        $this->error("No existe una cuenta con el email {$this->argument('email')}.");
+        return 1;
+    }
+    if ($this->option('quitar')) {
+        $user->forceFill(['role' => 'user'])->save();
+        $this->info("{$user->email} ya no es admin.");
+        return 0;
+    }
+    $user->forceFill(['role' => 'admin', 'email_verified_at' => $user->email_verified_at ?? now()])->save();
+    $this->info("{$user->email} ahora es admin.");
+})->purpose('Hace admin a una cuenta (o la vuelve usuario normal con --quitar)');
+
 // GIF de los sets con fondo magenta (#FF00FF) sin transparencia: el magenta pasa a ser transparente.
 // Solo los gif de los sets (no los fondos de las ciudades). Con --probar muestra qué cambiaría sin tocar nada.
 // Antes de cambiar un archivo deja una copia en storage/app/gifs-originales/.

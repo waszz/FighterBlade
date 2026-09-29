@@ -35,8 +35,10 @@ class MostrarPosts extends Component
 
    public function render()
 {
-    // Los rivales de misión y el enemigo de bienvenida están en Personajes especiales
-    $posts = Post::where('user_id', auth()->user()->id)
+    // Los rivales de misión y el enemigo de bienvenida están en Personajes especiales.
+    // Los admins ven todos los sets (los haya creado quien sea); si no, solo los propios
+    $posts = Post::query()
+        ->when(! auth()->user()->isAdmin(), fn ($query) => $query->where('user_id', auth()->id()))
         ->where('titulo', 'like', '%' . $this->search . '%')
         ->when($this->categoria, function($query) {
             $query->where('categoria', $this->categoria);

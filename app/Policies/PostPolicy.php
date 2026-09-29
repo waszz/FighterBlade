@@ -37,7 +37,8 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-       return $user->id === $post->user_id;
+        // Cualquier admin edita cualquier set (no solo el que lo creó)
+        return $user->isAdmin() || $user->id === $post->user_id;
     }
 
     /**
