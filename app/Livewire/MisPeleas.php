@@ -46,16 +46,44 @@ class MisPeleas extends Component
         $this->cargarPeleas();
     }
 
-    // Últimas 20 peleas de la pestaña; PvP son las que se guardaron con el rival siendo otro jugador
+    // Últimas 20 peleas de la pestaña; PvP son las que se guardaron con el rival siendo otro jugador.
+    // En PvP también están las que otro jugador inició contra este personaje (ataques y duelos aceptados)
     protected function cargarPeleas(): void
     {
+        $esPvp = fn ($pelea) => ! empty(($pelea->datos_combate ?? [])['enemigo_es_personaje']);
+
+        if ($this->pestana === 'pvp') {
+            $this->peleas = Pelea::where(fn ($q) => $q->where('personaje_id', $this->personajeId)->orWhere('enemigo_id', $this->personajeId))
+                ->orderBy('realizada_en', 'desc')
+                ->take(300)
+                ->get()
+                // enemigo_id también guarda sets en las peleas PvE: solo cuentan las PvP
+                ->filter($esPvp)
+                ->take(20)
+                ->values();
+            return;
+        }
+
         $this->peleas = Pelea::where('personaje_id', $this->personajeId)
             ->orderBy('realizada_en', 'desc')
             ->take(300)
             ->get()
-            ->filter(fn ($pelea) => ! empty(($pelea->datos_combate ?? [])['enemigo_es_personaje']) === ($this->pestana === 'pvp'))
+            ->reject($esPvp)
             ->take(20)
             ->values();
+    }
+
+    // Pelea que puede ver este personaje: las suyas o las PvP donde el rival era él
+    protected function peleaVisible($id): ?Pelea
+    {
+        $pelea = Pelea::find($id);
+        if (! $pelea) {
+            return null;
+        }
+        $esMia = (int) $pelea->personaje_id === (int) $this->personajeId;
+        $meAtacaron = (int) $pelea->enemigo_id === (int) $this->personajeId && ! empty(($pelea->datos_combate ?? [])['enemigo_es_personaje']);
+
+        return $esMia || $meAtacaron ? $pelea : null;
     }
 
 
@@ -157,7 +185,7 @@ if ($enemigo->gif) {
     // Las peleas viejas no tienen rondas guardadas: se ve el escenario y el resultado.
     public function verPelea($id)
     {
-        $pelea = Pelea::where('personaje_id', $this->personajeId)->find($id);
+        $pelea = $this->peleaVisible($id);
         if (! $pelea) {
             return;
         }

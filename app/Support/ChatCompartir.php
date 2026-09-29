@@ -51,7 +51,7 @@ class ChatCompartir
             'exp'              => (int) $pelea->exp_ganada,
             'oro'              => (int) $pelea->oro_ganado,
             'nombre_personaje' => $datos['nombre_personaje'] ?? $personaje->nombre,
-            'nombre_enemigo'   => $datos['nombre_enemigo'] ?? ($pelea->enemigo->titulo ?? 'Enemigo'),
+            'nombre_enemigo'   => $pelea->nombreRival(),
             'gif_personaje'    => $datos['gif_personaje'] ?? null,
             'gif_enemigo'      => $datos['gif_enemigo'] ?? null,
             'fecha'            => $pelea->realizada_en?->toIso8601String(),

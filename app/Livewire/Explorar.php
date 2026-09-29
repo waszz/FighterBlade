@@ -1160,7 +1160,8 @@ if ($tieneSiempreEnPie) {
             'gif_personaje'     => $gifMostrar,
             'gif_enemigo'       => $this->gifEnemigo(),
             'nombre_personaje'  => $this->personaje->nombre,
-            'nombre_enemigo'    => $this->enemigo->titulo ?? 'Enemigo',
+            // Set o, en PvP, el nombre del personaje rival
+            'nombre_enemigo'    => $this->enemigo->titulo ?? $this->enemigo->nombre ?? 'Enemigo',
             'poderes_personaje' => $poderesPersonaje->toArray(),
             'poderes_enemigo'   => collect($this->enemigo->poderes ?? [])->map(fn($p) => strtoupper($p['nombre'] ?? ''))->toArray(),
             // Para volver a ver la pelea desde "Mis peleas" (partial livewire.partials.resultado-pelea)

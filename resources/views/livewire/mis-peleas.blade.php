@@ -15,7 +15,13 @@
       $datosRep = $repeticion['pelea']->datos_combate ?? [];
       $ganoRep = $repeticion['pelea']->resultado === 'victoria';
       // Verde si ganó, gris si empató, rojo si perdió
-      $colorRep = match ($repeticion['pelea']->resultado) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
+      // Si la pelea la inició otro jugador contra mí, el cartel muestra mi resultado (al revés del guardado)
+      $meAtacaronRep = $repeticion['pelea']->esPvp() && (int) $repeticion['pelea']->enemigo_id === (int) $personajeId
+          && (int) $repeticion['pelea']->personaje_id !== (int) $personajeId;
+      $resultadoRep = $meAtacaronRep
+          ? match ($repeticion['pelea']->resultado) { 'victoria' => 'derrota', 'derrota' => 'victoria', default => 'empate' }
+          : $repeticion['pelea']->resultado;
+      $colorRep = match ($resultadoRep) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
       $fondoRep = $repeticion['escenarioMision'] ?? $repeticion['ciudadActual']?->gif;
       $gifPjRep = $datosRep['gif_personaje'] ?? null;
       $gifEnRep = $datosRep['gif_enemigo'] ?? null;
@@ -24,17 +30,22 @@
       $poderesRepPj = $poderesPorNombre($datosRep['poderes_personaje'] ?? []);
       $poderesRepEn = $poderesPorNombre($datosRep['poderes_enemigo'] ?? []);
       $nombrePjRep = $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre;
-      $nombreEnRep = $datosRep['nombre_enemigo'] ?? ($repeticion['enemigo']->titulo ?? $repeticion['enemigo']->nombre ?? 'Enemigo');
+      $nombreEnRep = $repeticion['pelea']->nombreRival();
     @endphp
 
     {{-- Encabezado: quién contra quién y resultado --}}
     <h2 class="text-center text-xl font-bold mb-2 [text-shadow:0_2px_0_#000]">
       <span class="text-yellow-300">{{ $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre }}</span>
       <span class="text-gray-300 mx-1">vs</span>
-      <span class="text-yellow-300">{{ $datosRep['nombre_enemigo'] ?? ($repeticion['enemigo']->titulo ?? $repeticion['enemigo']->nombre ?? 'Enemigo') }}</span>
+      <span class="text-yellow-300">{{ $nombreEnRep }}</span>
       <span class="ml-2 inline-block align-middle px-2 py-0.5 rounded-full border border-black text-xs font-extrabold uppercase shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]
-                   {{ $colorRep }}">{{ ucfirst($repeticion['pelea']->resultado) }}</span>
+                   {{ $colorRep }}">{{ ucfirst($resultadoRep) }}{{ $meAtacaronRep ? ' para vos' : '' }}</span>
     </h2>
+    @if ($meAtacaronRep)
+      <p class="-mt-1 mb-2 text-center text-xs font-bold text-sky-300">
+        {{ ($datosRep['origen'] ?? null) === 'duelo' ? '⚔️ Duelo' : '🛡️ Te atacó' }} {{ $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre }}
+      </p>
+    @endif
 
     {{-- Escenario de la pelea, como en la Ciudad: los dos enfrentados con el VS y los poderes a los costados --}}
     <div class="w-full flex items-center justify-center gap-3 mb-4">
@@ -91,7 +102,7 @@
     <div class="max-w-md mx-auto p-4 rounded-xl text-center space-y-2 {{ $panel3d }}">
       <p class="text-xs text-amber-300">Esta pelea es de antes de que se guardaran las rondas: solo queda el resumen.</p>
       <p><b class="text-white">{{ $datosRep['nombre_personaje'] ?? 'Personaje' }}</b> hizo <span class="text-red-400 font-bold">{{ number_format($datosRep['danio_personaje'] ?? 0) }}</span> de daño</p>
-      <p><b class="text-white">{{ $datosRep['nombre_enemigo'] ?? 'Enemigo' }}</b> hizo <span class="text-red-400 font-bold">{{ number_format($datosRep['danio_enemigo'] ?? 0) }}</span> de daño</p>
+      <p><b class="text-white">{{ $nombreEnRep }}</b> hizo <span class="text-red-400 font-bold">{{ number_format($datosRep['danio_enemigo'] ?? 0) }}</span> de daño</p>
       <div class="flex justify-center gap-4 pt-1 font-bold">
         <span class="text-green-400">EXP +{{ number_format($repeticion['pelea']->exp_ganada ?? 0) }}</span>
         <span class="flex items-center gap-1 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="" class="w-4 h-4">+{{ number_format($repeticion['pelea']->oro_ganado ?? 0) }}</span>
@@ -129,9 +140,20 @@
           $gifEnemigo = $datosCombate['gif_enemigo'] ?? null;
 
           $nombrePersonaje = $datosCombate['nombre_personaje'] ?? ($pelea->personaje->nombre ?? 'Personaje');
-          $nombreEnemigo = $datosCombate['nombre_enemigo'] ?? ($pelea->enemigo->titulo ?? 'Enemigo');
-          $gano = $pelea->resultado === 'victoria';
-          $colorResultado = match ($pelea->resultado) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
+          $nombreEnemigo = $pelea->nombreRival();
+          $resultadoMio = $pelea->resultado;
+
+          // Pelea que inició otro jugador contra mí (ataque o duelo): se ve desde mi lado,
+          // yo a la izquierda y el resultado al revés; no me dio exp ni oro
+          $meAtacaron = (int) $pelea->personaje_id !== (int) $personajeId;
+          if ($meAtacaron) {
+              [$gifPersonaje, $gifEnemigo] = [$gifEnemigo, $gifPersonaje];
+              [$nombrePersonaje, $nombreEnemigo] = [$nombreEnemigo, $nombrePersonaje];
+              $resultadoMio = match ($pelea->resultado) { 'victoria' => 'derrota', 'derrota' => 'victoria', default => 'empate' };
+          }
+          $esDuelo = ($datosCombate['origen'] ?? null) === 'duelo';
+          $gano = $resultadoMio === 'victoria';
+          $colorResultado = match ($resultadoMio) { 'victoria' => 'bg-gradient-to-b from-emerald-500 to-emerald-800', 'empate' => 'bg-gradient-to-b from-gray-400 to-gray-700', default => 'bg-gradient-to-b from-red-500 to-red-800' };
         @endphp
 
         {{-- Tarjeta 3D de la pelea --}}
@@ -150,18 +172,26 @@
           <div class="flex-1 min-w-0 text-center">
             <span class="inline-block px-2 py-0.5 rounded-full border border-black text-xs font-extrabold uppercase shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]
                          {{ $colorResultado }}">
-              {{ ucfirst($pelea->resultado) }}
+              {{ ucfirst($resultadoMio) }}
             </span>
-            <p class="mt-1 text-gray-300 text-xs flex justify-center items-center gap-2">
-              <span>EXP <span class="text-green-400 font-semibold">+{{ number_format($pelea->exp_ganada) }}</span></span>
-              <span class="flex items-center gap-1 text-yellow-400 font-semibold">
-                <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4" />+{{ number_format($pelea->oro_ganado) }}
-              </span>
-            </p>
+            @if ($meAtacaron || $esDuelo)
+              <p class="mt-1 text-xs font-bold {{ $esDuelo ? 'text-orange-300' : 'text-sky-300' }}">
+                {{ $esDuelo ? '⚔️ Duelo' : '🛡️ Te atacó' }}
+              </p>
+            @else
+              <p class="mt-1 text-gray-300 text-xs flex justify-center items-center gap-2">
+                <span>EXP <span class="text-green-400 font-semibold">+{{ number_format($pelea->exp_ganada) }}</span></span>
+                <span class="flex items-center gap-1 text-yellow-400 font-semibold">
+                  <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4" />+{{ number_format($pelea->oro_ganado) }}
+                </span>
+              </p>
+            @endif
             <p class="text-gray-400 text-[11px] mt-0.5">{{ $pelea->realizada_en->diffForHumans() }}</p>
             <div class="mt-1.5 flex justify-center gap-1.5">
               <button wire:click="verPelea({{ $pelea->id }})" class="{{ $boton3d }} !py-1 !text-xs">Ver</button>
-              <button wire:click="compartirPelea({{ $pelea->id }})" wire:loading.attr="disabled" title="Compartir en el chat" class="{{ $boton3d }} !py-1 !text-xs">💬 Compartir</button>
+              @unless ($meAtacaron)
+                <button wire:click="compartirPelea({{ $pelea->id }})" wire:loading.attr="disabled" title="Compartir en el chat" class="{{ $boton3d }} !py-1 !text-xs">💬 Compartir</button>
+              @endunless
             </div>
           </div>
 
@@ -199,7 +229,7 @@
 
                 // Nombres para mostrar
                 $nombrePersonaje = $datosCombate['nombre_personaje'] ?? $peleaSeleccionada->personaje->nombre ?? 'Personaje';
-                $nombreEnemigo = $datosCombate['nombre_enemigo'] ?? $peleaSeleccionada->enemigo->titulo ?? 'Enemigo';
+                $nombreEnemigo = $peleaSeleccionada->nombreRival();
 
                 // Poderes personaje
                 $poderesPersonaje = collect($datosCombate['poderes_personaje'] ?? [])

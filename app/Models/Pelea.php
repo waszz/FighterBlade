@@ -34,4 +34,22 @@ class Pelea extends Model
         // Incluye a los rivales de misión en el historial
         return $this->belongsTo(Post::class, 'enemigo_id')->withoutGlobalScope(Post::SCOPE_SIN_RIVALES);
     }
+
+    public function esPvp(): bool
+    {
+        return ! empty(($this->datos_combate ?? [])['enemigo_es_personaje']);
+    }
+
+    // Nombre del rival. En PvP el rival es un personaje: las peleas viejas guardaron "Enemigo" en vez de su nombre
+    public function nombreRival(): string
+    {
+        $guardado = ($this->datos_combate ?? [])['nombre_enemigo'] ?? null;
+        if ($this->esPvp()) {
+            return ($guardado && $guardado !== 'Enemigo' ? $guardado : null)
+                ?? Personaje::find($this->enemigo_id)?->nombre
+                ?? 'Enemigo';
+        }
+
+        return $guardado ?? $this->enemigo?->titulo ?? 'Enemigo';
+    }
 }
