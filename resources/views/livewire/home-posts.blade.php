@@ -106,6 +106,17 @@
                     <p class="text-sm text-red-400 font-semibold">{{ $errors->first() }}</p>
                 @endif
 
+                {{-- Se cerró porque la cuenta está abierta en otro dispositivo: volver a jugar acá con un toque --}}
+                @if (session('retomar_sesion'))
+                    <button type="submit" form="form-retomar-sesion"
+                            class="w-full py-2 rounded-lg border border-black font-bold text-white
+                                   bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]
+                                   hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
+                        🎮 Jugar en este dispositivo
+                    </button>
+                    <p class="-mt-1 text-center text-[11px] text-gray-400">Se cierra la sesión en el otro dispositivo.</p>
+                @endif
+
                 <label class="flex items-center gap-2 text-sm text-gray-300">
                     <input type="checkbox" name="remember" class="rounded border-gray-500 bg-black/50 text-yellow-500 focus:ring-yellow-500">
                     Recordarme
@@ -125,6 +136,13 @@
                     <a href="{{ route('register') }}" class="text-yellow-400 underline hover:text-yellow-300">Crear cuenta</a>
                 </div>
             </form>
+            {{-- Pase para "Jugar en este dispositivo" (el botón está dentro del cuadro de arriba) --}}
+            @if (session('retomar_sesion'))
+                <form id="form-retomar-sesion" method="POST" action="{{ route('sesion.retomar') }}" class="hidden">
+                    @csrf
+                    <input type="hidden" name="pase" value="{{ session('retomar_sesion') }}">
+                </form>
+            @endif
             @endguest
 
             {{-- Tu personaje (con la sesión iniciada) --}}

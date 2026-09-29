@@ -22,6 +22,11 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // "Jugar en este dispositivo" después de que la cuenta entró en otro lado (ver middleware SesionUnica)
+    Route::post('retomar-sesion', [AuthenticatedSessionController::class, 'retomar'])
+        ->middleware('throttle:10,1')
+        ->name('sesion.retomar');
+
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 

@@ -68,6 +68,32 @@ public function store(LoginRequest $request): RedirectResponse
 
 
     /**
+     * "Jugar en este dispositivo": a este dispositivo le cerraron la sesión porque la cuenta entró en otro
+     * (middleware SesionUnica) y con el pase que le dejó vuelve a entrar sin la contraseña; se cierra en el otro.
+     */
+    public function retomar(Request $request): RedirectResponse
+    {
+        $userId = \Illuminate\Support\Facades\Cache::pull('retomar-sesion:' . (string) $request->input('pase'));
+        $user = $userId ? \App\Models\User::find($userId) : null;
+        if (! $user) {
+            return redirect()->route('home')->withErrors(['email' => 'El aviso venció: iniciá sesión con tu email y contraseña.']);
+        }
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        // El último que entra gana: la sesión del otro dispositivo se cierra en su próxima petición
+        $user->last_session_id = $request->session()->getId();
+        $user->save();
+
+        $personaje = Personaje::where('user_id', $user->id)->latest('updated_at')->first();
+
+        return $personaje
+            ? redirect()->route('juego.mostrar', ['personajeId' => $personaje->id])
+            : redirect()->route('personajes.elegir');
+    }
+
+    /**
      * Destroy an authenticated session.
      */
    public function destroy(Request $request): RedirectResponse

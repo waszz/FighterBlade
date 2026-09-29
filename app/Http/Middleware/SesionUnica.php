@@ -36,6 +36,11 @@ class SesionUnica
                 $request->session()->regenerateToken();
                 // El aviso queda en la sesión nueva (vacía) y lo muestra la portada
                 $request->session()->flash('errors', (new ViewErrorBag)->put('default', new MessageBag(['email' => self::MENSAJE])));
+                // Pase de un solo uso (30 min) para volver a jugar acá con un toque, sin la contraseña
+                // (este dispositivo ya tenía la sesión abierta): ver AuthenticatedSessionController::retomar
+                $pase = \Illuminate\Support\Str::random(40);
+                \Illuminate\Support\Facades\Cache::put('retomar-sesion:' . $pase, $user->id, now()->addMinutes(30));
+                $request->session()->flash('retomar_sesion', $pase);
 
                 // Peticiones de Livewire/AJAX: 409 → el layout lleva a la portada (ver layouts/app: 'sesion-desplazada')
                 if ($request->hasHeader('X-Livewire') || $request->expectsJson()) {
