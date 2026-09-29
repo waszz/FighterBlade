@@ -212,7 +212,7 @@
           class="absolute inset-0 w-full h-full object-cover object-bottom z-0" />
 
         {{-- Personaje: estiloGif lo escala para que todos midan lo mismo y pisen la misma línea --}}
-        <div class="absolute bottom-1 left-[8%] z-10">
+        <div class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifMostrar) }}" alt="Personaje {{ $personaje->nombre }}"
             style="{{ \App\Models\Post::estiloGif($gifMostrar) }}"
             class="block max-w-none {{ $personaje->orientacion_gif === 'derecha' ? 'scale-x-[-1]' : '' }} {{ $personaje->claseAura() }}" />
@@ -220,7 +220,7 @@
 
         {{-- Enemigo --}}
         @if($enemigo)
-        <div class="absolute bottom-1 right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
+        <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
           <img src="{{ asset('storage/' . ($this->gifEnemigo() ?? 'default_enemigo.gif')) }}"
             alt="Enemigo {{ $enemigo->nombre ?? $enemigo->titulo }}"
             style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '' }}" />

@@ -66,7 +66,7 @@
         <div class="absolute inset-0 bg-gray-800"></div>
       @endif
       @if ($gifPjRep)
-        <div class="absolute bottom-1 left-[8%] z-10">
+        <div class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifPjRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifPjRep) }}" class="block max-w-none">
         </div>
       @endif
@@ -74,7 +74,7 @@
         <span class="text-4xl font-extrabold italic tracking-wider text-white [text-shadow:2px_2px_0_#000,-1px_-1px_0_#000] inline-block -rotate-6">VS</span>
       </div>
       @if ($gifEnRep)
-        <div class="absolute bottom-1 right-[8%] z-10 scale-x-[-1]">
+        <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
           <img src="{{ asset('storage/' . $gifEnRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifEnRep) }}" class="block max-w-none">
         </div>
       @endif

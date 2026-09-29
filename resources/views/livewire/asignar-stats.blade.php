@@ -208,8 +208,10 @@ document.addEventListener('DOMContentLoaded', function () {
     @endif
 
 
+{{-- Los modales se mandan al body: dentro del panel del perfil (celular) el panel los recortaba y tapaba --}}
 @if ($modalVisible)
-    <div class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-60  px-2" wire:click.self="cerrarModal">
+    @teleport('body')
+    <div class="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-60  px-2" wire:click.self="cerrarModal">
         <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-3 rounded-lg w-full max-w-xs space-y-3 text-xs">
 
 
@@ -291,11 +293,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 class="w-full py-1 bg-gradient-to-b from-green-500 to-green-800 text-white font-bold rounded text-xs border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] active:translate-y-[2px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 hover:brightness-125 disabled:opacity-50 disabled:active:translate-y-0">Guardar</button>
         </div>
     </div>
+    @endteleport
 @endif
 
 {{-- Modal de reset --}}
 @if($confirmandoReset)
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-2" wire:click.self="$set('confirmandoReset', false)">
+    @teleport('body')
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] px-2" wire:click.self="$set('confirmandoReset', false)">
         <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] text-white p-3 rounded-lg w-full max-w-[280px] space-y-4 text-center mx-auto">
             <h2 class="text-base font-bold">¿Resetear stats?</h2>
 
@@ -330,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 class="w-full py-1 bg-gradient-to-b from-red-600 to-red-900 text-white rounded text-sm font-semibold mt-4 border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] active:translate-y-[2px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 hover:brightness-125 disabled:opacity-50 disabled:active:translate-y-0">Cancelar</button>
         </div>
     </div>
+    @endteleport
 @endif
 
 

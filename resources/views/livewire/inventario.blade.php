@@ -1109,11 +1109,11 @@
     {{-- Modal tirar objeto --}}
     @if($modalTirarObjetosAbierto)
     <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModalTirarObjetos">
-      <div class="bg-gray-900 p-4 rounded-xl shadow-lg max-w-sm w-full text-white relative">
-        <button wire:click="cerrarModalTirarObjetos"
-          class="absolute top-2 right-2 text-yellow-300 hover:text-white text-3xl leading-none">&times;</button>
+      <div class="bg-gradient-to-b from-[#1c2533] to-[#0a0e14] border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)] p-4 rounded-lg max-w-sm w-full text-white relative">
+        <button wire:click="cerrarModalTirarObjetos" aria-label="Cerrar"
+          class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white text-sm font-bold shadow-[0_2px_0_#000] hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all duration-100">&times;</button>
 
-        <h3 class="text-lg font-bold mb-3 text-yellow-400 text-center">
+        <h3 class="text-lg font-bold mb-3 text-yellow-400 text-center [text-shadow:1px_1px_2px_rgba(0,0,0,0.9)]">
           🗑️ Confirmar tirar
           @if($objetoParaTirarId)
           este objeto
@@ -1134,8 +1134,10 @@
         @endphp
 
         <div class="mb-3 text-center">
-          <img src="{{ asset('storage/posts/' . $objetoSeleccionado->imagen) }}" alt="{{ $objetoSeleccionado->nombre }}"
-            class="mx-auto w-28 h-28 object-cover rounded mb-3 border border-gray-600" />
+          <div class="mx-auto w-32 h-32 mb-3 p-1.5 rounded-md border-2 border-black bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
+            <img src="{{ asset('storage/posts/' . $objetoSeleccionado->imagen) }}" alt="{{ $objetoSeleccionado->nombre }}"
+              class="w-full h-full object-cover rounded" />
+          </div>
 
           <h4 class="text-lg font-semibold text-indigo-300 mb-2 truncate">{{ $objetoSeleccionado->nombre }}</h4>
 
@@ -1161,9 +1163,9 @@
 
         <div class="flex justify-center gap-3 mt-4">
           <button wire:click="cerrarModalTirarObjetos"
-            class="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 font-semibold rounded text-sm">Cancelar</button>
-          <button wire:click="confirmarTirarObjeto"
-            class="px-4 py-1.5 bg-red-600 hover:bg-red-500 font-bold text-white rounded text-sm">Confirmar</button>
+            class="flex-1 py-1.5 rounded border border-black bg-gradient-to-b from-[#4b5563] to-[#1f2937] text-white text-sm font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100">Cancelar</button>
+          <button wire:click="confirmarTirarObjeto" wire:loading.attr="disabled"
+            class="flex-1 py-1.5 rounded border border-black bg-gradient-to-b from-red-500 to-red-800 text-white text-sm font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 disabled:opacity-50">Tirar</button>
         </div>
       </div>
     </div>
