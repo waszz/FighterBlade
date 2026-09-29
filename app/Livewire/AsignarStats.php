@@ -230,8 +230,11 @@ public function quitarEstado($nombreEstado)
             }
         }
 
+        // Poderes que suben stats (ENERGIZADO, GOLPES VELOCES, SUPER ATAQUE...): los del set con el que pelea
+        // (el completo equipado o, si no, el inicial), no siempre los del set inicial
+        $poderes = $this->personaje->postDeCombate()?->poderes ?? collect();
+
         // Aplicar poder ENERGIZADO si lo tiene el personaje
-        $poderes = $this->personaje->post->poderes ?? collect();
 
         foreach ($poderes as $poder) {
             if (strtoupper($poder->nombre) === 'ENERGIZADO') {

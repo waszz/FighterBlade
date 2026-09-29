@@ -155,8 +155,11 @@ public function calcularStatsTotales()
         }
     }
 
+    // Poderes que suben stats: los del set con el que pelea (el completo equipado o el inicial);
+    // la relación "poderes" del personaje es siempre la del set inicial
+    $poderes = $this->personaje->postDeCombate()?->poderes ?? collect();
+
     // Poder ENERGIZADO
-    $poderes = $this->personaje->poderes ?? [];
 
 foreach ($poderes as $poder) {
     if (strtoupper($poder->nombre) === 'ENERGIZADO') {
