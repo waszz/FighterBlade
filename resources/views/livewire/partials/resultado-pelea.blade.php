@@ -118,32 +118,18 @@
     @php
     $nombrePersonajeUsuario = $personaje->nombre ?? 'Personaje';
 
-    $postCompleto = null;
-    if ($equipo && $entrenamiento && $accesorio &&
-    $equipo->origen_post_id &&
-    $equipo->origen_post_id === $entrenamiento->origen_post_id &&
-    $equipo->origen_post_id === $accesorio->origen_post_id
-    ) {
-    $postCompleto = \App\Models\Post::find($equipo->origen_post_id);
-    }
+    // Poderes de cada uno: los del set con el que peleó (en Mis peleas, el guardado en la pelea; si no, el set
+    // completo equipado o el base). En PvP la relación "poderes" de un jugador es la de su set base: no sirve
+    $poderesDeCombate = fn ($pj) => $pj instanceof \App\Models\Personaje
+        ? ($pj->postDeCombate()?->poderes ?? collect())
+        : ($pj?->poderes ?? collect());
 
-    $poderPrincipalPersonaje = '';
-    $poderesPersonaje = collect();
-    if ($postCompleto && $postCompleto->poderes->count() > 0) {
-    $poderPrincipalPersonaje = $postCompleto->poderes->first()->nombre;
-    $poderesPersonaje = $postCompleto->poderes;
-    } elseif ($personaje->post && $personaje->post->poderes->count() > 0) {
-    $poderPrincipalPersonaje = $personaje->post->poderes->first()->nombre;
-    $poderesPersonaje = $personaje->post->poderes;
-    }
+    $poderesPersonaje = collect($postPjRep?->poderes ?? $poderesDeCombate($personaje));
+    $poderPrincipalPersonaje = $poderesPersonaje->first()->nombre ?? '';
 
     $nombreEnemigo = $enemigo->nombre ?? $enemigo->titulo ?? 'Enemigo';
-    $poderPrincipalEnemigo = '';
-    $poderesEnemigo = collect();
-    if ($enemigo && $enemigo->poderes->count() > 0) {
-    $poderPrincipalEnemigo = $enemigo->poderes->first()->nombre;
-    $poderesEnemigo = $enemigo->poderes;
-    }
+    $poderesEnemigo = collect($postEnRep?->poderes ?? $poderesDeCombate($enemigo));
+    $poderPrincipalEnemigo = $poderesEnemigo->first()->nombre ?? '';
     @endphp
 
     {{-- Poderes debajo de cada personaje: solo en pantallas chicas (en las grandes están al costado del escenario) --}}

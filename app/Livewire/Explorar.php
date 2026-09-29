@@ -1106,7 +1106,7 @@ if ($estadoParalizado) {
                     }
                 }
             }
-             $tieneSiempreEnPie = collect($this->personaje->post->poderes ?? [])->contains(function ($poder) {
+             $tieneSiempreEnPie = collect($this->personaje->postDeCombate()?->poderes ?? [])->contains(function ($poder) {
         return strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE';
     });
 if ($tieneSiempreEnPie) {
@@ -1239,7 +1239,7 @@ if ($tieneSiempreEnPie) {
 
         // ⏳ Recuperación al ganar o empatar (la de derrota se calcula arriba, con la poción de recuperación)
         if ($this->resultadoFinal !== 'Derrota' && ! $this->esDuelo) {
-            $siempreEnPie = collect($this->personaje->post->poderes ?? [])
+            $siempreEnPie = collect($this->personaje->postDeCombate()?->poderes ?? [])
                 ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
             $this->personaje->fin_exploracion = $siempreEnPie
                 ? now()
@@ -1538,6 +1538,8 @@ protected function obtenerPoderesAnulados($combatiente)
         if ($this->enemigo instanceof Personaje && ($postRival = $this->gifsEnemigo()) instanceof Post) {
             $this->enemigo->setRelation('poderes', $postRival->poderes);
         }
+        // El jugador también: sus poderes son los del set con el que pelea (la relación "poderes" es la del set base)
+        $this->personaje->setRelation('poderes', collect($poderesPersonaje));
         $tipoEnemigo = $this->gifsEnemigo()?->tipo ?? $this->enemigo->tipo ?? 'fisico';
 
         $calcularDanioFisico = function ($stats, $nivel) {
@@ -2208,7 +2210,7 @@ if ($nombrePoder === 'FURIA CIEGA') {
                 $gifAtaqueDefensor   = $this->personaje->post->gif_ataque ?? 'normal.gif';
                 $gifContraDefensor   = $this->personaje->post->gif_ataque ?? 'normal.gif';
 
-                $poderesDefensor = $this->personaje->post->poderes;
+                $poderesDefensor = $this->personaje->poderes;
             }
 
 
@@ -3052,8 +3054,16 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Quemado') {
     }
 }
 
-$this->personaje->load('poderes');
-$this->enemigo->load('poderes');
+// Se vuelven a poner los poderes de cada uno (la Anulación de poder los pudo haber recortado para las rondas):
+// los del set con el que pelea, no los del set base
+unset($this->personaje->poderes);
+$this->personaje->setRelation('poderes', $this->personaje->postDeCombate()?->poderes ?? collect());
+if ($this->enemigo instanceof Personaje) {
+    unset($this->enemigo->poderes);
+    $this->enemigo->setRelation('poderes', $this->gifsEnemigo()?->poderes ?? collect());
+} else {
+    $this->enemigo->load('poderes');
+}
 
 
 // Bloque que procesa reducción de daño:
@@ -3062,7 +3072,7 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
     $actor = $esPersonajeAbsorvedor ? $this->personaje : $this->enemigo;
 
     // Garantizamos que poderes sea colección para evitar errores
-   $poderesActor = $actor->post ? $actor->post->poderes : collect();
+   $poderesActor = $actor instanceof Personaje ? ($actor->postDeCombate()?->poderes ?? collect()) : collect();
 
     foreach ($poderesActor as $poder) {
         $modsRaw = $poder['modificadores'] ?? '[]';
@@ -3289,7 +3299,7 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
         }
 
         // Obtener poderes del personaje (de donde los tengas guardados)
-$poderesPersonaje = collect($this->personaje->post->poderes ?? [])
+$poderesPersonaje = collect($this->personaje->postDeCombate()?->poderes ?? [])
     ->map(fn($p) => strtoupper($p['nombre'] ?? ''));
 
 // Si el personaje tiene el poder SUERTUDO
