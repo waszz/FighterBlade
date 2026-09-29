@@ -56,7 +56,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'defensa',
         ],
         'descripcion' => 'Multiplica la defensa por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
@@ -73,7 +73,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'resistencia',
         ],
         'descripcion' => 'Multiplica la resistencia por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
@@ -90,7 +90,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'velocidad',
         ],
         'descripcion' => 'Multiplica la velocidad por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
@@ -107,7 +107,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'fuerza',
         ],
         'descripcion' => 'Multiplica la fuerza por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
@@ -124,7 +124,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'energia',
         ],
         'descripcion' => 'Multiplica la energia por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
@@ -141,7 +141,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'ataque',
         ],
         'descripcion' => 'Multiplica el ataque por 2',
-        'precio' => 15,
+        'precio' => 50,
         'moneda' => 'diamante',
     ]);
 
