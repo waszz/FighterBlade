@@ -155,9 +155,9 @@
 
             {{-- Recuperándose después de una pelea: cuenta regresiva y recuperar con oro --}}
             @php
-                $finRecuperacion = $personaje->fin_exploracion && ! $personaje->exploracion_duracion
-                    ? \Carbon\Carbon::parse($personaje->fin_exploracion) : null;
-                $segundosRecuperacion = $finRecuperacion ? max(0, $finRecuperacion->timestamp - now()->timestamp) : 0;
+                // (también mientras explora, si lo atacaron en PvP: ver Personaje::segundosRecuperacion)
+                $segundosRecuperacion = $personaje->segundosRecuperacion();
+                $finRecuperacion = $segundosRecuperacion > 0 ? now()->addSeconds($segundosRecuperacion) : null;
                 $costoRecuperacion = $personaje->nivel * 20;
             @endphp
             <div wire:key="panel-recuperacion" class="contents">

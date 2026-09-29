@@ -69,6 +69,9 @@ class PvpController extends Controller
         if ($personaje->viajando_hasta && now()->lt($personaje->viajando_hasta)) {
             return 'Estás viajando. Peleá cuando llegues.';
         }
+        if (! $esDuelo && $personaje->fin_recuperacion && now()->lt($personaje->fin_recuperacion)) {
+            return 'Te estás recuperando. Esperá para pelear.';
+        }
         if (! $esDuelo && $personaje->fin_exploracion && now()->lt($personaje->fin_exploracion)) {
             return $personaje->exploracion_duracion > 0
                 ? 'Estás explorando. Terminá la exploración antes de pelear.'

@@ -138,13 +138,19 @@ protected $casts = [
         return $this->estaEntrenando() ? max(0, $this->entreno_fin->timestamp - now()->timestamp) : 0;
     }
 
-    // Segundos que le quedan de recuperación después de una pelea (0 si no se está recuperando)
+    // Segundos que le quedan de recuperación después de una pelea (0 si no se está recuperando).
+    // Normalmente es fin_exploracion (sin exploración en curso); si lo atacaron en PvP mientras exploraba,
+    // la recuperación va aparte en fin_recuperacion para no cortarle la exploración
     public function segundosRecuperacion(): int
     {
-        if (! $this->fin_exploracion || $this->exploracion_duracion > 0) {
-            return 0;
+        $segundos = 0;
+        if ($this->fin_exploracion && ! ($this->exploracion_duracion > 0)) {
+            $segundos = \Carbon\Carbon::parse($this->fin_exploracion)->timestamp - now()->timestamp;
         }
-        return max(0, \Carbon\Carbon::parse($this->fin_exploracion)->timestamp - now()->timestamp);
+        if ($this->fin_recuperacion) {
+            $segundos = max($segundos, \Carbon\Carbon::parse($this->fin_recuperacion)->timestamp - now()->timestamp);
+        }
+        return max(0, $segundos);
     }
 
     // Set con el que pelea (sus gifs y apariencia): el del set completo equipado, o su set base

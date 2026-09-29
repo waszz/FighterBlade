@@ -464,6 +464,19 @@ public function colorBarraPorStat($valor)
 
     public function generarYGuardarEnemigo()
     {
+        // Terminó de explorar pero lo atacaron en PvP y se sigue recuperando: la exploración se estira
+        // hasta que termine la recuperación y recién ahí aparece el enemigo
+        $finRecuperacion = $this->personaje->fin_recuperacion;
+        if ($this->personaje->exploracion_duracion > 0 && $finRecuperacion && now()->lt($finRecuperacion)) {
+            $this->personaje->fin_exploracion = $finRecuperacion;
+            $this->personaje->save();
+            $this->tiempoExploracion = (int) ceil(now()->diffInSeconds($finRecuperacion));
+            $this->finExploracion    = $finRecuperacion->timestamp;
+            $this->mostrarOpciones   = false;
+            $this->dispatch('statsActualizados');
+            return;
+        }
+
         $enemigo = $this->generarEnemigo(true);
 
         if ($enemigo) {
@@ -559,6 +572,12 @@ public function colorBarraPorStat($valor)
 
     public function onTimerTerminado()
     {
+        // Terminó de explorar pero se sigue recuperando de un PvP: la exploración se estira (no se limpia nada)
+        if ($this->personaje->exploracion_duracion > 0 && $this->personaje->fin_recuperacion && now()->lt($this->personaje->fin_recuperacion)) {
+            $this->generarYGuardarEnemigo();
+            return;
+        }
+
         $this->personaje->fin_exploracion = null;
 
         // ✅ Guardamos y limpiamos estado
@@ -667,6 +686,13 @@ if ($estadoParalizado) {
         // Bloquear si está subiendo la Torre
         if ($this->personaje->torre_piso_activo) {
             $this->mensajeExploracion = '🗼 Estás en la Torre. Peleá con el rival del piso antes de explorar.';
+            return;
+        }
+
+        // Bloquear si se está recuperando de un PvP que le llegó explorando
+        if ($this->personaje->fin_recuperacion && now()->lt($this->personaje->fin_recuperacion)) {
+            $restante                 = $this->personaje->fin_recuperacion->diffForHumans(now(), ['parts' => 1]);
+            $this->mensajeExploracion = "⏳ Debes esperar $restante antes de volver a explorar.";
             return;
         }
 
@@ -936,6 +962,7 @@ if ($estadoParalizado) {
         $this->personaje->oro -= $costoOro;
         $this->personaje->exploracion_duracion = 0;
         $this->personaje->fin_exploracion      = null; // <--- importante para que el contador desaparezca
+        $this->personaje->fin_recuperacion     = null;
         $this->personaje->save();
 
         $this->dispatch('recuperacionCompleta');
@@ -3672,12 +3699,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     }
 
     // PvP: el atacado queda en recuperación con la regla del PvP (su resultado es el inverso del que ataca).
-    // Si está explorando no se toca (fin_exploracion es el fin de su exploración); si ya se estaba
-    // recuperando por más tiempo, queda el más largo. Con SIEMPRE EN PIE no espera.
+    // Si está explorando, la exploración no se corta (fin_exploracion es su fin) y la recuperación va en
+    // fin_recuperacion; si ya se estaba recuperando por más tiempo, queda el más largo. Con SIEMPRE EN PIE no espera.
     private function darRecuperacionAlRivalPvp(): void
     {
         $rival = Personaje::with('equipo', 'entrenamiento', 'accesorio', 'post.poderes')->find($this->enemigo->id ?? null);
-        if (! $rival || $rival->exploracion_duracion > 0) {
+        if (! $rival) {
             return;
         }
         $siempreEnPie = collect($rival->postDeCombate()?->poderes ?? [])
@@ -3690,12 +3717,15 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             'Derrota'  => 'Victoria',
             default    => 'Empate',
         };
-        $fin = now()->addSeconds(self::segundosRecuperacion((int) $rival->nivel, $resultadoRival, true));
-        if ($rival->fin_exploracion && \Carbon\Carbon::parse($rival->fin_exploracion)->gt($fin)) {
+        $segundos = self::segundosRecuperacion((int) $rival->nivel, $resultadoRival, true);
+        // Si ya se estaba recuperando por más tiempo, queda el más largo
+        if ($rival->segundosRecuperacion() >= $segundos) {
             return;
         }
-        // Solo esa columna, para no pisar nada de lo que el otro esté haciendo
-        Personaje::whereKey($rival->id)->update(['fin_exploracion' => $fin]);
+        // Solo esa columna, para no pisar nada de lo que el otro esté haciendo.
+        // Explorando: la exploración sigue; la recuperación va en fin_recuperacion (ver generarYGuardarEnemigo)
+        $columna = $rival->exploracion_duracion > 0 ? 'fin_recuperacion' : 'fin_exploracion';
+        Personaje::whereKey($rival->id)->update([$columna => now()->addSeconds($segundos)]);
     }
 
     // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)

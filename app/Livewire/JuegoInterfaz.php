@@ -325,7 +325,7 @@ foreach ($poderes as $poder) {
         $personaje = Personaje::find($this->personaje->id);
         $costo = $personaje->nivel * 20;
 
-        if (! $personaje->fin_exploracion || $personaje->exploracion_duracion > 0 || now()->gte($personaje->fin_exploracion)) {
+        if ($personaje->segundosRecuperacion() <= 0) {
             $this->recargarPersonaje();
             return;
         }
@@ -335,7 +335,16 @@ foreach ($poderes as $poder) {
         }
 
         $personaje->oro -= $costo;
-        $personaje->fin_exploracion = null;
+        if ($personaje->exploracion_duracion > 0) {
+            // Lo atacaron mientras exploraba: la exploración sigue. Si ya había terminado y solo se estiraba
+            // por la recuperación (ver Explorar::generarYGuardarEnemigo), el enemigo aparece ya
+            if ($personaje->fin_recuperacion && $personaje->fin_exploracion?->eq($personaje->fin_recuperacion)) {
+                $personaje->fin_exploracion = now();
+            }
+        } else {
+            $personaje->fin_exploracion = null;
+        }
+        $personaje->fin_recuperacion = null;
         $personaje->save();
 
         $this->dispatch('success', ['message' => "Te recuperaste pagando $costo de oro."]);

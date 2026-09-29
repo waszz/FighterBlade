@@ -6,6 +6,11 @@
         ? max(0, \Carbon\Carbon::parse($personaje->fin_exploracion)->timestamp - now()->timestamp)
         : 0;
     $motivoEspera = $personaje->exploracion_duracion > 0 ? '🧭 Estás explorando' : '⏳ Te estás recuperando';
+    // Recuperación de un PvP que le llegó explorando (va aparte de la exploración)
+    if ($personaje->segundosRecuperacion() > $segundosEspera) {
+        $segundosEspera = $personaje->segundosRecuperacion();
+        $motivoEspera = '⏳ Te estás recuperando';
+    }
     // El entrenamiento también bloquea atacar (y suele durar más)
     if ($personaje->segundosEntreno() > $segundosEspera) {
         $segundosEspera = $personaje->segundosEntreno();

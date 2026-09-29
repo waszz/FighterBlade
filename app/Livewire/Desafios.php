@@ -40,7 +40,7 @@ class Desafios extends Component
     // Hora (timestamp) en que termina la recuperación después de una pelea, o null si no se está recuperando
     protected function finRecuperacion(): ?int
     {
-        $personaje = Personaje::select('id', 'fin_exploracion', 'exploracion_duracion')->find($this->personajeId);
+        $personaje = Personaje::select('id', 'fin_exploracion', 'exploracion_duracion', 'fin_recuperacion')->find($this->personajeId);
         $segundos = $personaje?->segundosRecuperacion() ?? 0;
         return $segundos > 0 ? now()->timestamp + $segundos : null;
     }
