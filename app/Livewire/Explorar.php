@@ -54,6 +54,20 @@ class Explorar extends Component
         [76, 100, 0.02],
     ];
 
+    // Exp según la zona (exploración y caza): en una zona de tu nivel o más alta, el 100%;
+    // por cada nivel que le pasás a la zona, 10% menos (mínimo 10%). Así conviene ir cambiando de zona
+    const EXP_ZONA_BAJA_POR_NIVEL = 0.10;
+    const EXP_ZONA_MINIMO = 0.10;
+
+    public static function factorExpZona(int $nivelPersonaje, int $nivelZona): float
+    {
+        $diferencia = $nivelPersonaje - $nivelZona;
+        if ($diferencia <= 0) {
+            return 1.0;
+        }
+        return max(self::EXP_ZONA_MINIMO, 1 - $diferencia * self::EXP_ZONA_BAJA_POR_NIVEL);
+    }
+
     // Espera después de una pelea: hasta nivel 20, 5 s si ganás y 15 s si perdés; desde el 21, 1 minuto.
     // (Se puede saltear pagando oro: recuperarConOro)
     public static function segundosRecuperacion(int $nivel, bool $gano): int
@@ -3234,7 +3248,8 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
             $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP,
             // Torre: el doble que una pelea común
             $this->torreActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * \App\Support\RecompensasTorre::MULTIPLICADOR_EXP,
-            default => self::porcentajeExpPorNivel($nivelPersonaje),
+            // Exploración y caza: menos exp si la zona es de menor nivel que el personaje
+            default => self::porcentajeExpPorNivel($nivelPersonaje) * self::factorExpZona($nivelPersonaje, (int) $nivelCiudad),
         };
 
 // 🔥 Esta es la experiencia real a sumar

@@ -167,6 +167,15 @@
                     <span class="absolute top-1 left-1 px-2 py-0.5 rounded bg-black/70 border {{ $bloqueada ? 'border-gray-500 text-gray-300' : 'border-indigo-400 text-indigo-200' }} text-[11px] font-bold">
                         Nv {{ $ciudad->nivel }}
                     </span>
+                    {{-- Cuánta exp da explorar acá con el nivel actual (baja 10% por cada nivel que le pasás a la zona) --}}
+                    @unless ($bloqueada)
+                        @php $porcExp = (int) round(\App\Livewire\Explorar::factorExpZona((int) $personaje->nivel, (int) $ciudad->nivel) * 100); @endphp
+                        <span class="absolute top-1 right-1 px-2 py-0.5 rounded bg-black/70 border text-[11px] font-bold
+                                     {{ $porcExp >= 100 ? 'border-green-400 text-green-300' : ($porcExp >= 50 ? 'border-yellow-400 text-yellow-300' : 'border-red-400 text-red-300') }}"
+                              title="Experiencia que te da explorar en esta zona">
+                            EXP {{ $porcExp }}%
+                        </span>
+                    @endunless
                     @if ($bloqueada)
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
                             <span class="text-4xl [filter:drop-shadow(0_2px_0_#000)]">🔒</span>
