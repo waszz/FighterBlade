@@ -1630,7 +1630,8 @@ protected function obtenerPoderesAnulados($combatiente)
             }
 
             if ($atacante !== 'personaje') {
-                $reductorDanioEnemigo = 0.3; // 30% daño para enemigo (bajado)
+                // Los enemigos del juego pegan el 30%; en PvP el rival es otro jugador y pega completo
+                $reductorDanioEnemigo = $this->esPvp ? 1 : 0.3;
                 return [
                     'fisico'    => round($danioFisico * $reductorDanioEnemigo),
                     'elemental' => round($danioElemental * $reductorDanioEnemigo),
@@ -2120,8 +2121,15 @@ if ($nombrePoder === 'FURIA CIEGA') {
             $prioridadPersonaje = ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje + rand(0, 2);
             $prioridadEnemigo   = ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo + rand(0, 2);
 
-            $atacante = $prioridadPersonaje >= $prioridadEnemigo ? 'personaje' : 'enemigo';
+            $primeroEnAtacar = $prioridadPersonaje >= $prioridadEnemigo ? 'personaje' : 'enemigo';
 
+            // PvP (y duelos): en cada ronda pegan los dos, primero el más rápido.
+            // Contra los enemigos del juego sigue pegando solo el más rápido.
+            $ordenAtaques = $this->esPvp
+                ? [$primeroEnAtacar, $primeroEnAtacar === 'personaje' ? 'enemigo' : 'personaje']
+                : [$primeroEnAtacar];
+
+            foreach ($ordenAtaques as $atacante) {
             if ($atacante === 'personaje') {
                 $statsAtacante       = $statsPersonaje;
                 $nivelAtacante       = $nivelPersonaje;
@@ -2320,7 +2328,8 @@ if ($contraataqueOcurre) {
         'texto_tipo_danio' => $textoDanio,
     ];
 }
- 
+            } // fin de los ataques de la ronda (en PvP pegan los dos)
+
         }
 
 $statsPersonaje = $aplicarReduccionPorCongelado($statsPersonaje, $this->personaje);
