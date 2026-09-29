@@ -116,6 +116,7 @@ class Explorar extends Component
         'refreshComponent'  => '$refresh',
         'refrescarBuffs'    => '$refresh',
         'recuperacionTerminada' => 'onRecuperacionTerminada',
+        'recuperacionPorPvp'    => 'onRecuperacionPorPvp',
     ];
     public Post $post;
     public $personaje;
@@ -538,6 +539,21 @@ public function colorBarraPorStat($valor)
         if ($personaje && ! $personaje->exploracion_duracion && (! $personaje->fin_exploracion || now()->gte($personaje->fin_exploracion))) {
             $this->personaje->fin_exploracion = null;
             $this->tiempoExploracion = null;
+        }
+    }
+
+    // Me atacaron en PvP (lo avisa Desafios): se esconde Explorar mientras dura la recuperación, sin recargar
+    public function onRecuperacionPorPvp()
+    {
+        $personaje = $this->personaje->fresh();
+        if (! $personaje || $this->enemigo || $personaje->exploracion_duracion > 0) {
+            return;
+        }
+        $restante = $personaje->segundosRecuperacion();
+        if ($restante > 0) {
+            $this->personaje->fin_exploracion = $personaje->fin_exploracion;
+            $this->tiempoExploracion = $restante;
+            $this->mostrarOpciones   = false;
         }
     }
 
@@ -1244,6 +1260,10 @@ if ($tieneSiempreEnPie) {
             $this->personaje->fin_exploracion = $siempreEnPie
                 ? now()
                 : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal, $this->esPvp));
+        }
+        // PvP: el atacado también queda en recuperación, según cómo le fue a él
+        if ($this->esPvp && ! $this->esDuelo) {
+            $this->darRecuperacionAlRivalPvp();
         }
         // Mostrar el contador de recuperación sin recargar la página
         $restante = $this->personaje->fin_exploracion ? now()->diffInSeconds($this->personaje->fin_exploracion, false) : 0;
@@ -3649,6 +3669,33 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         $expNecesaria = 10000 * pow($nivel, 2) - 10000 * pow($nivel - 1, 2);
         $exp = (int) round($expNecesaria * self::fraccionExpPvp($nivel, (int) $this->personaje->nivel));
         $rival->agregarExperiencia($exp);
+    }
+
+    // PvP: el atacado queda en recuperación con la regla del PvP (su resultado es el inverso del que ataca).
+    // Si está explorando no se toca (fin_exploracion es el fin de su exploración); si ya se estaba
+    // recuperando por más tiempo, queda el más largo. Con SIEMPRE EN PIE no espera.
+    private function darRecuperacionAlRivalPvp(): void
+    {
+        $rival = Personaje::with('equipo', 'entrenamiento', 'accesorio', 'post.poderes')->find($this->enemigo->id ?? null);
+        if (! $rival || $rival->exploracion_duracion > 0) {
+            return;
+        }
+        $siempreEnPie = collect($rival->postDeCombate()?->poderes ?? [])
+            ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
+        if ($siempreEnPie) {
+            return;
+        }
+        $resultadoRival = match ($this->resultadoFinal) {
+            'Victoria' => 'Derrota',
+            'Derrota'  => 'Victoria',
+            default    => 'Empate',
+        };
+        $fin = now()->addSeconds(self::segundosRecuperacion((int) $rival->nivel, $resultadoRival, true));
+        if ($rival->fin_exploracion && \Carbon\Carbon::parse($rival->fin_exploracion)->gt($fin)) {
+            return;
+        }
+        // Solo esa columna, para no pisar nada de lo que el otro esté haciendo
+        Personaje::whereKey($rival->id)->update(['fin_exploracion' => $fin]);
     }
 
     // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)

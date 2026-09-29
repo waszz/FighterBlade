@@ -81,7 +81,7 @@
         ]],
         ['Pelear contra jugadores (PvP)', 'fa-user-ninja', [
             'Podés atacar a otro jugador desde la lista de usuarios de la zona o desde el Ranking.',
-            ['Los dos tienen que estar en la misma zona.', "Los dos tienen que ser nivel " . ($nivelMaxNovato + 1) . " o más.", 'Si le ganás, cobrás el 4% de la experiencia de tu nivel si la diferencia de nivel es de 5 o menos, y el 1% si es mayor.', 'Si te atacan y el otro pierde, esa experiencia la cobrás vos.'],
+            ['Los dos tienen que estar en la misma zona.', "Los dos tienen que ser nivel " . ($nivelMaxNovato + 1) . " o más.", 'Si le ganás, cobrás el 4% de la experiencia de tu nivel si la diferencia de nivel es de 5 o menos, y el 1% si es mayor.', 'Si te atacan y el otro pierde, esa experiencia la cobrás vos.', 'Si te atacan, vos también quedás en recuperación, igual que el que atacó.'],
         ]],
         ['Mercado', 'fa-store', [
             ['Sets completos para comprar con esmeraldas.', 'Pociones.', 'Objetos de la semana: partes sueltas que se compran con oro.', 'Vendidos por jugadores: lo que otros pusieron a la venta.'],

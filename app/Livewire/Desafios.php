@@ -21,9 +21,13 @@ class Desafios extends Component
     public int $oroOferta = 0;
     public int $diamanteOferta = 0;
 
+    // Fin de la recuperación que ya se vio: si cambia (me atacaron en PvP) se avisa al panel y a la Ciudad
+    public ?int $finRecuperacionVisto = null;
+
     public function mount($personajeId)
     {
         $this->personajeId = (int) $personajeId;
+        $this->finRecuperacionVisto = $this->finRecuperacion();
 
         // Si se recarga con un intercambio abierto, los campos arrancan con lo que ya había puesto
         if ($d = $this->intercambioAbierto()) {
@@ -31,6 +35,14 @@ class Desafios extends Component
             $this->oroOferta = (int) ($oferta['oro'] ?? 0);
             $this->diamanteOferta = (int) ($oferta['diamante'] ?? 0);
         }
+    }
+
+    // Hora (timestamp) en que termina la recuperación después de una pelea, o null si no se está recuperando
+    protected function finRecuperacion(): ?int
+    {
+        $personaje = Personaje::select('id', 'fin_exploracion', 'exploracion_duracion')->find($this->personajeId);
+        $segundos = $personaje?->segundosRecuperacion() ?? 0;
+        return $segundos > 0 ? now()->timestamp + $segundos : null;
     }
 
     protected function yo(): ?Personaje
@@ -292,6 +304,14 @@ class Desafios extends Component
 
     public function render()
     {
+        // Recuperación nueva que no puso este navegador (me atacaron en PvP): se muestra sin recargar
+        $fin = $this->finRecuperacion();
+        if ($fin && $fin !== $this->finRecuperacionVisto) {
+            $this->dispatch('statsActualizados');
+            $this->dispatch('recuperacionPorPvp');
+        }
+        $this->finRecuperacionVisto = $fin;
+
         // Lo que se venció sin respuesta queda como expirado (así el que pidió ve el aviso)
         Desafio::whereIn('estado', ['pendiente', 'aceptado'])->where('expira_en', '<=', now())
             ->where(fn ($q) => $q->where('de_id', $this->personajeId)->orWhere('para_id', $this->personajeId))
