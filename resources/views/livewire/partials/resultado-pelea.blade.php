@@ -919,30 +919,30 @@
         @if($totalDanioPersonaje > $totalDanioEnemigo)
 
         {{-- Victoria del personaje --}}
-        <div class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10">
+        <div class="absolute bottom-1 left-[3%] sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Victoria Personaje"
             style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none">
         </div>
-        <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
+        <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
           <img src="{{ asset('storage/' . $gifDerrotaEnemigo) }}" alt="GIF Derrota Enemigo"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaEnemigo) }}" class="block max-w-none">
         </div>
         @elseif($totalDanioPersonaje < $totalDanioEnemigo) {{-- Victoria del enemigo --}} <div
-          class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10 ">
+          class="absolute bottom-1 left-[3%] sm:left-[8%] z-10 ">
           <img src="{{ asset('storage/' . $gifDerrotaPersonaje) }}" alt="GIF Derrota Personaje"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaPersonaje) }}" class="block max-w-none drop-shadow-md">
       </div>
-      <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
+      <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
         <img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Victoria Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md">
       </div>
       @else
       {{-- Empate --}}
-      <div class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10">
+      <div class="absolute bottom-1 left-[3%] sm:left-[8%] z-10">
         <img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Empate Personaje"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none drop-shadow-md">
       </div>
-      <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1] ">
+      <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1] ">
         <img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Empate Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md">
       </div>

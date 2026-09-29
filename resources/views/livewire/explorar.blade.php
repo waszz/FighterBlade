@@ -203,16 +203,17 @@
       </aside>
       @endif
 
-      {{-- Contenedor ciudad con overflow-hidden para evitar desbordes --}}
+      {{-- Contenedor ciudad con overflow-hidden para evitar desbordes.
+           Celular: de borde a borde (tapa el padding del main y de esta columna: 0.5rem + 1rem por lado) y más alto --}}
       <div
-        class="relative  border-2 border-gray-900 rounded-xl shadow-lg overflow-hidden select-none w-full max-w-[650px] min-h-[240px] pt-6">
+        class="relative border-y-2 sm:border-2 border-gray-900 sm:rounded-xl shadow-lg overflow-hidden select-none -mx-6 w-[calc(100%+3rem)] shrink-0 sm:mx-0 sm:w-full sm:shrink max-w-none sm:max-w-[650px] min-h-[300px] sm:min-h-[240px] pt-6">
 
         {{-- Fondo: la ciudad, o el escenario si es una misión --}}
         <img src="{{ asset('storage/posts/' . ($escenarioMision ?? $ciudadActual->gif)) }}" alt="Ciudad {{ $ciudadActual->nombre }}"
           class="absolute inset-0 w-full h-full object-cover object-bottom z-0" />
 
         {{-- Personaje: estiloGif lo escala para que todos midan lo mismo y pisen la misma línea --}}
-        <div class="gif-escena absolute bottom-1 left-[3%] sm:left-[8%] z-10">
+        <div class="absolute bottom-1 left-0 sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifMostrar) }}" alt="Personaje {{ $personaje->nombre }}"
             style="{{ \App\Models\Post::estiloGif($gifMostrar) }}"
             class="block max-w-none {{ $personaje->orientacion_gif === 'derecha' ? 'scale-x-[-1]' : '' }} {{ $personaje->claseAura() }}" />
@@ -220,7 +221,7 @@
 
         {{-- Enemigo --}}
         @if($enemigo)
-        <div class="gif-escena absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
+        <div class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
           <img src="{{ asset('storage/' . ($this->gifEnemigo() ?? 'default_enemigo.gif')) }}"
             alt="Enemigo {{ $enemigo->nombre ?? $enemigo->titulo }}"
             style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '' }}" />
