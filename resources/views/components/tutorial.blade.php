@@ -36,7 +36,7 @@
         ['Pelear', 'fa-khanda', [
             'Cuando aparece un enemigo elegís "Atacar" o "Huir". La pelea se juega sola, por rondas: los atributos, el tipo de daño y los poderes de cada uno deciden quién gana.',
             'Después de cada pelea hay un tiempo de recuperación:',
-            ['Hasta el nivel 20: 10 segundos.', 'Desde el nivel 21: 1 minuto.', 'Si empatás: 5 segundos, a cualquier nivel.', 'Podés saltearlo pagando oro con "Recuperar ya".'],
+            ['Explorando, en misiones y en la torre: 15 segundos si ganás y 1 minuto si perdés.', 'Contra jugadores (PvP): 10 segundos hasta el nivel 20 y 1 minuto desde el 21.', 'Si empatás: 5 segundos, siempre.', 'Podés saltearlo pagando oro con "Recuperar ya".'],
             'En Mis Peleas tenés tus últimas peleas: podés volver a verlas o compartirlas en el chat.',
         ]],
         ['Sets y partes', 'fa-shirt', [
@@ -81,7 +81,7 @@
         ]],
         ['Pelear contra jugadores (PvP)', 'fa-user-ninja', [
             'Podés atacar a otro jugador desde la lista de usuarios de la zona o desde el Ranking.',
-            ['Los dos tienen que estar en la misma zona.', "Los dos tienen que ser nivel " . ($nivelMaxNovato + 1) . " o más.", 'Si le ganás, cobrás el 4% de la experiencia de tu nivel si la diferencia de nivel es de 5 o menos, y el 1% si es mayor.'],
+            ['Los dos tienen que estar en la misma zona.', "Los dos tienen que ser nivel " . ($nivelMaxNovato + 1) . " o más.", 'Si le ganás, cobrás el 4% de la experiencia de tu nivel si la diferencia de nivel es de 5 o menos, y el 1% si es mayor.', 'Si te atacan y el otro pierde, esa experiencia la cobrás vos.'],
         ]],
         ['Mercado', 'fa-store', [
             ['Sets completos para comprar con esmeraldas.', 'Pociones.', 'Objetos de la semana: partes sueltas que se compran con oro.', 'Vendidos por jugadores: lo que otros pusieron a la venta.'],

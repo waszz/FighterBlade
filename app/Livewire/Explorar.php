@@ -68,18 +68,29 @@ class Explorar extends Component
         return max(self::EXP_ZONA_MINIMO, 1 - $diferencia * self::EXP_ZONA_BAJA_POR_NIVEL);
     }
 
-    // Espera después de una pelea: hasta nivel 20, 10 s; desde el 21, 1 minuto. Si empatás, siempre 5 s.
+    // Espera después de una pelea. Si empatás, siempre 5 s.
+    // PvP: hasta nivel 20, 10 s; desde el 21, 1 minuto (ganes o pierdas).
+    // Exploración, misiones, torre y caza: 15 s si ganás y 1 minuto si perdés, a cualquier nivel.
     // (Se puede saltear pagando oro: recuperarConOro)
-    // $resultado: 'Victoria' | 'Derrota' | 'Empate'. El empate siempre son 5 s, a cualquier nivel
-    public static function segundosRecuperacion(int $nivel, string $resultado): int
+    // $resultado: 'Victoria' | 'Derrota' | 'Empate'
+    public static function segundosRecuperacion(int $nivel, string $resultado, bool $esPvp): int
     {
         if ($resultado === 'Empate') {
             return 5;
+        }
+        if (! $esPvp) {
+            return $resultado === 'Victoria' ? 15 : 60;
         }
         if ($nivel <= 20) {
             return 10;
         }
         return 60;
+    }
+
+    // PvP: fracción de la exp del nivel que cobra el ganador, según la diferencia de nivel con el perdedor
+    public static function fraccionExpPvp(int $nivelGanador, int $nivelPerdedor): float
+    {
+        return abs($nivelGanador - $nivelPerdedor) <= self::PVP_DIFERENCIA_MAX ? self::PVP_EXP_CERCA : self::PVP_EXP_LEJOS;
     }
 
     public static function porcentajeExpPorNivel(int $nivel): float
@@ -1060,6 +1071,7 @@ if ($estadoParalizado) {
 
             if ($this->esPvp) {
                 $this->personaje->pvp_perdidas = ($this->personaje->pvp_perdidas ?? 0) + 1;
+                $this->darExpAlRivalPvp();
             } elseif ($this->esExploracion()) {
                 $this->personaje->pve_perdidas = ($this->personaje->pve_perdidas ?? 0) + 1;
             }
@@ -1102,7 +1114,7 @@ if ($tieneSiempreEnPie) {
         $this->personaje->fin_exploracion = now();
     } else {
             // Recuperación por derrota según el nivel; la poción de recuperación la deja en 15 s como máximo
-            $segundos = self::segundosRecuperacion($this->personaje->nivel, 'Derrota');
+            $segundos = self::segundosRecuperacion($this->personaje->nivel, 'Derrota', $this->esPvp);
             if ($usarPocionRecuperacion) {
                 $segundos = min($segundos, 15);
             }
@@ -1231,7 +1243,7 @@ if ($tieneSiempreEnPie) {
                 ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
             $this->personaje->fin_exploracion = $siempreEnPie
                 ? now()
-                : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal));
+                : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal, $this->esPvp));
         }
         // Mostrar el contador de recuperación sin recargar la página
         $restante = $this->personaje->fin_exploracion ? now()->diffInSeconds($this->personaje->fin_exploracion, false) : 0;
@@ -3246,8 +3258,7 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
         $porcentajeExp = match (true) {
             $esEnemigoEspecial => self::EXP_ENEMIGO_ESPECIAL,
             // PvP: 4% si el rival está a 5 niveles o menos, 1% si la diferencia es mayor
-            $this->esPvp => abs($nivelPersonaje - (int) ($this->enemigo->nivel ?? $nivelPersonaje)) <= self::PVP_DIFERENCIA_MAX
-                ? self::PVP_EXP_CERCA : self::PVP_EXP_LEJOS,
+            $this->esPvp => self::fraccionExpPvp($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
             // Misiones: el doble que una pelea común
             $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP,
             // Torre: el doble que una pelea común
@@ -3616,6 +3627,20 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     }
 
     // Misión que se está peleando (su rival es el enemigo actual), o null si es un combate normal
+    // PvP perdido: el rival (que no está peleando, solo lo atacaron) cobra la exp de la victoria
+    // con la misma regla que el que ataca: 4% de la exp de su nivel si la diferencia es de 5 o menos, 1% si es mayor
+    private function darExpAlRivalPvp(): void
+    {
+        $rival = Personaje::find($this->enemigo->id ?? null);
+        if (! $rival || $rival->nivel >= 100) {
+            return;
+        }
+        $nivel = (int) $rival->nivel;
+        $expNecesaria = 10000 * pow($nivel, 2) - 10000 * pow($nivel - 1, 2);
+        $exp = (int) round($expNecesaria * self::fraccionExpPvp($nivel, (int) $this->personaje->nivel));
+        $rival->agregarExperiencia($exp);
+    }
+
     // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)
     public function esExploracion(): bool
     {

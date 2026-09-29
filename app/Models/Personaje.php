@@ -323,6 +323,12 @@ public function buffs()
         $this->puntos_stats += 5 * $nivelesGanados;
     }
 
+    // Tope: nivel 100
+    if ($this->nivel >= 100) {
+        $this->nivel       = 100;
+        $this->experiencia = 10000 * pow(100, 2);
+    }
+
     $this->save();
 }
 
