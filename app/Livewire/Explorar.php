@@ -8,6 +8,7 @@ use App\Models\ExploracionRapida;
 use App\Models\Objeto;
 use App\Models\Pelea;
 use App\Models\Desafio;
+use App\Models\NotificacionJuego;
 use App\Models\Personaje;
 use App\Models\Post;
 use App\Models\User;
@@ -140,6 +141,8 @@ class Explorar extends Component
     // Duelo aceptado (pelea amistosa): sin premio, sin pociones gastadas, sin recuperación y sin contar para el PvP
     public bool $esDuelo      = false;
     public ?int $dueloId      = null;
+    // PvP: exp que cobró el atacado en esta pelea (para su aviso)
+    protected int $expDadaAlRival = 0;
 
     public $rondaActual         = 1;
     public $resultadosRondas    = [];
@@ -1291,6 +1294,7 @@ if ($tieneSiempreEnPie) {
         // PvP: el atacado también queda en recuperación, según cómo le fue a él
         if ($this->esPvp && ! $this->esDuelo) {
             $this->darRecuperacionAlRivalPvp();
+            $this->avisarAlRivalPvp();
         }
         // Mostrar el contador de recuperación sin recargar la página
         $restante = $this->personaje->fin_exploracion ? now()->diffInSeconds($this->personaje->fin_exploracion, false) : 0;
@@ -3697,6 +3701,19 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         $expNecesaria = 10000 * pow($nivel, 2) - 10000 * pow($nivel - 1, 2);
         $exp = (int) round($expNecesaria * self::fraccionExpPvp($nivel, (int) $this->personaje->nivel));
         $rival->agregarExperiencia($exp);
+        $this->expDadaAlRival = $exp;
+    }
+
+    // PvP: aviso al atacado (campanita de arriba) de quién lo atacó y cómo le fue
+    private function avisarAlRivalPvp(): void
+    {
+        $atacante = $this->personaje->nombre;
+        [$icono, $mensaje] = match ($this->resultadoFinal) {
+            'Derrota' => ['🏆', "{$atacante} te atacó y ganaste" . ($this->expDadaAlRival > 0 ? ': cobraste ' . number_format($this->expDadaAlRival, 0, ',', '.') . ' de exp.' : '.')],
+            'Victoria' => ['⚔️', "{$atacante} te atacó y perdiste."],
+            default => ['⚔️', "{$atacante} te atacó y empataron."],
+        };
+        NotificacionJuego::avisar($this->enemigo->id ?? null, $icono, $mensaje);
     }
 
     // PvP: el atacado queda en recuperación con la regla del PvP (su resultado es el inverso del que ataca).

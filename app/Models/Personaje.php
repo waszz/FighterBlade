@@ -182,6 +182,8 @@ protected $casts = [
         $this->recarga_esmeraldas_en = $ahora;
         $this->syncOriginalAttributes(['diamante', 'recarga_esmeraldas_en']);
 
+        NotificacionJuego::avisar($this->id, '💚', "Recarga diaria: recibiste {$recibe} " . ($recibe === 1 ? 'esmeralda' : 'esmeraldas') . ' (ahora tenés ' . self::ESMERALDAS_DIARIAS . ').');
+
         return $recibe;
     }
 

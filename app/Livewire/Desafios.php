@@ -277,6 +277,10 @@ class Desafios extends Component
                 }
             }
 
+            // Nombres de lo que entrega cada uno, para el registro de transacciones
+            $nombresDe = Objeto::whereIn('id', $ofDe['objetos'] ?? [])->pluck('nombre')->all();
+            $nombresPara = Objeto::whereIn('id', $ofPara['objetos'] ?? [])->pluck('nombre')->all();
+
             Objeto::whereIn('id', $ofDe['objetos'] ?? [])->update(['personaje_id' => $pjPara->id]);
             Objeto::whereIn('id', $ofPara['objetos'] ?? [])->update(['personaje_id' => $pjDe->id]);
 
@@ -288,6 +292,19 @@ class Desafios extends Component
             $pjPara->save();
 
             $d->update(['estado' => 'completado']);
+
+            \App\Models\Transaccion::create([
+                'tipo'              => 'intercambio',
+                'de_personaje_id'   => $pjDe->id,
+                'para_personaje_id' => $pjPara->id,
+                'detalle'           => [
+                    'de'   => \App\Models\Transaccion::lado($nombresDe, (int) ($ofDe['oro'] ?? 0), (int) ($ofDe['diamante'] ?? 0)),
+                    'para' => \App\Models\Transaccion::lado($nombresPara, (int) ($ofPara['oro'] ?? 0), (int) ($ofPara['diamante'] ?? 0)),
+                ],
+            ]);
+            foreach ([[$pjDe, $pjPara], [$pjPara, $pjDe]] as [$pj, $otro]) {
+                \App\Models\NotificacionJuego::avisar($pj->id, '🤝', "Hiciste un intercambio con {$otro->nombre}. El detalle está en Transacciones.");
+            }
         });
 
         if ($error) {

@@ -457,9 +457,20 @@ public function comprarObjeto($objetoId)
 
   
     // Transferir el objeto
+    $precio = (int) $objeto->precio_venta;
     $objeto->personaje_id = $this->personaje->id;
     $objeto->precio_venta = null;
     $objeto->save();
+
+    // Registro de la compra y aviso al vendedor (campanita de arriba)
+    \App\Models\Transaccion::create([
+        'tipo'              => 'mercado',
+        'de_personaje_id'   => $vendedor?->id,
+        'para_personaje_id' => $this->personaje->id,
+        'detalle'           => ['de' => \App\Models\Transaccion::lado([$objeto->nombre]), 'para' => \App\Models\Transaccion::lado([], $precio)],
+    ]);
+    \App\Models\NotificacionJuego::avisar($vendedor?->id, '💰',
+        "{$this->personaje->nombre} te compró {$objeto->nombre} en el mercado por " . number_format($precio, 0, ',', '.') . ' de oro.');
 
     session()->flash('mensaje', "¡Compra Realizada!");
     $this->mount($this->personaje);

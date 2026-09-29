@@ -276,6 +276,8 @@
                         <span class="flex items-center gap-1 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5">{{ number_format($personaje->diamante, 0, ',', '.') }}</span>
                     </p>
                 </div>
+                {{-- Notificaciones del juego y transacciones --}}
+                <livewire:avisos-juego :personaje-id="$personaje->id" estilo="celular" :key="'avisos-cel-' . $personaje->id" />
                 <button type="button" @click="$dispatch('abrir-tutorial')" title="Cómo jugar" aria-label="Cómo jugar"
                     class="w-9 h-9 text-lg shrink-0 flex items-center justify-center rounded-full border-2 border-black text-white font-extrabold bg-gradient-to-b from-sky-500 to-sky-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[2px] transition-all">?</button>
                 <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonCuadrado }}">
@@ -361,6 +363,8 @@
                             {{ $boton['nombre'] }}
                         </button>
                     @endforeach
+                    {{-- Notificaciones del juego y transacciones, al lado de Mis Drops --}}
+                    <livewire:avisos-juego :personaje-id="$personaje->id" estilo="pc" :key="'avisos-pc-' . $personaje->id" />
                 </div>
                 </div>
             </nav>
