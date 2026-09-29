@@ -703,8 +703,9 @@
 
 
 
-      {{-- Pociones + espacios vacíos (slots del inventario) --}}
-      <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+      {{-- Pociones + espacios vacíos (slots del inventario).
+           Celular: casilleros redondos de a 5 por fila, a todo el ancho; en pantallas grandes, cuadrados de 100 px --}}
+      <div class="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
 
         {{-- Partes ocupando slots --}}
         @php
@@ -729,7 +730,7 @@
           $statsSlot = is_array($objeto->stats) ? collect($objeto->stats)->filter(fn($v) => $v > 0) : collect();
           $tooltipStats = $statsSlot->map(fn($v, $s) => ($abreviaturasSlot[strtolower($s)] ?? strtoupper(substr($s, 0, 3))) . ' +' . $v)->implode(', ');
           @endphp
-          <div class="relative rounded-md border-2 {{ $bordeParte }} bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] w-[100px] h-[100px] flex flex-col items-center justify-center p-1 select-none cursor-pointer hover:brightness-125 hover:ring-2 hover:ring-indigo-400 transition"
+          <div class="relative rounded-full sm:rounded-md border-[3px] sm:border-2 {{ $bordeParte }} bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] w-full aspect-square sm:w-[100px] sm:h-[100px] sm:aspect-auto flex flex-col items-center justify-center p-1 select-none cursor-pointer hover:brightness-125 hover:ring-2 hover:ring-indigo-400 transition"
                wire:key="slot-objeto-{{ $objeto->id }}"
                title="{{ $objeto->nombre }} — {{ ucfirst($objeto->tipo) }}{{ $tooltipStats ? ' — ' . $tooltipStats : '' }}">
 
@@ -739,31 +740,31 @@
                    wire:key="checkbox-{{ $objeto->id }}"
                    wire:change="$refresh"
                    @if($objeto->precio_venta) disabled @endif
-                   class="absolute top-1 left-1 w-3.5 h-3.5 z-10 text-indigo-600 bg-gray-700 border-gray-300 rounded focus:ring-indigo-500
+                   class="absolute bottom-0 left-0 sm:bottom-auto sm:top-1 sm:left-1 w-3.5 h-3.5 z-10 text-indigo-600 bg-gray-700 border-gray-300 rounded focus:ring-indigo-500
                    @if($objeto->precio_venta) cursor-not-allowed @endif"
                    @if($objeto->precio_venta) title="No se puede tirar un objeto en venta" @endif
             />
 
             @if($objeto->precio_venta)
-              <div class="absolute top-1 right-1 bg-yellow-500 text-black text-[8px] font-bold px-1 rounded z-10">
+              <div class="absolute -top-1 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:top-1 sm:right-1 bg-yellow-500 text-black text-[7px] sm:text-[8px] font-bold px-1 rounded z-10 whitespace-nowrap">
                 En venta
               </div>
             @endif
 
-            <div class="flex flex-col items-center justify-center w-full @if($objeto->precio_venta) opacity-60 @endif"
+            <div class="flex flex-col items-center justify-center w-full h-full sm:h-auto @if($objeto->precio_venta) opacity-60 @endif"
                  wire:click="mostrarOpciones({{ $objeto->id }})">
               <img src="{{ asset('storage/posts/' . $objeto->imagen) }}" alt="{{ $objeto->nombre }}"
-                  class="w-12 h-12 object-cover rounded hover:scale-110 transition duration-150" />
+                  class="w-full h-full sm:w-12 sm:h-12 object-cover rounded-full sm:rounded hover:scale-110 transition duration-150" />
 
-              <p class="text-white text-[9px] font-semibold truncate w-full text-center px-1 mt-0.5">{{ $objeto->nombre }}</p>
-              <p class="{{ $textoParte }} text-[8px] leading-none uppercase">{{ $objeto->tipo }}</p>
+              <p class="hidden sm:block text-white text-[9px] font-semibold truncate w-full text-center px-1 mt-0.5">{{ $objeto->nombre }}</p>
+              <p class="hidden sm:block {{ $textoParte }} text-[8px] leading-none uppercase">{{ $objeto->tipo }}</p>
             </div>
           </div>
         @endforeach
 
         {{-- Pociones ocupando slots --}}
         @foreach($pocionesEnInventario as $pocion)
-          <div class="relative rounded-md border-2 border-black bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] w-[100px] h-[100px] flex flex-col items-center justify-center p-1 select-none cursor-pointer hover:brightness-125 hover:ring-2 hover:ring-indigo-400 transition"
+          <div class="relative rounded-full sm:rounded-md border-[3px] sm:border-2 border-pink-500 sm:border-black bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] w-full aspect-square sm:w-[100px] sm:h-[100px] sm:aspect-auto flex flex-col items-center justify-center p-1 select-none cursor-pointer hover:brightness-125 hover:ring-2 hover:ring-indigo-400 transition"
                wire:key="slot-pocion-{{ $pocion->id }}"
                title="{{ $pocion->nombre }} — {{ $pocion->descripcion }}">
 
@@ -773,24 +774,24 @@
                    wire:key="checkbox-{{ $pocion->id }}"
                    wire:change="$refresh"
                    @if($pocion->precio_venta) disabled @endif
-                   class="absolute top-1 left-1 w-3.5 h-3.5 z-10 text-indigo-600 bg-gray-700 border-gray-300 rounded focus:ring-indigo-500
+                   class="absolute bottom-0 left-0 sm:bottom-auto sm:top-1 sm:left-1 w-3.5 h-3.5 z-10 text-indigo-600 bg-gray-700 border-gray-300 rounded focus:ring-indigo-500
                    @if($pocion->precio_venta) cursor-not-allowed @endif"
                    @if($pocion->precio_venta) title="No se puede tirar una poción en venta" @endif
             />
 
             @if($pocion->precio_venta)
-              <div class="absolute top-1 right-1 bg-yellow-500 text-black text-[8px] font-bold px-1 rounded z-10">
+              <div class="absolute -top-1 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:top-1 sm:right-1 bg-yellow-500 text-black text-[7px] sm:text-[8px] font-bold px-1 rounded z-10 whitespace-nowrap">
                 En venta
               </div>
             @endif
 
-            <div class="flex flex-col items-center justify-center w-full @if($pocion->precio_venta) opacity-60 @endif"
+            <div class="flex flex-col items-center justify-center w-full h-full sm:h-auto @if($pocion->precio_venta) opacity-60 @endif"
                  wire:click="abrirModalEquiparPocion({{ $pocion->id }})">
               <img src="{{ asset('images/' . $pocion->imagen) }}" alt="{{ $pocion->nombre }}"
-                  class="w-12 h-12 object-contain hover:scale-110 transition duration-150" />
+                  class="w-4/5 h-4/5 sm:w-12 sm:h-12 object-contain hover:scale-110 transition duration-150" />
 
-              <p class="text-white text-[9px] font-semibold truncate w-full text-center px-1 mt-0.5">{{ $pocion->nombre }}</p>
-              <p class="text-pink-400 text-[8px] leading-none">
+              <p class="hidden sm:block text-white text-[9px] font-semibold truncate w-full text-center px-1 mt-0.5">{{ $pocion->nombre }}</p>
+              <p class="absolute -bottom-1 right-0 sm:static px-1 rounded sm:px-0 bg-black/80 sm:bg-transparent text-pink-400 text-[8px] leading-none">
                 {{ $this->obtenerStat($pocion, 'usos_restantes') }}/{{ $this->obtenerStat($pocion, 'usos_totales') }}
               </p>
             </div>
@@ -799,7 +800,7 @@
 
         {{-- Espacios vacíos --}}
         @for($i = 0; $i < $espaciosDisponibles; $i++)
-          <div class="rounded-md border-2 border-black bg-[#0a0e14] shadow-[inset_0_3px_6px_rgba(0,0,0,0.9),inset_0_-1px_0_rgba(255,255,255,0.08)] flex items-center justify-center text-gray-600 text-3xl w-[100px] h-[100px] select-none">
+          <div class="rounded-full sm:rounded-md border-[3px] sm:border-2 border-black bg-[#0a0e14] shadow-[inset_0_3px_6px_rgba(0,0,0,0.9),inset_0_-1px_0_rgba(255,255,255,0.08)] flex items-center justify-center text-gray-700 sm:text-gray-600 text-2xl sm:text-3xl w-full aspect-square sm:w-[100px] sm:h-[100px] sm:aspect-auto select-none">
             +
           </div>
         @endfor

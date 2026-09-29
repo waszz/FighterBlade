@@ -255,6 +255,11 @@
                     ['seccion' => 'drops', 'nombre' => 'Mis Drops', 'icono' => 'fa-gem'],
                     ['seccion' => 'galeria', 'nombre' => 'Mis Personajes', 'icono' => 'fa-users'],
                 ];
+                // En el inventario se necesita el ancho: quedan solo Extras y Ranking (la Ciudad está en la barra de arriba)
+                if ($seccion === 'inventario') {
+                    $botonesMovilIzq = array_values(array_filter($botonesMovilIzq, fn ($b) => $b['seccion'] === 'extra'));
+                    $botonesMovilDer = array_values(array_filter($botonesMovilDer, fn ($b) => $b['seccion'] === 'ranking'));
+                }
                 $botonRedondo = 'flex items-center justify-center rounded-full border-2 border-black text-white bg-gradient-to-b shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[2px] transition-all';
                 $botonCuadrado = 'w-11 h-11 shrink-0 flex items-center justify-center rounded-lg border-2 border-black text-white text-lg bg-gradient-to-b from-green-500 to-green-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] active:translate-y-[2px] transition-all';
             @endphp
