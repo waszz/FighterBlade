@@ -266,7 +266,7 @@ class Explorar extends Component
 
         // 4️⃣ Cargar ranking
         // Todos los usuarios de la zona (sin límite)
-        $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio'])
+        $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio', 'clan'])
             ->where('ciudad_id', $this->ciudadActual->id)
             ->sinAdmins()
             ->orderByDesc('nivel')
@@ -981,7 +981,7 @@ public function colorBarraPorStat($valor)
             return;
         }
 
-        $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio'])
+        $this->rankingCiudad = Personaje::with(['user', 'post', 'equipo', 'entrenamiento', 'accesorio', 'clan'])
             ->where('ciudad_id', $this->ciudadActual->id)
             ->sinAdmins()
             ->orderByDesc('nivel')

@@ -506,6 +506,10 @@
                      class="w-12 h-12 shrink-0 rounded-full object-cover" />
               @endif
               <span class="truncate text-sm font-semibold {{ $personajeRanking->claseNombre() }}">{{ $personajeRanking->nombre }}</span>
+              {{-- Clan: su etiqueta entre corchetes (como en el Ranking) --}}
+              @if ($personajeRanking->clan)
+                <span class="shrink-0 text-xs font-bold text-sky-300" title="Clan {{ $personajeRanking->clan->nombre }}">[{{ $personajeRanking->clan->tag ?? $personajeRanking->clan->nombre }}]</span>
+              @endif
             </div>
 
             {{-- Nivel y peleas PvP ganadas / perdidas --}}

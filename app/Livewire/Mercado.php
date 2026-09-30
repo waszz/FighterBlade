@@ -109,10 +109,11 @@ public static function nivelMaximoMercado(): int
     return max(5, $nivelTop - 5);
 }
 
-// El mercado se renueva los lunes y los sábados a las 00:00 (hora del servidor)
+// El mercado se renueva los lunes y los sábados a las 00:00 en hora local del juego (la misma zona que la Caza).
+// Antes era a las 00:00 del servidor (UTC): acá eso es el viernes y el domingo a las 21:00
 public static function ultimaRotacion(): Carbon
 {
-    $hoy = now()->startOfDay();
+    $hoy = now()->setTimezone(\App\Models\Caza::ZONA_HORARIA)->startOfDay();
     if ($hoy->isMonday() || $hoy->isSaturday()) {
         return $hoy;
     }
@@ -121,7 +122,7 @@ public static function ultimaRotacion(): Carbon
 
 public static function proximaRotacion(): Carbon
 {
-    $hoy = now()->startOfDay();
+    $hoy = now()->setTimezone(\App\Models\Caza::ZONA_HORARIA)->startOfDay();
     return min($hoy->copy()->next(Carbon::SATURDAY), $hoy->copy()->next(Carbon::MONDAY));
 }
 
