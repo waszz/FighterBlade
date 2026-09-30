@@ -39,11 +39,15 @@ class Explorar extends Component
     // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo
     const EQUIPO_RIVAL_MISION_TORRE = 1.0;
 
+    // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (menos que misiones y torre).
+    // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
+    const EQUIPO_RIVAL_EXPLORACION = 0.5;
+
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
-    public static function refuerzoRivalMisionTorre(int $nivel): float
+    public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
     {
         $base = 30 + 5 * max(1, $nivel);
-        return ($base + 5 * max(1, $nivel) * self::EQUIPO_RIVAL_MISION_TORRE) / $base;
+        return ($base + 5 * max(1, $nivel) * $fraccion) / $base;
     }
 
     const EXP_POR_NIVEL = [
@@ -1519,9 +1523,15 @@ protected function obtenerPoderesAnulados($combatiente)
             : Personaje::decodificarStats($this->enemigo->stats);
         // dd($statsEnemigo);
 
-        // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel
-        if (! ($this->enemigo instanceof Personaje) && ($this->misionActiva() || $this->torreActiva())) {
-            $factorRival = self::refuerzoRivalMisionTorre((int) ($this->enemigo->nivel ?? 1));
+        // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel.
+        // 🧭 Exploración: como uno con medio set (ver EQUIPO_RIVAL_EXPLORACION)
+        $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva();
+        $esEnemigoExploracion = $this->esExploracion() && ($this->enemigo->es_enemigo ?? null) != self::ENEMIGO_ESPECIAL;
+        if (! ($this->enemigo instanceof Personaje) && ($esRivalMisionTorre || $esEnemigoExploracion)) {
+            $factorRival = self::refuerzoRivalMisionTorre(
+                (int) ($this->enemigo->nivel ?? 1),
+                $esRivalMisionTorre ? self::EQUIPO_RIVAL_MISION_TORRE : self::EQUIPO_RIVAL_EXPLORACION
+            );
             foreach ($statsEnemigo as $stat => $valor) {
                 if (is_numeric($valor)) {
                     $statsEnemigo[$stat] = (int) round($valor * $factorRival);
