@@ -227,7 +227,8 @@ protected $casts = [
         return $this->post;
     }
 
-    // Stats para pelear: los base más los de las partes equipadas
+    // Stats para pelear: los base más los de las partes equipadas y la joya, y los poderes que suben stats
+    // del set con el que pelea (igual que el panel de atributos, ver App\Support\PoderesStats)
     public function statsDeCombate(): array
     {
         $stats = self::decodificarStats($this->stats);
@@ -242,7 +243,7 @@ protected $casts = [
                 }
             }
         }
-        return $stats;
+        return \App\Support\PoderesStats::aplicar($stats, $this->postDeCombate()?->poderes ?? collect());
     }
 
     // Stats como array: los personajes creados desde el juego los guardan como texto JSON y otros

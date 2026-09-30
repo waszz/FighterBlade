@@ -1417,6 +1417,9 @@ if ($tieneSiempreEnPie) {
             }
         }
 
+        // Poderes que suben stats (SUPER DEFENSA, ENERGIZADO...): los mismos puntos amarillos que muestra el panel
+        $statsCombinados = \App\Support\PoderesStats::aplicar($statsCombinados, $this->personaje->postDeCombate()?->poderes ?? collect());
+
         // dd para debug (podés comentar o borrar después)
         // dd([
         //  'equipo' => $this->equipo,
@@ -1553,6 +1556,11 @@ protected function obtenerPoderesAnulados($combatiente)
                     $statsEnemigo[$stat] = (int) round($valor * $factorRival);
                 }
             }
+        }
+
+        // Enemigos del juego: sus poderes que suben stats también cuentan (los jugadores ya los traen en statsDeCombate)
+        if (! ($this->enemigo instanceof Personaje)) {
+            $statsEnemigo = \App\Support\PoderesStats::aplicar($statsEnemigo, $this->enemigo->poderes ?? collect());
         }
 
         // 🎯 Presa de caza: stats reforzados según la rareza
