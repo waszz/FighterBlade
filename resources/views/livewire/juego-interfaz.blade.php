@@ -1,4 +1,5 @@
-<div class="relative h-screen overflow-hidden" style="height: 100dvh" x-data="{ perfil: false, chat: false }" @cerrar-chat.window="chat = false">
+{{-- fixed inset-0: ocupa exactamente la ventana visible (100dvh en algunos iPhone quedaba más corto y dejaba una franja abajo) --}}
+<div class="fixed inset-0 overflow-hidden" x-data="{ perfil: false, chat: false }" @cerrar-chat.window="chat = false">
     {{-- Una sola pestaña por navegador: las pestañas comparten la sesión (el servidor no las distingue), así que se avisan
          entre ellas; al abrir el juego en otra pestaña, esta queda bloqueada. "Jugar acá" la recarga y bloquea a la otra --}}
     <div wire:ignore x-data="{ otraPestana: false }"
@@ -456,7 +457,7 @@
         </div>
 
         {{-- Chat lateral derecho (solo PC) --}}
-        <div :class="chat ? '!flex fixed inset-0 !h-[100dvh] z-50 !w-full' : ''" class="w-[380px] h-full hidden lg:flex flex-col bg-[#0c202e]">
+        <div :class="chat ? '!flex fixed inset-0 !h-auto z-50 !w-full' : ''" class="w-[380px] h-full hidden lg:flex flex-col bg-[#0c202e]">
             <button type="button" @click="chat = false" aria-label="Cerrar chat"
                 class="lg:hidden self-end m-2 w-8 h-8 shrink-0 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white font-bold shadow-[0_2px_0_#000]">&times;</button>
             @livewire('chat-sidebar', ['personajeId' => $personaje->id])

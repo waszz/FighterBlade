@@ -21,10 +21,11 @@
 
     </head>
    
-    <body class="font-sans antialiased {{ request()->routeIs('juego.mostrar') ? 'overflow-hidden' : '' }}">
+    {{-- En el juego el fondo de la página es oscuro: si el celular deja algún hueco (barra del navegador de iPhone) no se ve una franja blanca --}}
+    <body class="font-sans antialiased {{ request()->routeIs('juego.mostrar') ? 'overflow-hidden bg-[#0b1620]' : '' }}">
 
       
-        <div class="min-h-screen bg-white">
+        <div class="min-h-screen {{ request()->routeIs('juego.mostrar') ? 'bg-[#0b1620]' : 'bg-white' }}">
            
             {{-- En la pantalla del juego no va la barra de arriba (logo, Inicio, usuario): el juego ocupa toda la ventana --}}
             @unless (request()->routeIs('juego.mostrar'))
