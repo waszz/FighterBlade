@@ -214,6 +214,16 @@ Artisan::command('sets:stats-por-tipo', function () {
     $this->info("Stats de pelea actualizados (sets, variantes y rivales de misión): $pelea");
 })->purpose('Sets y rivales de misión: solo los stats de su tipo de daño, rotando por nivel');
 
+// Pone en las partes que tienen los jugadores lo que su set tiene ahora (stats, requisito, nivel, nombre e imagen).
+// Al editar un set ya se hace solo; esto es para los sets editados antes: php artisan sets:sincronizar-partes
+Artisan::command('sets:sincronizar-partes', function () {
+    $total = 0;
+    foreach (\App\Models\Post::withoutGlobalScopes()->whereIn('id', \App\Models\Objeto::whereNotNull('origen_post_id')->distinct()->pluck('origen_post_id'))->get() as $post) {
+        $total += $post->sincronizarPartesEnInventarios();
+    }
+    $this->info("Partes actualizadas: $total");
+})->purpose('Actualiza las partes de los inventarios con lo que tiene su set ahora');
+
 // Hace admin a una cuenta (por su email): ve y edita todos los sets, noticias y ciudades, los haya creado quien sea.
 // Las pantallas de admin piden el email verificado: si no lo estaba, lo marca. Con --quitar la vuelve usuario normal.
 //   php artisan usuarios:admin alguien@mail.com

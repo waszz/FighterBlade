@@ -518,12 +518,33 @@ public function getNombreAttribute()
 
             $this->{'ajustes_manuales_' . $parte} = $da;
             $this->{'requisitos_' . $parte} = $requisito;
-            Objeto::where('origen_post_id', $this->id)->where('tipo', $parte)
-                ->update(['stats' => json_encode($da), 'requisitos_' . $parte => json_encode($requisito)]);
         }
         $this->saveQuietly();
+        $this->sincronizarPartesEnInventarios();
 
         return true;
+    }
+
+    // Las partes que ya tienen los jugadores (en el inventario, equipadas o a la venta) son copias de cuando cayeron:
+    // se les pone lo que el set tiene ahora (stats, requisito, nivel y, si el set los tiene cargados, nombre e imagen)
+    public function sincronizarPartesEnInventarios(): int
+    {
+        $actualizadas = 0;
+        foreach (self::PARTES_REQUISITO as $parte) {
+            $datos = [
+                'stats'                => json_encode($this->{'ajustes_manuales_' . $parte} ?? []),
+                'requisitos_' . $parte => json_encode($this->{'requisitos_' . $parte} ?? []),
+                'nivel'                => (int) $this->nivel,
+            ];
+            if ($this->{$parte . '_nombre'}) {
+                $datos['nombre'] = $this->{$parte . '_nombre'};
+            }
+            if ($this->{$parte . '_imagen'}) {
+                $datos['imagen'] = $this->{$parte . '_imagen'};
+            }
+            $actualizadas += Objeto::where('origen_post_id', $this->id)->where('tipo', $parte)->update($datos);
+        }
+        return $actualizadas;
     }
 
     // Stats de pelea (los que usa como enemigo: exploración, Torre, misiones). Siguen la misma regla de su tipo de daño:

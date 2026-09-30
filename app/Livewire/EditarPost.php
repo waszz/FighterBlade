@@ -436,7 +436,10 @@ public function decrementarStat($stat, $tipo, $cantidad = 1)
 
         $post->poderes()->sync($this->poderesSeleccionados);
 
-        session()->flash('mensaje', 'Personaje / Post actualizado correctamente.');
+        // Las partes de este set que ya tienen los jugadores también cambian (stats, requisito, nombre, imagen)
+        $partes = $post->sincronizarPartesEnInventarios();
+
+        session()->flash('mensaje', 'Personaje / Post actualizado correctamente.' . ($partes ? " También se actualizaron $partes partes que tenían los jugadores." : ''));
         // Los especiales vuelven a su propia lista
         if (in_array((int) $post->es_enemigo, [Post::ENEMIGO_ESPECIAL, Post::RIVAL_MISION], true)) {
             return redirect()->route('personajes.especiales');
