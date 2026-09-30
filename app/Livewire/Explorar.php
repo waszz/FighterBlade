@@ -50,9 +50,9 @@ class Explorar extends Component
     // tanto. Con 0,65 un híbrido pega más o menos lo mismo que un físico o un elemental del mismo nivel (antes, 1,5 veces)
     const FACTOR_DANIO_HIBRIDO = 0.65;
     const CONTRA_POR_DEFENSA = 0.5;
-    const CONTRA_TOPE = 35;
+    const CONTRA_TOPE = 50;
     const REBOTE_POR_RESISTENCIA = 0.5;
-    const REBOTE_TOPE = 35;
+    const REBOTE_TOPE = 50;
     const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
 
     // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (misiones y torre, set completo).
