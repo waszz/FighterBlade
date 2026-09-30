@@ -640,7 +640,8 @@
             el golpe a <strong>{{ $nombreDefensor }}</strong>!
           </p>
 
-          <div class="flex justify-center items-end gap-2 w-full min-h-[160px] overflow-hidden mt-2 mb-4">
+          {{-- Como en el escenario: el personaje siempre a la izquierda (mirando a la derecha) y el enemigo a la derecha --}}
+          <div class="flex justify-center items-end gap-2 w-full min-h-[160px] overflow-hidden mt-2 mb-4 {{ $res['atacante'] === 'personaje' ? '' : 'flex-row-reverse' }}">
             @if ($gifResiste)
               <img src="{{ asset('storage/' . $gifResiste) }}" alt="Gif resiste"
                 style="{{ \App\Models\Post::estiloGif($gifResiste) }}" class="block max-w-none {{ $claseFlipResiste }}">
