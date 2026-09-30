@@ -39,9 +39,9 @@ class Explorar extends Component
     // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo
     const EQUIPO_RIVAL_MISION_TORRE = 1.0;
 
-    // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (menos que misiones y torre).
+    // Exploración: el enemigo también se refuerza como un jugador de su nivel con set completo (igual que misiones y torre).
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
-    const EQUIPO_RIVAL_EXPLORACION = 0.5;
+    const EQUIPO_RIVAL_EXPLORACION = 1.0;
 
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
     public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
@@ -1524,7 +1524,7 @@ protected function obtenerPoderesAnulados($combatiente)
         // dd($statsEnemigo);
 
         // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel.
-        // 🧭 Exploración: como uno con medio set (ver EQUIPO_RIVAL_EXPLORACION)
+        // 🧭 Exploración: también (ver EQUIPO_RIVAL_EXPLORACION)
         $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva();
         $esEnemigoExploracion = $this->esExploracion() && ($this->enemigo->es_enemigo ?? null) != self::ENEMIGO_ESPECIAL;
         if (! ($this->enemigo instanceof Personaje) && ($esRivalMisionTorre || $esEnemigoExploracion)) {
