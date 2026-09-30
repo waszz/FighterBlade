@@ -53,7 +53,7 @@ class Explorar extends Component
     const CONTRA_TOPE = 35;
     const REBOTE_POR_RESISTENCIA = 0.25;
     const REBOTE_TOPE = 35;
-    const REBOTE_PORCENTAJE = 0.5;
+    const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
 
     // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (misiones y torre, set completo).
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
