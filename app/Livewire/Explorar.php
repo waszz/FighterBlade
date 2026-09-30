@@ -2316,14 +2316,16 @@ if ($tipoAtaque === 'defensa') {
     $tipoAtaque          = 'bloqueo';
 
 } else {
-    // Si el ataque no supera la defensa, se bloquea entero (contra enemigos y en PvP, igual)
-    $puedeDefender = ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
+    // Si el ataque no supera la defensa, se bloquea entero (contra enemigos y en PvP, igual).
+    // El ataque (y la fuerza del crítico) suben un 3% por nivel, igual que la defensa: a mismo nivel y mismos puntos, parejo
+    $bonusNivelAtacante = 1 + ($nivelAtacante * 0.03);
+    $puedeDefender = ($statsAtacante['ataque'] ?? 0) * $bonusNivelAtacante <= $defensaDefensor;
 
     // El crítico se mide con la fuerza del que pega contra la defensa del que recibe: el que tenga claramente más
     // gana; si están parejos (dentro del 10%), se tiran dados (1 a 6, si empatan se vuelven a tirar)
     $dados = null;
     if ($tipoAtaque === 'critico') {
-        $fuerzaCritico = $statsAtacante['fuerza'] ?? 0;
+        $fuerzaCritico = ($statsAtacante['fuerza'] ?? 0) * $bonusNivelAtacante;
         if ($fuerzaCritico > $defensaDefensor * 1.1) {
             $puedeDefender = false;
         } elseif ($defensaDefensor > $fuerzaCritico * 1.1) {
