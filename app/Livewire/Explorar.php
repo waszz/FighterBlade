@@ -45,6 +45,10 @@ class Explorar extends Component
     //  - Rebote: si no contraataca, chance = resistencia × REBOTE_POR_RESISTENCIA %, hasta REBOTE_TOPE %. Resiste el golpe
     //    entero (no recibe daño) y le rebota al atacante REBOTE_PORCENTAJE de ese golpe (cuenta como daño del que resiste)
     const MINIMO_CONTRA_REBOTE = 30;
+
+    // Híbridos: pegan físico y elemental a la vez (el ataque les cuenta en los dos), así que cada parte vale este
+    // tanto. Con 0,65 un híbrido pega más o menos lo mismo que un físico o un elemental del mismo nivel (antes, 1,5 veces)
+    const FACTOR_DANIO_HIBRIDO = 0.65;
     const CONTRA_POR_DEFENSA = 0.25;
     const CONTRA_TOPE = 35;
     const REBOTE_POR_RESISTENCIA = 0.25;
@@ -1682,8 +1686,8 @@ protected function obtenerPoderesAnulados($combatiente)
             }
 
             if ($tipo === 'hibrido') {
-                $danioFisico += $calcularDanioFisico($stats, $nivel);
-                $danioElemental += $calcularDanioElemental($stats, $nivel);
+                $danioFisico += $calcularDanioFisico($stats, $nivel) * self::FACTOR_DANIO_HIBRIDO;
+                $danioElemental += $calcularDanioElemental($stats, $nivel) * self::FACTOR_DANIO_HIBRIDO;
 
                 if ($tipoAtaque === 'critico') {
                     $danioFisico *= 0.5;
@@ -1747,8 +1751,8 @@ protected function obtenerPoderesAnulados($combatiente)
 
             // Daño base 50% para contraataque
             if ($defensorTipo === 'hibrido') {
-                $danioFisico    = $calcularDanioFisico($defensorStats, $defensorNivel) * 0.5;
-                $danioElemental = $calcularDanioElemental($defensorStats, $defensorNivel) * 0.5;
+                $danioFisico    = $calcularDanioFisico($defensorStats, $defensorNivel) * 0.5 * self::FACTOR_DANIO_HIBRIDO;
+                $danioElemental = $calcularDanioElemental($defensorStats, $defensorNivel) * 0.5 * self::FACTOR_DANIO_HIBRIDO;
             } elseif ($defensorTipo === 'elemental') {
                 $danioElemental = $calcularDanioElemental($defensorStats, $defensorNivel) * 0.5;
             } else {
