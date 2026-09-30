@@ -271,7 +271,7 @@ class Inventario extends Component
                 return $post && $post->partes && $post->partes->count() > 0;
             });
 
-        $this->pociones = Objeto::where('tipo', 'pocion')->get()->map(function ($objeto) {
+        $this->pociones = Objeto::where('personaje_id', $this->personaje->id)->where('tipo', 'pocion')->get()->map(function ($objeto) {
             return $this->procesarObjeto($objeto);
         });
     }
@@ -772,11 +772,14 @@ class Inventario extends Component
     {
         $this->personaje = Personaje::with(['post', 'equipo', 'entrenamiento', 'accesorio'])->find($this->personaje->id);
 
-        $this->objetos = Objeto::where('personaje_id', $this->personaje->id)->get()->map(function ($objeto) {
+        $todos = Objeto::where('personaje_id', $this->personaje->id)->get()->map(function ($objeto) {
             return $this->procesarObjeto($objeto);
         });
 
-        $this->pociones = $this->objetos->filter(fn($objeto) => $objeto->tipo === 'pocion')->values();
+        // Igual que al abrir el inventario: los objetos sin las pociones (las pociones se cuentan aparte; antes quedaban
+        // en los dos lados y después de tirar algo cada poción ocupaba 2 lugares → "inventario lleno")
+        $this->objetos  = $todos->filter(fn($objeto) => $objeto->tipo !== 'pocion')->values();
+        $this->pociones = $todos->filter(fn($objeto) => $objeto->tipo === 'pocion')->values();
 
         $this->objetoEquipado = $this->personaje->objeto_consumible_id
         ? $this->procesarObjeto(Objeto::find($this->personaje->objeto_consumible_id))
