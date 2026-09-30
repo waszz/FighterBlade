@@ -41,6 +41,48 @@ class GifTransparente
         return $r >= 240 && $g <= 16 && $b >= 240;
     }
 
+    // Blanco (o casi): algunos sprites se guardaron con fondo blanco en vez de magenta
+    private static function esBlanco(int $r, int $g, int $b): bool
+    {
+        return $r >= 240 && $g >= 240 && $b >= 240;
+    }
+
+    private static function indicesBlanco(string $tabla): array
+    {
+        $indices = [];
+        for ($i = 0, $n = intdiv(strlen($tabla), 3); $i < $n; $i++) {
+            if (self::esBlanco(ord($tabla[$i * 3]), ord($tabla[$i * 3 + 1]), ord($tabla[$i * 3 + 2]))) {
+                $indices[] = $i;
+            }
+        }
+        return $indices;
+    }
+
+    // ¿Las 4 esquinas del cuadro tienen alguno de esos índices? (así se reconoce un fondo, no un blanco del dibujo)
+    private static function esquinasCon(string $pixeles, int $ancho, int $alto, bool $entrelazado, array $indices): bool
+    {
+        if ($ancho <= 0 || $alto <= 0 || strlen($pixeles) < $ancho * $alto) {
+            return false;
+        }
+        $filaReal = range(0, $alto - 1);
+        if ($entrelazado) {
+            $filaReal = [];
+            foreach ([[0, 8], [4, 8], [2, 4], [1, 2]] as [$desde, $paso]) {
+                for ($y = $desde; $y < $alto; $y += $paso) {
+                    $filaReal[] = $y;
+                }
+            }
+        }
+        $filaGuardada = array_flip($filaReal);
+        $buscados = array_flip(array_map('chr', $indices));
+        foreach ([[0, 0], [$ancho - 1, 0], [0, $alto - 1], [$ancho - 1, $alto - 1]] as [$x, $y]) {
+            if (! isset($buscados[$pixeles[$filaGuardada[$y] * $ancho + $x]])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Índices de los colores magenta de una tabla (el exacto primero)
     private static function indicesMagenta(string $tabla): array
     {
@@ -292,6 +334,7 @@ class GifTransparente
         $cambiados = 0;
         $cuadros = 0;
         $yaTransparentes = 0;
+        $fondoBlanco = null; // se decide en el primer cuadro: ¿el gif tiene fondo blanco?
         $len = strlen($gif);
 
         while ($p < $len) {
@@ -327,6 +370,7 @@ class GifTransparente
                 $cuadro = substr($gif, $p, $finCuadro - $p);
 
                 $magentas = self::indicesMagenta($tabla);
+                $cambiadosAntes = $cambiados;
                 if ($magentas) {
                     $min = ord($gif[$finDescriptor]);
                     [$datos] = self::leerSubbloques($gif, $finDescriptor + 1);
@@ -384,6 +428,73 @@ class GifTransparente
                         }
                         if ($pixeles !== $antes) {
                             $cabecera = $finDescriptor - $p; // descriptor + tabla local
+                            $cuadro = substr($cuadro, 0, $cabecera) . chr($min) . self::armarSubbloques(self::lzwCodificar($min, $pixeles));
+                        }
+                    }
+                }
+
+                // Fondo blanco (si el magenta no cambió nada en este cuadro): solo si las 4 esquinas son blancas, y solo el
+                // blanco pegado al borde (el de adentro del sprite, como ojos o brillos, queda). Como transparente se usa
+                // el que ya tenga el cuadro o un índice de la paleta que no use ningún píxel (si no hay, no se toca)
+                // El blanco se toma como fondo solo si el primer cuadro del gif ya lo tiene: en una animación con fondo
+                // transparente, un cuadro con las esquinas blancas es un destello del efecto, no un fondo
+                $blancos = $cambiados === $cambiadosAntes && ($fondoBlanco ?? $cuadros === 1) ? self::indicesBlanco($tabla) : [];
+                if ($cuadros === 1) {
+                    $fondoBlanco = false;
+                }
+                // El índice que el cuadro ya usa como transparente no cuenta como blanco aunque en la paleta lo sea
+                // (muchos gifs guardan el transparente como blanco: sus esquinas ya son transparentes, no un fondo)
+                $flagsBlanco = $gcePendiente !== null ? ord($salida[$gcePendiente + 3]) : 0;
+                if ($blancos && ($flagsBlanco & 0x01)) {
+                    $blancos = array_values(array_diff($blancos, [ord($salida[$gcePendiente + 6])]));
+                }
+                if ($blancos) {
+                    $min = ord($gif[$finDescriptor]);
+                    [$datos] = self::leerSubbloques($gif, $finDescriptor + 1);
+                    $pixeles = self::lzwDecodificar($min, $datos);
+                    $anchoCuadro = ord($gif[$p + 5]) | (ord($gif[$p + 6]) << 8);
+                    $altoCuadro = ord($gif[$p + 7]) | (ord($gif[$p + 8]) << 8);
+                    $entrelazado = (bool) ($pk & 0x40);
+
+                    if (self::esquinasCon($pixeles, $anchoCuadro, $altoCuadro, $entrelazado, $blancos)) {
+                        if ($cuadros === 1) {
+                            $fondoBlanco = true;
+                        }
+                        $flags = $flagsBlanco;
+                        $yaTiene = (bool) ($flags & 0x01);
+                        $transparente = $yaTiene ? ord($salida[$gcePendiente + 6]) : null;
+                        if ($transparente === null) {
+                            $usadosPixeles = count_chars($pixeles, 1);
+                            for ($i = 0, $n = min(1 << ($min), intdiv(strlen($tabla), 3)); $i < $n; $i++) {
+                                if (! isset($usadosPixeles[$i])) {
+                                    $transparente = $i;
+                                    break;
+                                }
+                            }
+                        }
+                        $posiciones = $transparente !== null
+                            ? self::conectadosAlBorde($pixeles, $anchoCuadro, $altoCuadro, $entrelazado, array_values(array_diff($blancos, [$transparente])))
+                            : [];
+
+                        if ($posiciones) {
+                            $cambiados++;
+                            if (! $yaTiene) {
+                                $completo = $anchoCuadro === $anchoLienzo && $altoCuadro === $altoLienzo;
+                                if ($gcePendiente !== null) {
+                                    $nuevosFlags = $flags | 0x01;
+                                    if ($completo) {
+                                        $nuevosFlags = ($nuevosFlags & ~0x1C & 0xFF) | (2 << 2);
+                                    }
+                                    $salida[$gcePendiente + 3] = chr($nuevosFlags);
+                                    $salida[$gcePendiente + 6] = chr($transparente);
+                                } else {
+                                    $salida .= "\x21\xF9\x04" . chr(($completo ? (2 << 2) : 0) | 0x01) . "\x00\x00" . chr($transparente) . "\x00";
+                                }
+                            }
+                            foreach ($posiciones as $pos) {
+                                $pixeles[$pos] = chr($transparente);
+                            }
+                            $cabecera = $finDescriptor - $p;
                             $cuadro = substr($cuadro, 0, $cabecera) . chr($min) . self::armarSubbloques(self::lzwCodificar($min, $pixeles));
                         }
                     }

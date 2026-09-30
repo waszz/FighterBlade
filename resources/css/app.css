@@ -23,25 +23,48 @@
 .estado-supercarga { filter: sepia(1) saturate(5) hue-rotate(160deg) drop-shadow(0 0 7px #22d3ee); animation: estadoLatido 0.6s steps(2, end) infinite alternate; }
 @keyframes estadoLatido { from { opacity: 1; } to { opacity: 0.82; } }
 
-/* Pelea: fondo detrás del gif del golpe crítico (explosión roja) y del movimiento especial (rayos dorados y violetas) */
+/* Pelea: fondo animado detrás del gif del golpe crítico y del movimiento especial.
+   ::before = rayos que giran (más grande que el recuadro, se ve el centro); ::after = el brillo o la onda del centro */
 .fondo-critico, .fondo-especial { position: relative; isolation: isolate; border-radius: 14px; }
-.fondo-critico::before, .fondo-especial::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; }
-.fondo-critico::before {
-  background:
-    radial-gradient(ellipse 45% 55% at 50% 62%, rgba(255, 245, 230, .75) 0%, rgba(254, 202, 202, .35) 18%, transparent 40%),
-    radial-gradient(ellipse 70% 85% at 50% 62%, rgba(239, 68, 68, .65) 0%, rgba(185, 28, 28, .35) 45%, transparent 72%);
-  animation: fondoCritico .45s ease-in-out infinite alternate;
+.fondo-critico::before, .fondo-especial::before, .fondo-critico::after, .fondo-especial::after {
+  content: ''; position: absolute; z-index: -1; pointer-events: none;
 }
+.fondo-critico::before, .fondo-especial::before {
+  left: 50%; top: 60%; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
+  -webkit-mask: radial-gradient(circle, #000 18%, rgba(0, 0, 0, .6) 32%, transparent 48%);
+          mask: radial-gradient(circle, #000 18%, rgba(0, 0, 0, .6) 32%, transparent 48%);
+}
+
+/* Especial: rayos dorados, violetas y celestes que giran, con un núcleo dorado que late */
 .fondo-especial::before {
-  background:
-    radial-gradient(ellipse 40% 50% at 50% 60%, rgba(254, 249, 195, .8) 0%, rgba(250, 204, 21, .35) 25%, transparent 50%),
-    repeating-conic-gradient(from 0deg at 50% 60%, rgba(250, 204, 21, .28) 0deg 8deg, rgba(168, 85, 247, .22) 8deg 16deg, transparent 16deg 24deg);
-  -webkit-mask: radial-gradient(ellipse 75% 90% at 50% 60%, #000 35%, transparent 75%);
-          mask: radial-gradient(ellipse 75% 90% at 50% 60%, #000 35%, transparent 75%);
-  animation: fondoEspecial 6s linear infinite;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(250, 204, 21, .75) 0deg 7deg, transparent 7deg 15deg,
+    rgba(192, 38, 211, .6) 15deg 22deg, transparent 22deg 30deg,
+    rgba(34, 211, 238, .55) 30deg 37deg, transparent 37deg 45deg);
+  animation: fondoGirar 3s linear infinite;
 }
-@keyframes fondoCritico { from { opacity: .75; transform: scale(.96); } to { opacity: 1; transform: scale(1.04); } }
-@keyframes fondoEspecial { from { filter: hue-rotate(0deg) brightness(1); } 50% { filter: hue-rotate(25deg) brightness(1.25); } to { filter: hue-rotate(0deg) brightness(1); } }
+.fondo-especial::after {
+  left: 50%; top: 60%; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95) 0%, rgba(253, 224, 71, .8) 22%, rgba(217, 70, 239, .45) 48%, transparent 70%);
+  animation: fondoLatir .5s ease-in-out infinite alternate;
+}
+
+/* Crítico: estrella de picos rojos y naranjas que gira y late, y una onda de choque que sale del centro */
+.fondo-critico::before {
+  background: repeating-conic-gradient(from 0deg,
+    rgba(239, 68, 68, .85) 0deg 5deg, rgba(251, 146, 60, .55) 5deg 9deg, transparent 9deg 20deg);
+  animation: fondoGirar 5s linear infinite reverse, fondoLatirGrande .35s ease-in-out infinite alternate;
+}
+.fondo-critico::after {
+  left: 50%; top: 60%; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .9) 0%, rgba(254, 240, 138, .7) 12%, transparent 26%,
+    transparent 52%, rgba(254, 215, 170, .9) 56%, rgba(239, 68, 68, .85) 61%, transparent 68%);
+  animation: fondoOnda .7s ease-out infinite;
+}
+@keyframes fondoGirar { to { transform: rotate(360deg); } }
+@keyframes fondoLatir { from { transform: scale(.85); opacity: .75; } to { transform: scale(1.1); opacity: 1; } }
+@keyframes fondoLatirGrande { from { filter: brightness(.9); } to { filter: brightness(1.35); } }
+@keyframes fondoOnda { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
 
 /* ===================== Cosméticos (Extras) — catálogo en App\Support\Cosmeticos ===================== */
 
