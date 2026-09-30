@@ -467,6 +467,66 @@ public function getNombreAttribute()
         return $requisitos;
     }
 
+    // Sets de nivel 50 en adelante: los stats que dan sus partes dependen del tipo de daño. Cada nivel rota entre
+    // las opciones de su tipo (50 → la 1ª, 55 → la 2ª, 60 → la 3ª, 65 → la 1ª...). Los híbridos tienen una sola
+    const NIVEL_STATS_POR_TIPO = 50;
+    const STATS_POR_TIPO = [
+        'elemental' => [['velocidad', 'ataque', 'energia'], ['resistencia', 'energia', 'ataque'], ['defensa', 'energia', 'ataque']],
+        'fisico'    => [['fuerza', 'ataque', 'velocidad'], ['defensa', 'fuerza', 'ataque'], ['resistencia', 'ataque', 'fuerza']],
+        'hibrido'   => [['fuerza', 'velocidad', 'ataque', 'energia']],
+    ];
+
+    // Los stats que tiene que dar este set según su tipo y nivel, o null si no le toca (menos de nivel 50 o sin tipo)
+    public function statsPorTipo(): ?array
+    {
+        $opciones = self::STATS_POR_TIPO[$this->tipo] ?? null;
+        if (! $opciones || (int) $this->nivel < self::NIVEL_STATS_POR_TIPO) {
+            return null;
+        }
+        return $opciones[intdiv((int) $this->nivel - self::NIVEL_STATS_POR_TIPO, 5) % count($opciones)];
+    }
+
+    // Aplica statsPorTipo: el total de puntos que dan las 3 partes no cambia y se reparte en partes iguales entre
+    // esos stats (y nada en los demás). Cada parte da uno de ellos y lo pide de requisito; en los híbridos el 4º stat
+    // (energía) se reparte entre las 3 partes. También actualiza las partes que ya tienen los jugadores.
+    public function aplicarStatsPorTipo(): bool
+    {
+        $elegidos = $this->statsPorTipo();
+        if (! $elegidos) {
+            return false;
+        }
+
+        $total = 0;
+        foreach (self::PARTES_REQUISITO as $parte) {
+            $total += array_sum(array_map(fn ($v) => max(0, (int) $v), $this->{'ajustes_manuales_' . $parte} ?? []));
+        }
+
+        // Puntos de cada stat: partes iguales (el resto, de a 1 a los primeros)
+        $porStat = [];
+        foreach ($elegidos as $i => $stat) {
+            $porStat[$stat] = intdiv($total, count($elegidos)) + ($i < $total % count($elegidos) ? 1 : 0);
+        }
+
+        $vacio = array_fill_keys(['fuerza', 'resistencia', 'ataque', 'defensa', 'velocidad', 'energia'], 0);
+        foreach (self::PARTES_REQUISITO as $i => $parte) {
+            $da = $vacio;
+            $da[$elegidos[$i]] = $porStat[$elegidos[$i]];
+            // Híbridos: el 4º stat, repartido entre las 3 partes
+            if (isset($elegidos[3])) {
+                $da[$elegidos[3]] = intdiv($porStat[$elegidos[3]], 3) + ($i < $porStat[$elegidos[3]] % 3 ? 1 : 0);
+            }
+            $requisito = [$elegidos[$i] => (int) $this->nivel];
+
+            $this->{'ajustes_manuales_' . $parte} = $da;
+            $this->{'requisitos_' . $parte} = $requisito;
+            Objeto::where('origen_post_id', $this->id)->where('tipo', $parte)
+                ->update(['stats' => json_encode($da), 'requisitos_' . $parte => json_encode($requisito)]);
+        }
+        $this->saveQuietly();
+
+        return true;
+    }
+
     // Cuántos stats distintos puede dar cada parte según el nivel del set
     public function maxStatsPorParte(): int
     {

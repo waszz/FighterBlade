@@ -192,6 +192,19 @@ Artisan::command('jugadores:ver-datos {personaje} {--quitar}', function () {
     $this->info(($this->option('quitar') ? 'Permiso quitado a ' : 'Permiso dado a ') . "la cuenta de {$personaje->nombre} ({$personaje->user->email}).");
 })->purpose('Da (o quita con --quitar) el permiso de ver oro, esmeraldas y stats de los demás jugadores');
 
+// Sets de nivel 50 en adelante: sus partes dan solo los stats de su tipo de daño (ver Post::STATS_POR_TIPO).
+// Para aplicarlo a sets nuevos o editados: php artisan sets:stats-por-tipo
+Artisan::command('sets:stats-por-tipo', function () {
+    $total = 0;
+    foreach (\App\Models\Post::where('nivel', '>=', \App\Models\Post::NIVEL_STATS_POR_TIPO)->get() as $post) {
+        if ($post->aplicarStatsPorTipo()) {
+            $this->line("  {$post->titulo} (nivel {$post->nivel}, {$post->tipo}): " . implode(', ', $post->statsPorTipo()));
+            $total++;
+        }
+    }
+    $this->info("Sets actualizados: $total");
+})->purpose('Sets de nivel 50+: sus partes dan solo los stats de su tipo de daño, rotando por nivel');
+
 // Hace admin a una cuenta (por su email): ve y edita todos los sets, noticias y ciudades, los haya creado quien sea.
 // Las pantallas de admin piden el email verificado: si no lo estaba, lo marca. Con --quitar la vuelve usuario normal.
 //   php artisan usuarios:admin alguien@mail.com
