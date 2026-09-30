@@ -6,6 +6,7 @@
     $iconos = collect($simbolos)->map($iconoHtml);
 @endphp
 <div class="relative w-full py-3 px-2 text-white font-mono select-none flex flex-col"
+    @saldo-ruleta="saldo.oro = $event.detail.oro"
     x-data="{
         simbolos: @js($iconos),
         apuestas: @js($apuestas),
@@ -255,9 +256,14 @@
             filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45)) drop-shadow(2px 2px 0 #7f1d1d);
         }
     </style>
-    <h2 class="casino-titulo text-center text-4xl font-extrabold tracking-[0.25em] mb-3">
-        CASINO
-    </h2>
+    {{-- En celular Mai y Sakura van chiquitas a cada costado del título (en pantallas medianas están grandes a los costados de la máquina) --}}
+    <div class="flex items-end justify-center gap-1 mb-3">
+        <img src="{{ asset('images/casino/mai.gif') }}" alt="" aria-hidden="true" class="md:hidden pointer-events-none h-28 w-auto max-w-none -my-2 [filter:drop-shadow(0_3px_4px_rgba(0,0,0,0.7))]">
+        <h2 class="casino-titulo text-center text-3xl sm:text-4xl font-extrabold tracking-[0.2em] sm:tracking-[0.25em]">
+            CASINO
+        </h2>
+        <img src="{{ asset('images/casino/sakura.gif') }}" alt="" aria-hidden="true" class="md:hidden pointer-events-none h-16 w-auto max-w-none [image-rendering:pixelated] [filter:drop-shadow(0_3px_4px_rgba(0,0,0,0.7))]">
+    </div>
 
     {{-- Saldos --}}
     <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
@@ -475,5 +481,8 @@
         </template>
         </div>
     </div>
+
+    {{-- Ruleta: solo oro, sin vidas, sin límite --}}
+    @livewire('casino-ruleta', ['personaje' => \App\Models\Personaje::find($this->personajeId)], key('ruleta-' . $this->personajeId))
     </div>
 </div>
