@@ -258,6 +258,9 @@
                 @if ($personaje->joya)
                     <x-icono-joya :joya="$personaje->joya" tam="w-10 h-10" class="cursor-pointer" />
                 @endif
+                @if ($personaje->objeto_consumible)
+                    <x-icono-pocion :pocion="$personaje->objeto_consumible" tam="w-10 h-10" class="cursor-pointer" />
+                @endif
             </div>
             <div class="flex justify-center mt-1">
                 <button type="button" onclick="location.reload()" title="Refrescar página" aria-label="Refrescar página"

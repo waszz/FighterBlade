@@ -31,28 +31,8 @@ public function mostrarModalPersonaje($id)
     $this->personajeSeleccionadoModal = Personaje::with(['user', 'equipo', 'entrenamiento', 'accesorio'])
         ->find($id);
 
-    // Obtener stats base (JSON decodificado)
-    $statsBase = Personaje::decodificarStats($this->personajeSeleccionadoModal->stats);
-
-    // Inicializar array stats totales con base
-    $statsTotales = $statsBase;
-
-    // Sumar stats de equipo, entrenamiento y accesorio
-    foreach (['equipo', 'entrenamiento', 'accesorio', 'joya'] as $relacion) {
-        $obj = $this->personajeSeleccionadoModal->$relacion;
-        if ($obj) {
-            $statsObj = is_array($obj->stats) ? $obj->stats : json_decode($obj->stats ?? '{}', true);
-            foreach ($statsObj ?? [] as $stat => $valor) {
-                if (!isset($statsTotales[$stat])) {
-                    $statsTotales[$stat] = 0;
-                }
-                $statsTotales[$stat] += intval($valor);
-            }
-        }
-    }
-
-    // Guardar los stats totales en una propiedad para la vista
-    $this->personajeSeleccionadoModalStats = $statsTotales;
+    // Stats con los que pelea: base + partes + anillo + poción de stat + poderes (lo mismo que el panel y la pelea)
+    $this->personajeSeleccionadoModalStats = $this->personajeSeleccionadoModal->statsDeCombate();
 
     // Mostrar el modal
     $this->mostrarModal = true;

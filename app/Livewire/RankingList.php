@@ -49,25 +49,8 @@ $this->personajeSeleccionadoModal = Personaje::with([
 ])->find($id);
 
 
-    // Cargar stats (como antes)
-    $statsBase = Personaje::decodificarStats($this->personajeSeleccionadoModal->stats);
-
-    $statsTotales = $statsBase;
-
-    foreach (['equipo', 'entrenamiento', 'accesorio', 'joya'] as $relacion) {
-        $obj = $this->personajeSeleccionadoModal->$relacion;
-        if ($obj) {
-            $statsObj = is_array($obj->stats) ? $obj->stats : json_decode($obj->stats ?? '{}', true);
-            foreach ($statsObj ?? [] as $stat => $valor) {
-                if (!isset($statsTotales[$stat])) {
-                    $statsTotales[$stat] = 0;
-                }
-                $statsTotales[$stat] += intval($valor);
-            }
-        }
-    }
-
-    $this->personajeSeleccionadoModalStats = $statsTotales;
+    // Stats con los que pelea: base + partes + anillo + poción de stat + poderes (lo mismo que el panel y la pelea)
+    $this->personajeSeleccionadoModalStats = $this->personajeSeleccionadoModal->statsDeCombate();
 
     // Carga GIF del personaje equipado si los 3 objetos tienen el mismo origen_post_id
     $equipo = $this->personajeSeleccionadoModal->equipo;

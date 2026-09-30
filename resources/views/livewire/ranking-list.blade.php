@@ -208,7 +208,7 @@
             @endif
 
             {{-- Tipo de daño y poderes: solo iconos --}}
-            @if ($postModalRanking || $personajeSeleccionadoModal->joya)
+            @if ($postModalRanking || $personajeSeleccionadoModal->joya || $personajeSeleccionadoModal->objeto_consumible)
             <div class="rounded-lg p-2 mb-3 {{ $caja3d }}">
                 <div class="flex flex-wrap justify-center gap-2">
                     @if ($postModalRanking?->tipo)
@@ -219,6 +219,9 @@
                     @endforeach
                     @if ($personajeSeleccionadoModal->joya)
                         <x-icono-joya :joya="$personajeSeleccionadoModal->joya" tam="w-10 h-10" class="cursor-pointer" />
+                    @endif
+                    @if ($personajeSeleccionadoModal->objeto_consumible)
+                        <x-icono-pocion :pocion="$personajeSeleccionadoModal->objeto_consumible" tam="w-10 h-10" class="cursor-pointer" />
                     @endif
                 </div>
             </div>

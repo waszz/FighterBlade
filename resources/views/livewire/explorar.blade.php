@@ -660,8 +660,9 @@
         $tipoModalJugador = $postCombateModal?->tipo ?? $personajeSeleccionadoModal->post?->tipo;
         $poderesModalJugador = $postCombateModal?->poderes ?? collect();
         $joyaModalJugador = $personajeSeleccionadoModal->joya;
+        $pocionModalJugador = $personajeSeleccionadoModal->objeto_consumible;
       @endphp
-      @if ($tipoModalJugador || $poderesModalJugador->isNotEmpty() || $joyaModalJugador)
+      @if ($tipoModalJugador || $poderesModalJugador->isNotEmpty() || $joyaModalJugador || $pocionModalJugador)
         <div class="rounded-lg border border-black p-2 mb-4 text-left bg-gradient-to-b from-[#2a3240] to-[#10141b]
                     shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
           {{-- Solo los iconos: el nombre y la descripción aparecen al pasar el mouse o al tocar --}}
@@ -674,6 +675,9 @@
             @endforeach
             @if ($joyaModalJugador)
               <x-icono-joya :joya="$joyaModalJugador" tam="w-11 h-11" class="cursor-pointer" />
+            @endif
+            @if ($pocionModalJugador)
+              <x-icono-pocion :pocion="$pocionModalJugador" tam="w-11 h-11" class="cursor-pointer" />
             @endif
           </div>
         </div>

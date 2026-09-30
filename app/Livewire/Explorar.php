@@ -414,21 +414,8 @@ class Explorar extends Component
         'post'
     ])->find($id);
 
-    // Calcular stats totales
-    $statsBase = Personaje::decodificarStats($this->personajeSeleccionadoModal->stats);
-    $statsTotales = $statsBase;
-
-    foreach (['equipo', 'entrenamiento', 'accesorio', 'joya'] as $relacion) {
-        $obj = $this->personajeSeleccionadoModal->$relacion;
-        if ($obj) {
-            $statsObj = is_array($obj->stats) ? $obj->stats : json_decode($obj->stats ?? '{}', true);
-            foreach ($statsObj ?? [] as $stat => $valor) {
-                $statsTotales[$stat] = ($statsTotales[$stat] ?? 0) + intval($valor);
-            }
-        }
-    }
-
-    $this->personajeSeleccionadoModalStats = $statsTotales;
+    // Stats con los que pelea: base + partes + anillo + poción de stat + poderes (lo mismo que el panel y la pelea)
+    $this->personajeSeleccionadoModalStats = $this->personajeSeleccionadoModal->statsDeCombate();
 
     // Determinar gif del personaje
     $equipo = $this->personajeSeleccionadoModal->equipo;
