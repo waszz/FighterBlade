@@ -257,25 +257,15 @@ Artisan::command('gifs:transparentar {--probar}', function () {
     }
     $rutas = $rutas->unique()->values();
 
+    // (Al guardar un set con un gif nuevo ya se hace solo, ver Post::booted; esto es para los que ya estaban)
     $cambiados = 0;
     foreach ($rutas as $ruta) {
-        if (! $disco->exists($ruta)) {
-            continue;
-        }
-        [$nuevo, $cuadros, $motivo] = \App\Support\GifTransparente::procesar($disco->get($ruta));
-        if ($nuevo === null) {
+        $motivo = \App\Support\GifTransparente::arreglarArchivo($ruta, (bool) $this->option('probar'));
+        if ($motivo === null) {
             continue;
         }
         $cambiados++;
         $this->line("  {$ruta}: {$motivo}");
-        if (! $this->option('probar')) {
-            $copia = storage_path('app/gifs-originales/' . $ruta);
-            if (! file_exists($copia)) {
-                @mkdir(dirname($copia), 0775, true);
-                copy($disco->path($ruta), $copia);
-            }
-            $disco->put($ruta, $nuevo);
-        }
     }
     $this->info(($this->option('probar') ? 'Se cambiarían ' : 'GIF corregidos: ') . "{$cambiados} de {$rutas->count()}");
 })->purpose('Hace transparente el fondo magenta de los GIF de los sets');

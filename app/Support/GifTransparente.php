@@ -9,6 +9,32 @@ namespace App\Support;
 //   magenta pasan al índice transparente y se vuelve a comprimir.
 class GifTransparente
 {
+    // Arregla un GIF del disco público (ruta relativa, ej. "posts/123_gifAtaque.gif") si tiene fondo magenta.
+    // Antes de cambiarlo deja una copia del original en storage/app/gifs-originales/. Devuelve qué hizo, o null si
+    // no hacía falta (sin magenta, no es gif o no existe). Con $probar solo dice qué haría
+    public static function arreglarArchivo(?string $ruta, bool $probar = false): ?string
+    {
+        $disco = \Illuminate\Support\Facades\Storage::disk('public');
+        if (! $ruta || ! str_ends_with(strtolower($ruta), '.gif') || ! $disco->exists($ruta)) {
+            return null;
+        }
+        [$nuevo, , $motivo] = self::procesar($disco->get($ruta));
+        if ($nuevo === null) {
+            return null;
+        }
+        if (! $probar) {
+            $copia = storage_path('app/gifs-originales/' . $ruta);
+            if (! file_exists($copia)) {
+                if (! is_dir(dirname($copia))) {
+                    mkdir(dirname($copia), 0775, true);
+                }
+                copy($disco->path($ruta), $copia);
+            }
+            $disco->put($ruta, $nuevo);
+        }
+        return $motivo;
+    }
+
     // Tolerancia: algunos rips guardan el magenta como 248,0,248 o 252,0,252
     private static function esMagenta(int $r, int $g, int $b): bool
     {

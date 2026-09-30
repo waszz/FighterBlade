@@ -147,8 +147,14 @@ public function getNombreAttribute()
                 ->orWhereNotIn('posts.es_enemigo', [self::ENEMIGO_ESPECIAL, self::RIVAL_MISION, self::VARIANTE_ZONA]));
         });
 
-        // Al cambiar algún gif se vuelven a medir
+        // Al cambiar algún gif: si tiene fondo magenta se hace transparente (antes había que correr
+        // "php artisan gifs:transparentar") y se vuelven a medir
         static::saving(function (Post $post) {
+            foreach (self::CAMPOS_GIF as $campo) {
+                if ($post->isDirty($campo) && $post->$campo) {
+                    \App\Support\GifTransparente::arreglarArchivo($post->$campo);
+                }
+            }
             if (! $post->gif_medidas || $post->isDirty(self::CAMPOS_GIF)) {
                 $post->gif_medidas = $post->medirGifs();
             }
