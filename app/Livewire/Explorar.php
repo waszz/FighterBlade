@@ -1452,28 +1452,21 @@ if ($tieneSiempreEnPie) {
         $this->personaje->tipo = $this->determinarTipoPersonaje($this->equipo, $this->entrenamiento, $this->accesorio);
     }
 
+// Poderes que reducen el daño recibido de un tipo (PIEL DURA 25% físico, PIEL IMPENETRABLE 50% físico,
+// REDUCCIÓN ELEMENTAL 50% elemental). Antes calculaba el daño reducido pero devolvía el original: no reducían nada
 private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
 {
-    foreach ($poderes as $poder) {
-        $mods = is_array($poder->modificadores)
-            ? $poder->modificadores
-            : json_decode($poder->modificadores ?? '[]', true);
+    foreach ($poderes ?? [] as $poder) {
+        $modsRaw = $poder['modificadores'] ?? [];
+        $mods = is_array($modsRaw) ? $modsRaw : (json_decode($modsRaw ?: '[]', true) ?: []);
 
         foreach ($mods as $mod) {
             if (
                 ($mod['tipo'] ?? '') === 'reduccion_danio' &&
                 strtolower($mod['tipo_danio'] ?? '') === strtolower($tipoDanio)
             ) {
-                $porcentaje = $mod['porcentaje'] ?? 0;
-                $nuevoDanio = round($danio * (1 - $porcentaje / 100));
-
-                // dd([
-                //     'tipo_danio'    => $tipoDanio,
-                //     'poder'         => $poder['nombre'] ?? 'desconocido',
-                //     'porcentaje'    => $porcentaje,
-                //     'danio_original'=> $danio,
-                //     'danio_reducido'=> $nuevoDanio,
-                // ]);
+                $porcentaje = min(100, max(0, (float) ($mod['porcentaje'] ?? 0)));
+                $danio = round($danio * (1 - $porcentaje / 100));
             }
         }
     }
