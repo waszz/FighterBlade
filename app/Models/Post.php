@@ -467,23 +467,22 @@ public function getNombreAttribute()
         return $requisitos;
     }
 
-    // Sets de nivel 50 en adelante: los stats que dan sus partes dependen del tipo de daño. Cada nivel rota entre
-    // las opciones de su tipo (50 → la 1ª, 55 → la 2ª, 60 → la 3ª, 65 → la 1ª...). Los híbridos tienen una sola
-    const NIVEL_STATS_POR_TIPO = 50;
+    // Todos los sets: los stats que dan sus partes dependen del tipo de daño. Cada nivel rota entre las opciones de
+    // su tipo (5, 20, 35, 50... → la 1ª; 10, 25, 40, 55... → la 2ª; 15, 30, 45, 60... → la 3ª). Los híbridos tienen una sola
     const STATS_POR_TIPO = [
         'elemental' => [['velocidad', 'ataque', 'energia'], ['resistencia', 'energia', 'ataque'], ['defensa', 'energia', 'ataque']],
         'fisico'    => [['fuerza', 'ataque', 'velocidad'], ['defensa', 'fuerza', 'ataque'], ['resistencia', 'ataque', 'fuerza']],
         'hibrido'   => [['fuerza', 'velocidad', 'ataque', 'energia']],
     ];
 
-    // Los stats que tiene que dar este set según su tipo y nivel, o null si no le toca (menos de nivel 50 o sin tipo)
+    // Los stats que tiene que dar este set según su tipo y nivel, o null si no tiene tipo
     public function statsPorTipo(): ?array
     {
         $opciones = self::STATS_POR_TIPO[$this->tipo] ?? null;
-        if (! $opciones || (int) $this->nivel < self::NIVEL_STATS_POR_TIPO) {
+        if (! $opciones) {
             return null;
         }
-        return $opciones[intdiv((int) $this->nivel - self::NIVEL_STATS_POR_TIPO, 5) % count($opciones)];
+        return $opciones[max(0, intdiv((int) $this->nivel, 5) - 1) % count($opciones)];
     }
 
     // Aplica statsPorTipo: el total de puntos que dan las 3 partes no cambia y se reparte en partes iguales entre
@@ -527,8 +526,8 @@ public function getNombreAttribute()
         return true;
     }
 
-    // Stats para mostrar del set. En los de nivel 50+ (statsPorTipo) es lo que da el set completo equipado: la suma
-    // de sus 3 partes, solo los stats que da. En los demás (o si las partes no tienen nada), los stats del set
+    // Stats para mostrar del set: lo que da el set completo equipado, la suma de sus 3 partes (solo los stats que da).
+    // Si no tiene tipo o las partes no tienen nada cargado, los stats del set
     public function statsSetCompleto(): array
     {
         $propios = is_array($this->stats) ? $this->stats : (json_decode($this->stats ?? '[]', true) ?: []);

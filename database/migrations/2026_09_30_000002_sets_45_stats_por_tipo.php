@@ -5,17 +5,17 @@ use App\Models\Post;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Storage;
 
-// Sets de nivel 50 en adelante: sus partes dan solo los stats de su tipo de daño, rotando por nivel
-// (ver Post::STATS_POR_TIPO y Post::aplicarStatsPorTipo). Antes guarda una copia de lo que tenían los sets y las partes
-// ya dropeadas en storage/app/respaldos/, y el rollback la vuelve a poner.
+// Sets de nivel 45 para abajo: lo mismo que ya tienen los de 50 en adelante (ver 2026_09_30_000001 y
+// Post::aplicarStatsPorTipo). Antes guarda una copia de lo que tenían los sets y las partes ya dropeadas
+// en storage/app/respaldos/, y el rollback la vuelve a poner.
 return new class extends Migration
 {
-    const RESPALDO = 'respaldos/sets-50-stats-por-tipo.json';
+    const RESPALDO = 'respaldos/sets-45-stats-por-tipo.json';
     const PARTES = ['equipo', 'entrenamiento', 'accesorio'];
 
     public function up(): void
     {
-        $sets = Post::where('nivel', '>=', 50)->get()->filter(fn ($p) => $p->statsPorTipo());
+        $sets = Post::where('nivel', '<', 50)->get()->filter(fn ($p) => $p->statsPorTipo());
 
         $respaldo = ['sets' => [], 'objetos' => []];
         foreach ($sets as $set) {
