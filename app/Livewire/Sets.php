@@ -52,8 +52,8 @@ class Sets extends Component
                     ? json_decode($personaje->$campo, true)
                     : ($personaje->$campo ?? []);
             }
-            // Decodifico stats y preparo colores
-            $stats = is_string($personaje->stats) ? json_decode($personaje->stats, true) : ($personaje->stats ?? []);
+            // Lo que da el set completo (la suma de sus 3 partes) y sus colores
+            $stats = $personaje->statsSetCompleto();
             $statsConColor = [];
             foreach ($stats as $stat => $valor) {
                 $color = $this->colorBarraPorStat($valor);

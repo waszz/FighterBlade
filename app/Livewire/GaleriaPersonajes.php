@@ -39,7 +39,8 @@ public function abrirModalPost($postId)
     $this->nombrePost = $post->titulo ?? $post->nombre;
     $this->gifPost = $post->gif;
     $this->poderesPersonaje = collect($post->poderes ?? []);
-    $this->statsPost = is_array($post->stats) ? $post->stats : (json_decode($post->stats, true) ?? []);
+    // Lo que da el set completo equipado (la suma de sus 3 partes)
+    $this->statsPost = $post->statsSetCompleto();
     $this->mostrarModalPost = true;
 }
 

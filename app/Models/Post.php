@@ -527,6 +527,25 @@ public function getNombreAttribute()
         return true;
     }
 
+    // Stats para mostrar del set. En los de nivel 50+ (statsPorTipo) es lo que da el set completo equipado: la suma
+    // de sus 3 partes, solo los stats que da. En los demás (o si las partes no tienen nada), los stats del set
+    public function statsSetCompleto(): array
+    {
+        $propios = is_array($this->stats) ? $this->stats : (json_decode($this->stats ?? '[]', true) ?: []);
+        if (! $this->statsPorTipo()) {
+            return $propios;
+        }
+        $total = array_fill_keys(['fuerza', 'resistencia', 'ataque', 'defensa', 'velocidad', 'energia'], 0);
+        foreach (self::PARTES_REQUISITO as $parte) {
+            foreach ($this->{'ajustes_manuales_' . $parte} ?? [] as $stat => $valor) {
+                if (isset($total[$stat])) {
+                    $total[$stat] += max(0, (int) $valor);
+                }
+            }
+        }
+        return array_filter($total) ?: $propios;
+    }
+
     // Cuántos stats distintos puede dar cada parte según el nivel del set
     public function maxStatsPorParte(): int
     {
