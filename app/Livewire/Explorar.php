@@ -2016,18 +2016,22 @@ if (in_array('ANULACIÓN DE PODER', array_column($poderesEnemigoArray, 'nombre')
 }
 
 
+ // Frenesí y Furia Ciega tiran su chance una sola vez, al empezar la pelea (como Trance): si sale, valen en todas las
+ // rondas. Las banderas quedan para toda la pelea (antes se reiniciaban en cada ronda y solo contaba la última)
+ $poderActivoFrenesiPersonaje = false;
+ $poderActivoFrenesiEnemigo = false;
+ $poderActivoFuriaCiegaPersonaje = false;
+ $poderActivoFuriaCiegaEnemigo = false;
+ $tiradasEstadoPelea = []; // [estado][lado] => si salió la chance (se tira una vez por pelea)
+
  for ($r = 1; $r <= 5; $r++) {
 
     $this->danioPoderesPersonaje = 0;
     $this->danioPoderesEnemigo   = 0;
     $this->rondaActual           = $r;
-    $poderActivoFrenesiPersonaje = false;
-    $poderActivoFrenesiEnemigo = false;
-    $poderActivoFuriaCiegaPersonaje = false;
-    $poderActivoFuriaCiegaEnemigo = false;
 
-    $modificarStatsConBuffs = function ($stats, $poderes, $rondaActual, $esPersonaje) use (&$poderActivoFrenesiPersonaje, &$poderActivoFrenesiEnemigo, 
-    &$poderActivoFuriaCiegaPersonaje, &$poderActivoFuriaCiegaEnemigo) {
+    $modificarStatsConBuffs = function ($stats, $poderes, $rondaActual, $esPersonaje) use (&$poderActivoFrenesiPersonaje, &$poderActivoFrenesiEnemigo,
+    &$poderActivoFuriaCiegaPersonaje, &$poderActivoFuriaCiegaEnemigo, &$tiradasEstadoPelea) {
      
         $poderesAAnular = [];
         foreach ($poderes as $poder) {
@@ -2067,7 +2071,9 @@ if (in_array('ANULACIÓN DE PODER', array_column($poderesEnemigoArray, 'nombre')
 if ($nombrePoder === 'FRENESÍ') {
     if (($mod['tipo'] ?? '') === 'estado_en_ronda' && ($mod['estado'] ?? '') === 'Frenesí') {
         $chance = $mod['chance'] ?? 0;
-        if (rand(1, 100) <= $chance) {
+        $ladoTirada = $esPersonaje ? 'personaje' : 'enemigo';
+        $tiradasEstadoPelea['frenesi'][$ladoTirada] ??= rand(1, 100) <= $chance;
+        if ($tiradasEstadoPelea['frenesi'][$ladoTirada]) {
 
             foreach ($mod['modificaciones_stat'] ?? [] as $modStat) {
                 $porcentaje = $modStat['porcentaje'] ?? 0;
@@ -2093,7 +2099,9 @@ if ($nombrePoder === 'FRENESÍ') {
 if ($nombrePoder === 'FURIA CIEGA') {
     if (($mod['tipo'] ?? '') === 'estado_en_ronda') {
         $chance = $mod['chance'] ?? 0;
-        if (rand(1, 100) <= $chance) {
+        $ladoTirada = $esPersonaje ? 'personaje' : 'enemigo';
+        $tiradasEstadoPelea['furia'][$ladoTirada] ??= rand(1, 100) <= $chance;
+        if ($tiradasEstadoPelea['furia'][$ladoTirada]) {
             foreach ($mod['modificaciones_stat'] ?? [] as $modStat) {
                 $porcentaje = $modStat['porcentaje'] ?? 0;
                 foreach ($modStat['stats'] ?? [] as $stat) {
