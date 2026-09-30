@@ -561,13 +561,27 @@
           {{-- Defensa y contraataque --}}
           @if ($esBloqueo)
           @php
-          $gifDefensa = $res['atacante'] === 'personaje' ? $gifsPersonaje['defensa'] : $gifsEnemigo['defensa'];
-          $claseFlipDef = $res['atacante'] === 'personaje' ? '' : 'scale-x-[-1]';
+          // Hay tres bloqueos y no todos guardan del mismo lado quién bloquea:
+          //  - "se defiende y bloquea el ataque": el golpe no superó la defensa; 'atacante' es el que pegó, bloquea el otro
+          //  - "se defiende completamente este turno": el del turno se queda en guardia y no ataca
+          //  - antes de un contraataque: 'atacante' es el que bloquea
+          $textoBloqueo = $res['texto_tipo_danio'] ?? '';
+          $otroLado = $res['atacante'] === 'personaje' ? 'enemigo' : 'personaje';
+          $ladoBloquea = str_contains($textoBloqueo, 'se defiende y bloquea el ataque') ? $otroLado : $res['atacante'];
+          $esGuardia = str_contains($textoBloqueo, 'se defiende completamente');
+          $nombreBloquea = $ladoBloquea === 'personaje' ? $personaje->nombre : ($enemigo->titulo ?? $enemigo->nombre ?? 'Enemigo');
+          $nombreBloqueado = $ladoBloquea === 'personaje' ? ($enemigo->titulo ?? $enemigo->nombre ?? 'Enemigo') : $personaje->nombre;
+          $gifDefensa = $ladoBloquea === 'personaje' ? $gifsPersonaje['defensa'] : $gifsEnemigo['defensa'];
+          $claseFlipDef = $ladoBloquea === 'personaje' ? '' : 'scale-x-[-1]';
           @endphp
 
           <p class="text-lg font-medium text-center mb-4 leading-relaxed">
-            <strong class="text-indigo-600">{{ $nombreAtacante }}</strong> bloqueó el golpe de <strong
-              class="text-indigo-600">{{ $nombreDefensor }}</strong>.
+            @if ($esGuardia)
+              <strong class="text-indigo-600">{{ $nombreBloquea }}</strong> se pone en guardia y no ataca este turno.
+            @else
+              <strong class="text-indigo-600">{{ $nombreBloquea }}</strong> bloqueó el golpe de <strong
+                class="text-indigo-600">{{ $nombreBloqueado }}</strong>.
+            @endif
           </p>
 
           @if ($gifDefensa)
