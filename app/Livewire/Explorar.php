@@ -1122,6 +1122,8 @@ public function colorBarraPorStat($valor)
             if ($this->esPvp) {
                 $this->personaje->pvp_perdidas = ($this->personaje->pvp_perdidas ?? 0) + 1;
                 $this->darExpAlRivalPvp();
+                // El atacado ganó: si peleó con una poción de stat equipada, gasta un uso (como cuando gana atacando)
+                Personaje::find($this->enemigo->id ?? null)?->gastarUsoPocionDeStat();
             } elseif ($this->esExploracion()) {
                 $this->personaje->pve_perdidas = ($this->personaje->pve_perdidas ?? 0) + 1;
             }

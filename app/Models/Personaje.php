@@ -243,7 +243,48 @@ protected $casts = [
                 }
             }
         }
+        // Poción de stat equipada (×1.5, super ×2): también cuenta cuando lo atacan en PvP (igual que en el panel)
+        if ($pocion = $this->pocionDeStat()) {
+            $stats[$pocion['afecta']] = intval($stats[$pocion['afecta']] * $pocion['multiplicador']);
+        }
         return \App\Support\PoderesStats::aplicar($stats, $this->postDeCombate()?->poderes ?? collect());
+    }
+
+    // La poción equipada si sube un stat (no recuperación, búsqueda, oro...): [objeto, afecta, multiplicador]
+    public function pocionDeStat(): ?array
+    {
+        if (! $this->objeto_consumible_id) {
+            return null;
+        }
+        $objeto = Objeto::find($this->objeto_consumible_id);
+        $stats  = $objeto ? self::decodificarStats($objeto->stats) : [];
+        $afecta = $stats['afecta'] ?? null;
+        if (! in_array($afecta, ['fuerza', 'ataque', 'velocidad', 'resistencia', 'defensa', 'energia'], true)
+            || ! is_numeric($stats['multiplicador'] ?? null)) {
+            return null;
+        }
+        return ['objeto' => $objeto, 'afecta' => $afecta, 'multiplicador' => (float) $stats['multiplicador']];
+    }
+
+    // Gasta un uso de la poción de stat equipada (con el último se termina y se desequipa)
+    public function gastarUsoPocionDeStat(): void
+    {
+        if (! $pocion = $this->pocionDeStat()) {
+            return;
+        }
+        $objeto = $pocion['objeto'];
+        $stats  = self::decodificarStats($objeto->stats);
+        $usos   = (int) ($stats['usos_restantes'] ?? 1);
+        if ($usos <= 1) {
+            $objeto->delete();
+            // Solo esa columna, para no pisar nada de lo que el otro esté haciendo
+            static::whereKey($this->id)->update(['objeto_consumible_id' => null]);
+            $this->objeto_consumible_id = null;
+        } else {
+            $stats['usos_restantes'] = $usos - 1;
+            $objeto->stats = $stats;
+            $objeto->save();
+        }
     }
 
     // Stats como array: los personajes creados desde el juego los guardan como texto JSON y otros
