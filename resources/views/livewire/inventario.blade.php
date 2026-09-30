@@ -1198,62 +1198,51 @@
 
         <p class="text-sm font-bold text-white text-center mb-3 px-4 truncate">{{ $objetoADesequipar->nombre }}</p>
 
+        @php
+          // Misma tarjeta que la de las partes guardadas: borde del color de la parte, tipo de daño, stats 3D y requisitos
+          [$bordeDeseq, $textoDeseq] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300'], 'joya' => ['border-amber-400', 'text-amber-300']][$objetoADesequipar->tipo] ?? ['border-gray-700', 'text-gray-300'];
+          $abreviaturas = ['fuerza' => 'FUE', 'ataque' => 'ATA', 'velocidad' => 'VEL', 'resistencia' => 'RES', 'defensa' => 'DEF', 'energia' => 'ENE'];
+          $stats = is_array($objetoADesequipar->stats) ? $objetoADesequipar->stats : (json_decode($objetoADesequipar->stats, true) ?? []);
+          $requisitos = match ($objetoADesequipar->tipo) {
+            'equipo' => $objetoADesequipar->requisitos_equipo,
+            'entrenamiento' => $objetoADesequipar->requisitos_entrenamiento,
+            'accesorio' => $objetoADesequipar->requisitos_accesorio,
+            default => [],
+          };
+          $requisitos = is_string($requisitos) ? (json_decode($requisitos, true) ?: []) : ($requisitos ?? []);
+          $statsPjDeseq = is_array($personaje->stats) ? $personaje->stats : (json_decode($personaje->stats ?? '[]', true) ?: []);
+          $tipoDanioDeseq = $objetoADesequipar->post->tipo ?? null;
+        @endphp
+
+        <p class="text-[11px] font-bold uppercase text-center -mt-2 mb-2 {{ $textoDeseq }}">{{ ucfirst($objetoADesequipar->tipo) }}</p>
+
         @if($objetoADesequipar->imagen)
         <img src="{{ asset('storage/posts/' . $objetoADesequipar->imagen) }}" alt="{{ $objetoADesequipar->nombre }}"
-          class="w-20 h-20 mx-auto object-cover rounded-lg mb-3 border border-gray-700 shadow" />
+          class="w-20 h-20 mx-auto {{ $objetoADesequipar->tipo === 'joya' ? 'object-contain' : 'object-cover' }} rounded-lg mb-2 bg-black/50 border-2 {{ $bordeDeseq }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000]" />
         @endif
 
-        <div class="grid grid-cols-2 gap-x-3 gap-y-1 justify-center text-center mb-2">
-          @php
-          $stats = is_array($objetoADesequipar->stats)
-          ? $objetoADesequipar->stats
-          : (json_decode($objetoADesequipar->stats, true) ?? []);
-          $abreviaturas = [
-          'fuerza' => 'FUE',
-          'ataque' => 'ATA',
-          'velocidad' => 'VEL',
-          'resistencia' => 'RES',
-          'defensa' => 'DEF',
-          'energia' => 'ENE',
-          ];
-          @endphp
+        @if (in_array(strtolower((string) $tipoDanioDeseq), ['fisico', 'elemental', 'hibrido'], true))
+        <div class="mb-2 flex justify-center"><x-icono-tipo :tipo="$tipoDanioDeseq" tam="w-8 h-8" /></div>
+        @endif
 
-          @if(!empty($stats))
-          @foreach($stats as $stat => $valor)
-          @if($valor > 0)
-          <p class="text-green-400 text-sm font-semibold">{{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} +{{ $valor }}</p>
-          @endif
-          @endforeach
-          @else
-          <p class="text-gray-500 italic text-xs col-span-2">Sin stats</p>
-          @endif
+        <div class="grid grid-cols-2 gap-x-2 gap-y-1.5">
+          @forelse (array_filter($stats, fn ($v) => is_numeric($v) && $v > 0) as $stat => $valor)
+          <p class="text-green-400 text-xs font-semibold text-center px-1 py-0.5 rounded border border-black bg-gradient-to-b from-[#2f5470] to-[#0a1a26] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]">{{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} +{{ $valor }}</p>
+          @empty
+          <p class="text-gray-500 italic text-xs col-span-2 text-center">Sin stats</p>
+          @endforelse
         </div>
 
-        <div class="text-xs text-purple-400 text-center italic truncate max-w-full">
-          @php
-          $requisitos = [];
-
-          if ($tipoDesequipar === 'equipo') {
-          $requisitos = $objetoADesequipar->requisitos_equipo ?? [];
-          } elseif ($tipoDesequipar === 'entrenamiento') {
-          $requisitos = $objetoADesequipar->requisitos_entrenamiento ?? [];
-          } elseif ($tipoDesequipar === 'accesorio') {
-          $requisitos = $objetoADesequipar->requisitos_accesorio ?? [];
-          }
-
-          if (is_string($requisitos)) {
-          $requisitos = json_decode($requisitos, true) ?? [];
-          }
-          @endphp
-
-          @if(!empty($requisitos))
-          @foreach($requisitos as $stat => $valor)
-          {{ $valor }} {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }}@if(!$loop->last),
-          @endif
-          @endforeach
-          @else
-          Sin requisitos
-          @endif
+        {{-- Requisitos: nivel + stat de la parte (verde si cumple, rojo si no) --}}
+        <div class="mt-2 pt-2 border-t border-white/10 text-xs">
+          <p class="text-gray-400 font-semibold mb-1">Requiere:</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-1.5 py-0.5 rounded border border-black font-bold {{ $personaje->nivel >= ($objetoADesequipar->nivel ?? 1) ? 'text-green-400' : 'text-red-400' }} bg-black/40">Nivel {{ $objetoADesequipar->nivel ?? 1 }}</span>
+            @foreach ($requisitos as $stat => $valor)
+            <span class="px-1.5 py-0.5 rounded border border-black font-bold {{ ($statsPjDeseq[$stat] ?? 0) >= $valor ? 'text-green-400' : 'text-red-400' }} bg-black/40"
+                  title="Tenés {{ $statsPjDeseq[$stat] ?? 0 }}">{{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} {{ $valor }}</span>
+            @endforeach
+          </div>
         </div>
       </div>
 
