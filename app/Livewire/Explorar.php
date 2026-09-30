@@ -39,6 +39,16 @@ class Explorar extends Component
     // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo
     const EQUIPO_RIVAL_MISION_TORRE = 1.0;
 
+    // Contraataque (defensa) y rebote (resistencia), cuando al defensor le entra un golpe:
+    //  - Contraataque: chance = defensa × CONTRA_POR_DEFENSA %, hasta CONTRA_TOPE %. Bloquea el golpe y pega la mitad de su daño
+    //  - Rebote: si no contraataca, chance = resistencia × REBOTE_POR_RESISTENCIA %, hasta REBOTE_TOPE %. Resiste
+    //    REBOTE_PORCENTAJE del golpe (no lo recibe) y ese daño le rebota al atacante (cuenta como daño del que resiste)
+    const CONTRA_POR_DEFENSA = 0.25;
+    const CONTRA_TOPE = 35;
+    const REBOTE_POR_RESISTENCIA = 0.25;
+    const REBOTE_TOPE = 35;
+    const REBOTE_PORCENTAJE = 0.5;
+
     // Exploración: el enemigo también se refuerza como un jugador de su nivel con set completo (igual que misiones y torre).
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
     const EQUIPO_RIVAL_EXPLORACION = 1.0;
@@ -2331,8 +2341,9 @@ if ($tipoAtaque === 'defensa') {
     }
 }
 
-$chanceContraataque = 10;
-$contraataqueOcurre = rand(1, 100) <= $chanceContraataque && $danioFinal > 0;
+// Contraataque: la chance sale de la defensa del que recibe el golpe (ver CONTRA_POR_DEFENSA)
+$chanceContraataque = min(self::CONTRA_TOPE, ($statsDefensor['defensa'] ?? 0) * self::CONTRA_POR_DEFENSA);
+$contraataqueOcurre = mt_rand(1, 10000) <= $chanceContraataque * 100 && $danioFinal > 0;
 
 if ($contraataqueOcurre) {
     $daniosContraataque = $calcularContraataque($tipoDefensor, $statsDefensor, $nivelDefensor, $nombreDefensor, $poderesDefensor);
@@ -2387,13 +2398,27 @@ if ($contraataqueOcurre) {
         'texto_tipo_danio' => "$nombreDefensor realiza un contraataque!",
     ];
 } else {
-    // Acumular daño total + daño extra de poderes
+    // Rebote: la chance sale de la resistencia del que recibe el golpe (ver REBOTE_POR_RESISTENCIA).
+    // Resiste una parte del golpe (no la recibe) y esa parte le rebota al atacante
+    $chanceRebote = min(self::REBOTE_TOPE, ($statsDefensor['resistencia'] ?? 0) * self::REBOTE_POR_RESISTENCIA);
+    $danioRebote = 0;
+    if ($danioFinal > 0 && mt_rand(1, 10000) <= $chanceRebote * 100) {
+        $danioRebote = (int) round($danioFinal * self::REBOTE_PORCENTAJE);
+        $danioFisicoFinal    = round($danioFisicoFinal * (1 - self::REBOTE_PORCENTAJE));
+        $danioElementalFinal = round($danioElementalFinal * (1 - self::REBOTE_PORCENTAJE));
+        $danioFinal          = $danioFisicoFinal + $danioElementalFinal;
+        $textoTipoDanio      = "Físico: " . round($danioFisicoFinal) . " / Elemental: " . round($danioElementalFinal);
+    }
+
+    // Acumular daño total + daño extra de poderes (y el rebote, para el que lo resistió)
     if ($atacante === 'personaje') {
         $this->totalDanioPersonaje += round($danioFinal) + $danioExtraRondaPersonaje;
         $danioExtraTotalPersonaje += $danioExtraRondaPersonaje;
+        $this->totalDanioEnemigo += $danioRebote;
     } else {
         $this->totalDanioEnemigo += round($danioFinal) + $danioExtraRondaEnemigo;
         $danioExtraTotalEnemigo += $danioExtraRondaEnemigo;
+        $this->totalDanioPersonaje += $danioRebote;
     }
 
     $gif = match ($tipoAtaque) {
@@ -2415,6 +2440,19 @@ if ($contraataqueOcurre) {
         'tipo_ataque'      => $tipoAtaque,
         'texto_tipo_danio' => $textoDanio,
     ];
+
+    // El rebote va como una acción aparte del que resistió (en la pantalla: su gif base y el de derrota del otro)
+    if ($danioRebote > 0) {
+        $defensorEsPersonaje = $atacante !== 'personaje';
+        $res[] = [
+            'ronda'            => $r,
+            'atacante'         => $defensorEsPersonaje ? 'personaje' : 'enemigo',
+            'danio'            => $danioRebote,
+            'gif'              => $defensorEsPersonaje ? ($this->personaje->postDeCombate()?->gif) : ($this->gifsEnemigo()?->gif),
+            'tipo_ataque'      => 'rebote',
+            'texto_tipo_danio' => "$nombreDefensor resiste el golpe y le rebota $danioRebote de daño a $nombreAtacante.",
+        ];
+    }
 }
             } // fin del ataque de la ronda
 

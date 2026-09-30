@@ -91,6 +91,8 @@
     'especial' => null,
     'defensa' => null,
     'contraataque' => null,
+    'base' => null, // rebote: el que resiste se muestra con su gif base
+    'derrota' => null, // rebote: al que le rebota, con su gif de derrota
     ];
 
     $esPostDirecto = $personaje instanceof \App\Models\Post;
@@ -113,6 +115,8 @@
     $gifs['especial'] = $postCompleto->gif_especial ?? $postCompleto->gif ?? null;
     $gifs['defensa'] = $postCompleto->gif_defensa ?? $postCompleto->gif ?? null;
     $gifs['contraataque'] = $postCompleto->gif_ataque ?? $postCompleto->gif ?? null;
+    $gifs['base'] = $postCompleto->gif ?? null;
+    $gifs['derrota'] = $postCompleto->gif_derrota ?? $postCompleto->gif ?? null;
     return $gifs;
     }
     }
@@ -127,6 +131,8 @@
     $gifs['especial'] = $post->gif_especial ?? $post->gif ?? null;
     $gifs['defensa'] = $post->gif_defensa ?? $post->gif ?? null;
     $gifs['contraataque'] = $post->gif_ataque ?? $post->gif ?? null;
+    $gifs['base'] = $post->gif ?? null;
+    $gifs['derrota'] = $post->gif_derrota ?? $post->gif ?? null;
     }
 
     return $gifs;
@@ -513,8 +519,8 @@
           @endif
           @endif
 
-          {{-- Mostrar ataque si no fue bloqueado con contraataque --}}
-          @if (!$bloqueadoYContra && !$esBloqueo && !$esContra && !is_null($res['gif']))
+          {{-- Mostrar ataque si no fue bloqueado con contraataque (el rebote se muestra aparte, más abajo) --}}
+          @if (!$bloqueadoYContra && !$esBloqueo && !$esContra && $tipoAtaque !== 'rebote' && !is_null($res['gif']))
           @php
           $gifAtaque = $res['atacante'] === 'personaje'
           ? ($gifsPersonaje[$tipoAtaque] ?? null)
@@ -577,26 +583,8 @@
           $gifsEnemigo['contraataque'];
           $claseFlipContra = $contra['atacante'] === 'personaje' ? '' : 'scale-x-[-1]';
 
-          // Tipo atacante dinámico para contraataque
-          if ($contra['atacante'] === 'personaje') {
-          $equipo = $personaje->equipo;
-          $entrenamiento = $personaje->entrenamiento;
-          $accesorio = $personaje->accesorio;
-
-          if (
-          $equipo && $entrenamiento && $accesorio &&
-          $equipo->origen_post_id &&
-          $equipo->origen_post_id === $entrenamiento->origen_post_id &&
-          $equipo->origen_post_id === $accesorio->origen_post_id
-          ) {
-          $postOrigen = \App\Models\Post::find($equipo->origen_post_id);
-          $tipoAtacanteContra = $postOrigen?->tipo ?? 'fisico';
-          } else {
-          $tipoAtacanteContra = $personaje->post->tipo ?? 'fisico';
-          }
-          } else {
-          $tipoAtacanteContra = $tipoVistaEnemigo;
-          }
+          // Tipo de daño del contraataque: el de la pelea, no el del set equipado ahora
+          $tipoAtacanteContra = $contra['atacante'] === 'personaje' ? $tipoVistaPersonaje : $tipoVistaEnemigo;
 
           $danioFisicoContra = $contra['danio_fisico'] ?? 0;
           $danioElementalContra = $contra['danio_elemental'] ?? 0;
@@ -632,6 +620,37 @@
 
           @php $skipNext = true; @endphp
           @endif
+          @endif
+
+          {{-- Rebote (resistencia): el que resiste con su gif base y al que le rebota, con su gif de derrota --}}
+          @if ($tipoAtaque === 'rebote')
+          @php
+          // En el rebote, 'atacante' es el que resistió; el que recibe el rebote es el otro
+          $gifResiste = $res['atacante'] === 'personaje' ? ($gifsPersonaje['base'] ?? null) : ($gifsEnemigo['base'] ?? null);
+          $gifRebotado = $res['atacante'] === 'personaje' ? ($gifsEnemigo['derrota'] ?? null) : ($gifsPersonaje['derrota'] ?? null);
+          $claseFlipResiste = $res['atacante'] === 'personaje' ? '' : 'scale-x-[-1]';
+          $claseFlipRebotado = $res['atacante'] === 'personaje' ? 'scale-x-[-1]' : '';
+          @endphp
+
+          <p class="text-lg font-medium text-center mb-2 leading-relaxed">
+            <strong class="text-indigo-600">{{ $nombreAtacante }}</strong> <span class="text-amber-400 font-bold">resiste el golpe</span>
+            y le rebota el daño a <strong>{{ $nombreDefensor }}</strong>!
+          </p>
+
+          <div class="flex justify-center items-end gap-2 w-full min-h-[160px] overflow-hidden mt-2 mb-4">
+            @if ($gifResiste)
+              <img src="{{ asset('storage/' . $gifResiste) }}" alt="Gif resiste"
+                style="{{ \App\Models\Post::estiloGif($gifResiste) }}" class="block max-w-none {{ $claseFlipResiste }}">
+            @endif
+            @if ($gifRebotado)
+              <img src="{{ asset('storage/' . $gifRebotado) }}" alt="Gif rebotado"
+                style="{{ \App\Models\Post::estiloGif($gifRebotado) }}" class="block max-w-none {{ $claseFlipRebotado }}">
+            @endif
+          </div>
+
+          <div class="text-center text-gray-300 mt-1 text-xl leading-relaxed font-semibold">
+            <p><strong class="text-lg">{{ $nombreDefensor }} ha recibido:</strong> <span class="text-amber-400 text-xl font-bold">{{ $res['danio'] ?? 0 }}</span> de daño rebotado.</p>
+          </div>
           @endif
 
           @if ($skipNext)
