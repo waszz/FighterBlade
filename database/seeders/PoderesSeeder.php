@@ -83,11 +83,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'CONGELAR',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ENE. 10% de chances de dejar Congelado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 15% de una tirada de ENE. 10% de chances de dejar Congelado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 25,
+                        'porcentaje' => 15,
                         'stat_base'  => 'energia',
                     ],
                     [
@@ -126,11 +126,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'DIRECT DAMAGE',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 75% de una tirada de ENE',
+                'descripcion'   => 'Ejerce daño directo equivalente al 50% de una tirada de ENE',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 75,
+                        'porcentaje' => 50,
                         'stat_base'  => 'energia',
                     ],
                 ]),
@@ -175,11 +175,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'ESPINAS', //!!HECHO!!
-                'descripcion'   => 'Devuelve un 45% del daño recibido. 10% de chances de dejar Envenenado al contrincante en pelea',
+                'descripcion'   => 'Devuelve un 20% del daño recibido. 10% de chances de dejar Envenenado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 45,
+                        'porcentaje' => 20,
                     ],
                     [
                         'tipo' => 'estado',
@@ -244,11 +244,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'HEMORRAGIA',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 35% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 15% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 35,
+                        'porcentaje' => 15,
                         'stat_base'  => 'ataque',
                     ],
                     [
@@ -390,11 +390,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'QUEMAR',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 10% de chances de dejar Quemado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 15% de una tirada de ATA. 10% de chances de dejar Quemado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 25,
+                        'porcentaje' => 15,
                         'stat_base'  => 'ataque',
                     ],
                     [
@@ -471,11 +471,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'SANGRADO',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 25% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
+                'descripcion'   => 'Ejerce daño directo equivalente al 15% de una tirada de ATA. 10% de chances de dejar Desangrado al contrincante en pelea',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 25,
+                        'porcentaje' => 15,
                         'stat_base'  => 'ataque',
                     ],
                     [
