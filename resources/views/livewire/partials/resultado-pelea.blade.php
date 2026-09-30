@@ -1,13 +1,14 @@
 {{-- Rondas y resultado de una pelea. Lo usa la Ciudad (explorar) y "Mis peleas" para volver a ver una pelea guardada.
      Variables: $resultadosRondas, $personaje, $enemigo, $recompensas, $ciudadActual, $escenarioMision y las de Explorar::VISTA_PELEA --}}
   @if($resultadosRondas)
-  {{-- Tocando la pelea se baja hasta el final (el resultado y la escena), con el scroll del contenedor en el que está --}}
+  {{-- Tocando la pelea se baja hasta el final (el resultado y la escena), con el scroll del contenedor en el que está.
+       No baja si lo que se tocó es un icono (poder, tipo de daño: tienen tabindex para mostrar su cartel), un botón o un enlace --}}
   <div x-data="{ bajar() {
           let el = this.$el.parentElement;
           while (el && !(el.scrollHeight > el.clientHeight && /(auto|scroll)/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
           el = el || document.scrollingElement;
           el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-       } }" @click="bajar()" title="Tocá para ir al resultado">
+       } }" @click="if (! $event.target.closest('[tabindex], button, a, [data-sin-bajar]')) bajar()" title="Tocá para ir al resultado">
   @php
   // Tipo de daño con el que pelea cada uno: el de su set completo equipado o su set base (igual que el combate),
   // no el del personaje con el que arrancó

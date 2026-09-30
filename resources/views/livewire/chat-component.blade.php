@@ -71,10 +71,12 @@
             </div>
         @endif
 
-        {{-- Mensajes: baja solo al último si estabas mirando el final --}}
+        {{-- Mensajes: baja solo al último si estabas mirando el final. El ResizeObserver hace que en el celular,
+             donde el chat arranca oculto (sin alto), baje al último al abrirlo --}}
         <div id="chat-box" x-data="{ pegado: true }"
              x-init="$el.scrollTop = $el.scrollHeight;
-                     new MutationObserver(() => { if (pegado) $el.scrollTop = $el.scrollHeight }).observe($el, { childList: true, subtree: true })"
+                     new MutationObserver(() => { if (pegado) $el.scrollTop = $el.scrollHeight }).observe($el, { childList: true, subtree: true });
+                     new ResizeObserver(() => { if (pegado) $el.scrollTop = $el.scrollHeight }).observe($el)"
              @scroll="pegado = $el.scrollTop + $el.clientHeight >= $el.scrollHeight - 40"
              class="flex-1 min-h-0 overflow-y-auto mb-3 space-y-2.5 pr-1 [scrollbar-width:thin] [scrollbar-color:#4b5563_transparent]">
             @forelse ($mensajes as $msg)
