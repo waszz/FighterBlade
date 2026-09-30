@@ -198,7 +198,7 @@
     }">
 
     {{-- Probabilidades por tirada: al costado en pantallas anchas; en las más chicas, al final (debajo de la máquina) --}}
-    <div class="order-last mt-3 w-full mx-auto mb-3 max-w-md min-[1650px]:order-none min-[1650px]:mt-0 min-[1650px]:absolute min-[1650px]:top-3 min-[1650px]:right-3 min-[1650px]:mb-0 min-[1650px]:w-64 rounded border-2 border-[#16203a] bg-black/70 p-3 text-[13px] shadow-[inset_0_0_8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(90,130,200,0.35)]">
+    <div class="order-last mt-3 w-full mx-auto mb-3 max-w-md min-[1650px]:order-none min-[1650px]:mt-0 min-[1650px]:absolute min-[1650px]:top-3 min-[1650px]:right-3 min-[1650px]:mb-0 min-[1650px]:w-64 relative z-10 rounded border-2 border-[#16203a] bg-black/70 p-3 text-[13px] shadow-[inset_0_0_8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(90,130,200,0.35)]">
         <h3 class="text-center text-sm font-bold uppercase tracking-wide text-yellow-300 mb-2 pb-1.5 border-b border-white/10">Tus chances por tirada</h3>
         @foreach ($probabilidades as $vida => $porMoneda)
             @foreach ($porMoneda as $moneda => $lista)
@@ -230,7 +230,14 @@
         </p>
     </div>
 
-    <div class="max-w-md mx-auto">
+    <div class="relative max-w-md mx-auto">
+
+    {{-- De fondo, a los costados de la máquina: Mai (izquierda) y Sakura (derecha). Solo decoran: no tapan clics.
+         En celular no entran al lado de la máquina, así que se ven desde pantallas medianas --}}
+    <img src="{{ asset('images/casino/mai.gif') }}" alt="" aria-hidden="true"
+         class="pointer-events-none hidden md:block absolute right-full -top-10 lg:-top-24 mr-2 h-[420px] lg:h-[520px] w-auto max-w-none opacity-90 [filter:drop-shadow(0_6px_8px_rgba(0,0,0,0.7))]">
+    <img src="{{ asset('images/casino/sakura.gif') }}" alt="" aria-hidden="true"
+         class="pointer-events-none hidden md:block absolute left-full top-40 ml-2 h-[220px] lg:h-[260px] w-auto max-w-none opacity-90 [image-rendering:pixelated] [filter:drop-shadow(0_6px_8px_rgba(0,0,0,0.7))]">
 
     {{-- Título --}}
     <style>
@@ -419,8 +426,18 @@
 
     {{-- Premio: set ganado --}}
     <div x-show="setGanado" x-cloak x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-3" @click.self="setGanado = null">
-        <div class="w-full max-w-xs text-center rounded-xl border-4 border-yellow-500 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] p-4 shadow-[0_0_30px_rgba(234,179,8,0.6)]">
+        class="fixed inset-0 z-50 flex flex-col sm:flex-row items-center justify-center gap-1 bg-black/75 px-3" @click.self="setGanado = null">
+        {{-- Chun-Li festejando al costado, con su globo de "¡Felicidades!" --}}
+        <div class="pointer-events-none relative shrink-0 flex flex-col items-center"
+             x-show="setGanado" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 -translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <div class="relative mb-1 px-3 py-1.5 rounded-xl border-2 border-black bg-white text-black text-xs sm:text-sm font-extrabold text-center shadow-[0_3px_0_#000] animate-bounce">
+                ¡Felicidades!<br><span class="font-bold text-[10px] sm:text-xs text-pink-600">¡Te ganaste un set!</span>
+                <span class="absolute left-1/2 -bottom-2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r-2 border-b-2 border-black"></span>
+            </div>
+            <img src="{{ asset('images/casino/chunli.gif') }}" alt=""
+                 class="h-36 sm:h-72 w-auto max-w-none mt-2 [filter:drop-shadow(0_6px_8px_rgba(0,0,0,0.8))]">
+        </div>
+        <div class="w-full min-w-0 max-w-xs text-center rounded-xl border-4 border-yellow-500 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] p-4 shadow-[0_0_30px_rgba(234,179,8,0.6)]">
             <img src="{{ asset('images/casino-set.png') }}" alt="Set" class="mx-auto mb-1 h-16 w-16 object-contain" />
             <h3 class="text-lg font-extrabold tracking-widest text-yellow-400 [text-shadow:0_0_8px_rgba(250,204,21,0.7)]">¡SET GANADO!</h3>
             <template x-if="setGanado?.gif">
