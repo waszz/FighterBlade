@@ -1703,8 +1703,8 @@ protected function obtenerPoderesAnulados($combatiente)
             }
 
             if ($atacante !== 'personaje') {
-                // Los enemigos del juego pegan el 30%; en PvP el rival es otro jugador y pega completo
-                $reductorDanioEnemigo = $this->esPvp ? 1 : 0.3;
+                // Los enemigos del juego pegan el 40% (exploración, misiones, torre y caza); en PvP el rival es otro jugador y pega completo
+                $reductorDanioEnemigo = $this->esPvp ? 1 : 0.4;
                 return [
                     'fisico'    => round($danioFisico * $reductorDanioEnemigo),
                     'elemental' => round($danioElemental * $reductorDanioEnemigo),
