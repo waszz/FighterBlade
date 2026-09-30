@@ -526,11 +526,22 @@ public function getNombreAttribute()
         return true;
     }
 
-    // Rivales de misión (también pelean en la Torre): no tienen partes, así que la regla va en sus stats de pelea.
-    // Hay uno por nivel y la combinación rota en cada nivel (5 → la 1ª, 6 → la 2ª, 7 → la 3ª, 8 → la 1ª...).
-    // Cada stat conserva una base de 5 (como un jugador sin nada equipado) y el resto del total se reparte en partes
+    // Stats de pelea (los que usa como enemigo: exploración, Torre, misiones). Siguen la misma regla de su tipo de daño:
+    // cada stat conserva una base de 5 (como un jugador sin nada equipado) y el resto del total se reparte en partes
     // iguales entre los stats de su tipo. El total no cambia.
+    //  - Sets normales y variantes de la zona inicial: la misma combinación que dan sus partes (statsPorTipo)
+    //  - Rivales de misión: hay uno por nivel y la combinación rota en cada nivel (5 → la 1ª, 6 → la 2ª, 7 → la 3ª...)
+    //  - El enemigo de bienvenida (Wolverine) no cambia
     const BASE_STAT_RIVAL = 5;
+
+    public function statsPeleaPorTipo(): ?array
+    {
+        return match (true) {
+            (int) $this->es_enemigo === self::RIVAL_MISION => $this->statsPorTipoRival(),
+            (int) $this->es_enemigo === self::ENEMIGO_ESPECIAL => null,
+            default => $this->statsPorTipo(),
+        };
+    }
 
     public function statsPorTipoRival(): ?array
     {
@@ -542,9 +553,15 @@ public function getNombreAttribute()
         return $opciones[$indice < 0 ? $indice + count($opciones) : $indice];
     }
 
+    // Solo rivales de misión (lo usa la migración 2026_09_30_000003)
     public function aplicarStatsPorTipoRival(): bool
     {
-        $elegidos = $this->statsPorTipoRival();
+        return (int) $this->es_enemigo === self::RIVAL_MISION && $this->aplicarStatsPelea();
+    }
+
+    public function aplicarStatsPelea(): bool
+    {
+        $elegidos = $this->statsPeleaPorTipo();
         if (! $elegidos) {
             return false;
         }
