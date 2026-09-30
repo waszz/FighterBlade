@@ -540,7 +540,10 @@
 
           {{-- Mostrar texto contextual del daño --}}
           <div class="text-center text-gray-300 mt-1 text-xl leading-relaxed font-semibold">
-            @if($tipoAtacante === 'hibrido')
+            @if(strtolower($siguiente['tipo_ataque'] ?? '') === 'rebote')
+            {{-- El golpe no le hizo daño: lo resistió y abajo se lo rebota --}}
+            <p><strong class="text-amber-400">{{ $nombreDefensor }}</strong> resiste el golpe y no recibe daño.</p>
+            @elseif($tipoAtacante === 'hibrido')
             <p><strong class="text-lg">Ha recibido:</strong></p>
             <p><x-icono-tipo tipo="fisico" tam="w-7 h-7" class="align-[-0.35em]" /> <span class="text-red-400 text-xl font-bold">{{ $danioFisico }}</span> golpes y</p>
             <p><x-icono-tipo tipo="elemental" tam="w-7 h-7" class="align-[-0.35em]" /> <span class="text-indigo-400 text-xl font-bold">{{ $danioElemental }}</span> puntos de daño elemental.
@@ -633,8 +636,8 @@
           @endphp
 
           <p class="text-lg font-medium text-center mb-2 leading-relaxed">
-            <strong class="text-indigo-600">{{ $nombreAtacante }}</strong> <span class="text-amber-400 font-bold">resiste el golpe</span>
-            y le rebota el daño a <strong>{{ $nombreDefensor }}</strong>!
+            <strong class="text-indigo-600">{{ $nombreAtacante }}</strong> le <span class="text-amber-400 font-bold">rebota</span>
+            el golpe a <strong>{{ $nombreDefensor }}</strong>!
           </p>
 
           <div class="flex justify-center items-end gap-2 w-full min-h-[160px] overflow-hidden mt-2 mb-4">

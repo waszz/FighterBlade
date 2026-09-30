@@ -39,10 +39,12 @@ class Explorar extends Component
     // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo
     const EQUIPO_RIVAL_MISION_TORRE = 1.0;
 
-    // Contraataque (defensa) y rebote (resistencia), cuando al defensor le entra un golpe:
+    // Contraataque (defensa) y rebote (resistencia), cuando al defensor le entra un golpe. Solo los tiene quien tiene más
+    // de 30 en ese stat (como el especial con velocidad o el crítico con fuerza):
     //  - Contraataque: chance = defensa × CONTRA_POR_DEFENSA %, hasta CONTRA_TOPE %. Bloquea el golpe y pega la mitad de su daño
-    //  - Rebote: si no contraataca, chance = resistencia × REBOTE_POR_RESISTENCIA %, hasta REBOTE_TOPE %. Resiste
-    //    REBOTE_PORCENTAJE del golpe (no lo recibe) y ese daño le rebota al atacante (cuenta como daño del que resiste)
+    //  - Rebote: si no contraataca, chance = resistencia × REBOTE_POR_RESISTENCIA %, hasta REBOTE_TOPE %. Resiste el golpe
+    //    entero (no recibe daño) y le rebota al atacante REBOTE_PORCENTAJE de ese golpe (cuenta como daño del que resiste)
+    const MINIMO_CONTRA_REBOTE = 30;
     const CONTRA_POR_DEFENSA = 0.25;
     const CONTRA_TOPE = 35;
     const REBOTE_POR_RESISTENCIA = 0.25;
@@ -2341,8 +2343,9 @@ if ($tipoAtaque === 'defensa') {
     }
 }
 
-// Contraataque: la chance sale de la defensa del que recibe el golpe (ver CONTRA_POR_DEFENSA)
-$chanceContraataque = min(self::CONTRA_TOPE, ($statsDefensor['defensa'] ?? 0) * self::CONTRA_POR_DEFENSA);
+// Contraataque: la chance sale de la defensa del que recibe el golpe, si tiene más de 30 (ver CONTRA_POR_DEFENSA)
+$defensaContra = $statsDefensor['defensa'] ?? 0;
+$chanceContraataque = $defensaContra > self::MINIMO_CONTRA_REBOTE ? min(self::CONTRA_TOPE, $defensaContra * self::CONTRA_POR_DEFENSA) : 0;
 $contraataqueOcurre = mt_rand(1, 10000) <= $chanceContraataque * 100 && $danioFinal > 0;
 
 if ($contraataqueOcurre) {
@@ -2398,16 +2401,17 @@ if ($contraataqueOcurre) {
         'texto_tipo_danio' => "$nombreDefensor realiza un contraataque!",
     ];
 } else {
-    // Rebote: la chance sale de la resistencia del que recibe el golpe (ver REBOTE_POR_RESISTENCIA).
-    // Resiste una parte del golpe (no la recibe) y esa parte le rebota al atacante
-    $chanceRebote = min(self::REBOTE_TOPE, ($statsDefensor['resistencia'] ?? 0) * self::REBOTE_POR_RESISTENCIA);
+    // Rebote: la chance sale de la resistencia del que recibe el golpe, si tiene más de 30 (ver REBOTE_POR_RESISTENCIA).
+    // Resiste el golpe entero (no recibe daño) y le rebota al atacante una parte
+    $resistenciaRebote = $statsDefensor['resistencia'] ?? 0;
+    $chanceRebote = $resistenciaRebote > self::MINIMO_CONTRA_REBOTE ? min(self::REBOTE_TOPE, $resistenciaRebote * self::REBOTE_POR_RESISTENCIA) : 0;
     $danioRebote = 0;
     if ($danioFinal > 0 && mt_rand(1, 10000) <= $chanceRebote * 100) {
         $danioRebote = (int) round($danioFinal * self::REBOTE_PORCENTAJE);
-        $danioFisicoFinal    = round($danioFisicoFinal * (1 - self::REBOTE_PORCENTAJE));
-        $danioElementalFinal = round($danioElementalFinal * (1 - self::REBOTE_PORCENTAJE));
-        $danioFinal          = $danioFisicoFinal + $danioElementalFinal;
-        $textoTipoDanio      = "Físico: " . round($danioFisicoFinal) . " / Elemental: " . round($danioElementalFinal);
+        $danioFisicoFinal    = 0;
+        $danioElementalFinal = 0;
+        $danioFinal          = 0;
+        $textoTipoDanio      = "$nombreDefensor resiste el golpe y no recibe daño.";
     }
 
     // Acumular daño total + daño extra de poderes (y el rebote, para el que lo resistió)
