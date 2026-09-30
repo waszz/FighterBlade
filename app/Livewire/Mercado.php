@@ -109,21 +109,26 @@ public static function nivelMaximoMercado(): int
     return max(5, $nivelTop - 5);
 }
 
-// El mercado se renueva los lunes y los sábados a las 00:00 en hora local del juego (la misma zona que la Caza).
-// Antes era a las 00:00 del servidor (UTC): acá eso es el viernes y el domingo a las 21:00
-public static function ultimaRotacion(): Carbon
+// El mercado se renueva los lunes y los sábados a las HORA_ROTACION en hora local del juego (la misma zona que la Caza)
+const HORA_ROTACION = 20;
+
+// Renovaciones (lunes y sábados a las 20:00 locales) de una semana antes a una semana después de ahora
+private static function rotacionesCercanas()
 {
     $hoy = now()->setTimezone(\App\Models\Caza::ZONA_HORARIA)->startOfDay();
-    if ($hoy->isMonday() || $hoy->isSaturday()) {
-        return $hoy;
-    }
-    return max($hoy->copy()->previous(Carbon::SATURDAY), $hoy->copy()->previous(Carbon::MONDAY));
+    return collect(range(-8, 8))
+        ->map(fn ($d) => $hoy->copy()->addDays($d)->setTime(self::HORA_ROTACION, 0))
+        ->filter(fn ($dia) => $dia->isMonday() || $dia->isSaturday());
+}
+
+public static function ultimaRotacion(): Carbon
+{
+    return self::rotacionesCercanas()->filter(fn ($r) => $r->lte(now()))->sort()->last();
 }
 
 public static function proximaRotacion(): Carbon
 {
-    $hoy = now()->setTimezone(\App\Models\Caza::ZONA_HORARIA)->startOfDay();
-    return min($hoy->copy()->next(Carbon::SATURDAY), $hoy->copy()->next(Carbon::MONDAY));
+    return self::rotacionesCercanas()->filter(fn ($r) => $r->gt(now()))->sort()->first();
 }
 
 private function claveCacheMercado(): string
