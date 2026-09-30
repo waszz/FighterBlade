@@ -49,9 +49,9 @@ class Explorar extends Component
     // Híbridos: pegan físico y elemental a la vez (el ataque les cuenta en los dos), así que cada parte vale este
     // tanto. Con 0,65 un híbrido pega más o menos lo mismo que un físico o un elemental del mismo nivel (antes, 1,5 veces)
     const FACTOR_DANIO_HIBRIDO = 0.65;
-    const CONTRA_POR_DEFENSA = 0.25;
+    const CONTRA_POR_DEFENSA = 0.5;
     const CONTRA_TOPE = 35;
-    const REBOTE_POR_RESISTENCIA = 0.25;
+    const REBOTE_POR_RESISTENCIA = 0.5;
     const REBOTE_TOPE = 35;
     const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
 
