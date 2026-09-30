@@ -439,6 +439,8 @@
                 @livewire('misiones', ['personaje' => $personaje], key('misiones-'.($reloadCounters['misiones'] ?? 0)))
                 @elseif ($seccion === 'torre')
                 @livewire('torre', ['personaje' => $personaje], key('torre-'.($reloadCounters['torre'] ?? 0)))
+                @elseif ($seccion === 'mazmorra')
+                @livewire('mazmorra', ['personaje' => $personaje], key('mazmorra-'.($reloadCounters['mazmorra'] ?? 0)))
                 @elseif ($seccion === 'entrenar')
                 @livewire('entrenar', ['personaje' => $personaje], key('entrenar-'.($reloadCounters['entrenar'] ?? 0)))
                 @elseif ($seccion === 'drops')

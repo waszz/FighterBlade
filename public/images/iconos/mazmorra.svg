@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<g fill="none" stroke="#000" stroke-width="26" stroke-linejoin="round" stroke-linecap="round">
+  <!-- arco de piedra de la entrada -->
+  <path d="M96 450 V250 a160 160 0 0 1 320 0 V450"/>
+  <!-- boca oscura de la mazmorra -->
+  <path d="M166 450 V270 a90 90 0 0 1 180 0 V450"/>
+  <!-- rejas -->
+  <line x1="211" y1="200" x2="211" y2="450"/>
+  <line x1="256" y1="180" x2="256" y2="450"/>
+  <line x1="301" y1="200" x2="301" y2="450"/>
+  <!-- piedras del arco -->
+  <line x1="120" y1="170" x2="160" y2="200"/>
+  <line x1="256" y1="90" x2="256" y2="140"/>
+  <line x1="392" y1="170" x2="352" y2="200"/>
+</g>
+<line x1="60" y1="450" x2="452" y2="450" stroke="#000" stroke-width="26" stroke-linecap="round"/>
+</svg>

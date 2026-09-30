@@ -433,6 +433,12 @@
         <span {!! $iconoCiudad('torre.svg') !!}></span>
         Torre
       </button>
+      <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'mazmorra' })" x-bind:disabled="recup > 0"
+        x-bind:title="recup > 0 ? 'Te estás recuperando' : ''"
+        class="{{ $botonCiudad }}" style="--c:#f43f5e">
+        <span {!! $iconoCiudad('mazmorra.svg') !!}></span>
+        Mazmorra
+      </button>
       {{-- Entrenamiento con el maestro: se puede aunque te estés recuperando --}}
       <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'entrenar' })"
         class="{{ $botonCiudad }}" style="--c:#fb923c">

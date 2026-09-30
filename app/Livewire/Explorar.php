@@ -68,10 +68,11 @@ class Explorar extends Component
 
     // Stats con los que pelea un rival de Misión o Torre: los del set reforzados como un jugador equipado de su nivel,
     // más sus poderes que suben stats (la misma cuenta que hace la pelea). Los usan los modales de Misiones y Torre
-    public static function statsRivalMisionTorre(Post $rival): array
+    // ($extra: la Mazmorra lo hace más fuerte según la dificultad)
+    public static function statsRivalMisionTorre(Post $rival, float $extra = 1.0): array
     {
         $stats  = Personaje::decodificarStats($rival->stats);
-        $factor = self::refuerzoRivalMisionTorre((int) ($rival->nivel ?? 1));
+        $factor = self::refuerzoRivalMisionTorre((int) ($rival->nivel ?? 1)) * $extra;
         foreach ($stats as $stat => $valor) {
             if (is_numeric($valor)) {
                 $stats[$stat] = (int) round($valor * $factor);
@@ -390,7 +391,8 @@ class Explorar extends Component
  $this->estadosTemporalesActivos = collect($this->personaje->estadosTemporales)
         ->filter(fn($estado) => $estado->estaActivo());
 
-        $this->escenarioMision = $this->misionActiva()?->escenario ?? $this->torreActiva()?->escenario;
+        $this->escenarioMision = $this->misionActiva()?->escenario ?? $this->torreActiva()?->escenario
+            ?? ($this->mazmorraActiva()?->rivalActual()['escenario'] ?? null);
 
         // PvP recién iniciado con "Atacar": la pelea arranca sola, sin volver a apretar Atacar
         if ($this->esPvp && $this->enemigo && session()->pull('pvp_auto_atacar') == $this->enemigo->id) {
@@ -1262,6 +1264,7 @@ if ($tieneSiempreEnPie) {
                 (bool) $this->esPvp => 'pvp',
                 (bool) $this->misionActiva() => 'mision',
                 (bool) $this->torreActiva() => 'torre',
+                (bool) $this->mazmorraActiva() => 'mazmorra',
                 (bool) $this->cazaActiva() => 'caza',
                 default => 'explorar',
             },
@@ -1329,6 +1332,21 @@ if ($tieneSiempreEnPie) {
                 $this->personaje->torre_piso = max((int) $this->personaje->torre_piso, $pisoTorre->piso);
             }
             $this->personaje->torre_piso_activo = null;
+        }
+
+        // 🕳️ Mazmorra: con victoria pasa al rival siguiente; ganándole al jefe la mazmorra termina.
+        // Si no, sigue en el mismo rival (se vuelve a intentar gastando energía otra vez)
+        if ($mazmorra = $this->mazmorraActiva()) {
+            if ($this->resultadoFinal === 'Victoria') {
+                if ($mazmorra->esJefe()) {
+                    $mazmorra->fill(['dificultad' => null, 'rivales' => null, 'paso' => 0]);
+                    $mazmorra->jefes_derrotados++;
+                } else {
+                    $mazmorra->paso++;
+                }
+            }
+            $mazmorra->en_pelea = false;
+            $mazmorra->save();
         }
 
         // Finalizamos el combate y actualizamos (un duelo aceptado mientras explora no corta la exploración)
@@ -1548,13 +1566,18 @@ protected function obtenerPoderesAnulados($combatiente)
 
         // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel.
         // 🧭 Exploración: también (ver EQUIPO_RIVAL_EXPLORACION)
-        $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva();
+        $mazmorraPelea = $this->mazmorraActiva();
+        $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva() || $mazmorraPelea; // la mazmorra, como la Torre
         $esEnemigoExploracion = $this->esExploracion() && ($this->enemigo->es_enemigo ?? null) != self::ENEMIGO_ESPECIAL;
         if (! ($this->enemigo instanceof Personaje) && ($esRivalMisionTorre || $esEnemigoExploracion)) {
             $factorRival = self::refuerzoRivalMisionTorre(
                 (int) ($this->enemigo->nivel ?? 1),
                 $esRivalMisionTorre ? self::EQUIPO_RIVAL_MISION_TORRE : self::EQUIPO_RIVAL_EXPLORACION
             );
+            // 🕳️ Mazmorra: más fuerte según la dificultad (y el jefe un poco más)
+            if ($mazmorraPelea) {
+                $factorRival *= $mazmorraPelea->factorStats();
+            }
             foreach ($statsEnemigo as $stat => $valor) {
                 if (is_numeric($valor)) {
                     $statsEnemigo[$stat] = (int) round($valor * $factorRival);
@@ -3404,6 +3427,8 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
             $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP,
             // Torre: el doble que una pelea común
             $this->torreActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * \App\Support\RecompensasTorre::MULTIPLICADOR_EXP,
+            // Mazmorra: la de una pelea común (sin el descuento por zona)
+            $this->mazmorraActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje),
             // Exploración y caza: menos exp si la zona es de menor nivel que el personaje
             default => self::porcentajeExpPorNivel($nivelPersonaje) * self::factorExpZona($nivelPersonaje, (int) $nivelCiudad),
         };
@@ -3516,6 +3541,15 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $oro = \App\Support\RecompensasTorre::oro((int) $pisoOroTorre->nivel);
         }
 
+        // 🕳️ Mazmorra: oro según el nivel del rival y la dificultad; el jefe además da esmeraldas
+        if ($mazmorraOro = $this->mazmorraActiva()) {
+            $oro = $mazmorraOro->oroPorVictoria((int) ($this->enemigo->nivel ?? 1));
+            if (is_array($statsOriginal) && ($statsOriginal['afecta'] ?? '') === 'oro') {
+                $oro *= 2; // la Poción de Oro también vale acá
+            }
+            $diamantesExtra += $mazmorraOro->esmeraldasPorVictoria();
+        }
+
         $this->personaje->oro += $oro;
         $this->personaje->diamante += $diamantesExtra;
         $this->personaje->save();
@@ -3528,7 +3562,7 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
 
         // Solo generar drops si el enemigo NO es el post 68
         // (las misiones y el PvP no dan drops: el premio de las misiones es oro y diamantes)
-        if (! $esEnemigoEspecial && ! $mision && ! $this->esPvp && ! $this->torreActiva()) { // la Torre tampoco da drops (sus recompensas se definen aparte)
+        if (! $esEnemigoEspecial && ! $mision && ! $this->esPvp && ! $this->torreActiva() && ! $this->mazmorraActiva()) { // la Torre tampoco da drops (sus recompensas se definen aparte)
 
             // Definición de pociones normales
             $pocionesNormales = [
@@ -3695,6 +3729,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $drop = \App\Support\RecompensasTorre::premio((int) $pisoTorre->nivel);
         }
 
+        // 🕳️ Mazmorra: los enemigos (no el jefe) a veces tiran una poción, de cualquier tipo
+        $mazmorraDrop = $this->mazmorraActiva();
+        if ($mazmorraDrop && ! $mazmorraDrop->esJefe() && rand(1, 100) <= \App\Models\Mazmorra::CHANCE_POCION) {
+            $drop = \App\Models\Mazmorra::pocionAlAzar();
+        }
+
         // 🌱 Variante de la zona inicial: siempre suelta su parte fija del set original (Black = equipo, normal = entrenamiento, Gold = accesorio)
         if (! $this->esPvp && ($this->enemigo->es_enemigo ?? null) == Post::VARIANTE_ZONA && $this->enemigo->variante_de_post_id) {
             $setOriginal = Post::find($this->enemigo->variante_de_post_id);
@@ -3834,7 +3874,18 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)
     public function esExploracion(): bool
     {
-        return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva();
+        return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva();
+    }
+
+    // Mazmorra en la que se está peleando (su rival del paso actual es el enemigo), o null si es otro combate
+    public function mazmorraActiva(): ?\App\Models\Mazmorra
+    {
+        if ($this->esPvp || ! $this->enemigo || ! $this->personaje) {
+            return null;
+        }
+        $mazmorra = \App\Models\Mazmorra::where('personaje_id', $this->personaje->id)->where('en_pelea', true)->first();
+
+        return $mazmorra && (int) ($mazmorra->rivalActual()['post_id'] ?? 0) === (int) $this->enemigo->id ? $mazmorra : null;
     }
 
     public function misionActiva(): ?\App\Models\Mision
@@ -3905,7 +3956,7 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     // Misma regla que asignarRecompensas: variante → su parte fija; caza → la parte elegida; si no, según los minutos.
     public function parteYaSacada(): ?array
     {
-        if ($this->esPvp || ! $this->enemigo || $this->misionActiva() || $this->torreActiva()
+        if ($this->esPvp || ! $this->enemigo || $this->misionActiva() || $this->torreActiva() || $this->mazmorraActiva()
             || ($this->enemigo->es_enemigo ?? null) == self::ENEMIGO_ESPECIAL) {
             return null;
         }
@@ -3940,6 +3991,8 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $this->personaje->mision_activa_id  = null; // la misión se puede volver a intentar
             $this->personaje->torre_piso_activo = null; // el piso de la Torre también
             $this->personaje->save();
+            // Mazmorra: sigue en el mismo rival (la energía ya se gastó)
+            \App\Models\Mazmorra::where('personaje_id', $this->personaje->id)->update(['en_pelea' => false]);
         }
         $this->escenarioMision = null;
 
