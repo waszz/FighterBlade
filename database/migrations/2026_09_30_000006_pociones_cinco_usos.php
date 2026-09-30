@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-// Las pociones pasan a tener 5 usos (menos las de Oro y Esmeraldas): las que ya están en los inventarios y las de la
+// Las pociones pasan a tener 5 usos (menos las de Oro, Esmeraldas y Búsqueda): las que ya están en los inventarios y las de la
 // tienda de pociones (1/1 → 5/5). Antes guarda una copia en storage/app/respaldos/ y el rollback la vuelve a poner.
 return new class extends Migration
 {

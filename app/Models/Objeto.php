@@ -38,9 +38,9 @@ class Objeto extends Model
         'pocion' => 'boolean',
     ];
 
-    // Las pociones traen 5 usos (5/5), menos las de Oro y Esmeraldas, que se gastan de una
+    // Las pociones traen 5 usos (5/5), menos las de Oro, Esmeraldas y Búsqueda (drop), que se gastan de una
     const USOS_POCION = 5;
-    const POCIONES_DE_UN_USO = ['oro', 'diamante'];
+    const POCIONES_DE_UN_USO = ['oro', 'diamante', 'drop_partes'];
 
     // Stats de una poción con sus usos: si trae menos de 5 usos totales se completan (1/1 → 5/5; una a medio usar
     // de 3/5 que se vende en el mercado queda como está)

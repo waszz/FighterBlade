@@ -33,8 +33,8 @@ class MercadoPocionesSeeder extends Seeder
         'nivel' => 1,
         'requisitos' => [],
         'stats' => [
-            'usos_restantes' => 5,
-            'usos_totales' => 5,
+            'usos_restantes' => 1,
+            'usos_totales' => 1,
             'multiplicador' => 1,
             'afecta' => 'drop_partes',
         ],
