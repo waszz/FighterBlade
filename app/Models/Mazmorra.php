@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 // Cada pelea cuesta ENERGIA_POR_PELEA rayitos (de ENERGIA_DIARIA por día: dos mazmorras completas). Si perdés, seguís
 // en el mismo rival y lo podés volver a intentar (gastando otra vez). Una vez por día se compran +100 rayitos con esmeraldas.
 //  - Enemigos: oro y a veces una poción (cualquiera)
-//  - Jefe: oro y esmeraldas (500 en normal), y la mazmorra termina
+//  - Jefe: oro y esmeraldas (250 en normal, 500 en difícil, 1000 en pesadilla), y la mazmorra termina
 // Las dificultades más altas tienen rivales más fuertes y multiplican el premio.
 class Mazmorra extends Model
 {
@@ -20,16 +20,16 @@ class Mazmorra extends Model
     const PRECIO_COMPRA = 1000; // esmeraldas
     const ENEMIGOS = 4;         // antes del jefe
 
-    // stats: sobre el refuerzo de Misiones/Torre (un jugador equipado de su nivel). premio: multiplica oro y esmeraldas
+    // stats: sobre el refuerzo de Misiones/Torre (un jugador equipado de su nivel). premio: multiplica el oro.
+    // esmeraldas: las que da el jefe
     const DIFICULTADES = [
-        'normal'    => ['nombre' => 'Normal',    'icono' => '🟢', 'stats' => 1.0,  'premio' => 1],
-        'dificil'   => ['nombre' => 'Difícil',   'icono' => '🟠', 'stats' => 1.25, 'premio' => 2],
-        'pesadilla' => ['nombre' => 'Pesadilla', 'icono' => '🔴', 'stats' => 1.5,  'premio' => 3],
+        'normal'    => ['nombre' => 'Normal',    'icono' => '🟢', 'stats' => 1.0,  'premio' => 1, 'esmeraldas' => 250],
+        'dificil'   => ['nombre' => 'Difícil',   'icono' => '🟠', 'stats' => 1.25, 'premio' => 2, 'esmeraldas' => 500],
+        'pesadilla' => ['nombre' => 'Pesadilla', 'icono' => '🔴', 'stats' => 1.5,  'premio' => 3, 'esmeraldas' => 1000],
     ];
     const FACTOR_JEFE = 1.15;         // el jefe pega un poco más que los enemigos de su dificultad
     const ORO_ENEMIGO_POR_NIVEL = 20; // oro de un enemigo = nivel × esto × premio
     const ORO_JEFE_POR_NIVEL = 60;
-    const ESMERALDAS_JEFE = 500;      // × premio
     const CHANCE_POCION = 30;         // % de que un enemigo tire una poción
 
     protected $table = 'mazmorras';
@@ -104,7 +104,7 @@ class Mazmorra extends Model
 
     public function esmeraldasPorVictoria(): int
     {
-        return $this->esJefe() ? self::ESMERALDAS_JEFE * $this->datosDificultad()['premio'] : 0;
+        return $this->esJefe() ? $this->datosDificultad()['esmeraldas'] : 0;
     }
 
     // Arma una mazmorra nueva para el personaje: 4 enemigos de su nivel (hasta +4) y un jefe de +5 a +9, cada uno en un escenario

@@ -21,7 +21,7 @@
         <div>
             <h2 class="text-2xl font-bold text-rose-300 [text-shadow:0_2px_0_#000]">🕳️ Mazmorra</h2>
             <p class="text-sm text-gray-300">Elegí la dificultad, vencé a {{ M::ENEMIGOS }} enemigos y enfrentá al <b class="text-rose-300">jefe</b>. Si perdés, seguís en el mismo rival y lo podés volver a intentar.</p>
-            <p class="text-xs text-rose-200 mt-1">Los enemigos dan oro y a veces una poción. El jefe da oro y <b>{{ M::ESMERALDAS_JEFE }} esmeraldas</b> (×2 en Difícil, ×3 en Pesadilla).</p>
+            <p class="text-xs text-rose-200 mt-1">Los enemigos dan oro y a veces una poción. El jefe da oro y <b>esmeraldas</b> ({{ collect(M::DIFICULTADES)->map(fn ($d) => $d['esmeraldas'] . ' en ' . $d['nombre'])->join(', ', ' y ') }}).</p>
         </div>
 
         {{-- Energía --}}
@@ -62,7 +62,7 @@
                     <ul class="text-xs text-gray-300 space-y-0.5 flex-1">
                         <li>Rivales {{ $dif['stats'] == 1 ? 'normales' : 'un ' . round(($dif['stats'] - 1) * 100) . '% más fuertes' }}</li>
                         <li>Oro <b class="text-yellow-300">×{{ $dif['premio'] }}</b></li>
-                        <li>Jefe: <b class="text-cyan-300">{{ M::ESMERALDAS_JEFE * $dif['premio'] }}</b> esmeraldas</li>
+                        <li>Jefe: <b class="text-cyan-300">{{ $dif['esmeraldas'] }}</b> esmeraldas</li>
                     </ul>
                     <button type="button" wire:click="elegir('{{ $clave }}')" wire:loading.attr="disabled" @disabled(! $puedeEntrar)
                             class="{{ $boton3d }} w-full py-2 text-white bg-gradient-to-b {{ $colorDificultad[$clave] }}">
