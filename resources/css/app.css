@@ -15,6 +15,14 @@
 .lista-drops { scrollbar-width: none; }
 .lista-drops::-webkit-scrollbar { display: none; }
 
+/* Pelea: gifs teñidos del color del estado en que entró el personaje (ver partials/resultado-pelea) */
+.estado-frenesi    { filter: sepia(1) saturate(6) hue-rotate(-40deg) drop-shadow(0 0 6px #ef4444); animation: estadoLatido 1s ease-in-out infinite alternate; }
+.estado-furia      { filter: sepia(1) saturate(7) hue-rotate(-15deg) drop-shadow(0 0 6px #f97316); animation: estadoLatido 0.8s ease-in-out infinite alternate; }
+.estado-trance     { filter: sepia(1) saturate(4) hue-rotate(230deg) drop-shadow(0 0 7px #a855f7); animation: estadoLatido 1.4s ease-in-out infinite alternate; }
+.estado-supernova  { filter: sepia(1) saturate(3) hue-rotate(5deg) brightness(1.25) drop-shadow(0 0 8px #facc15); animation: estadoLatido 1.2s ease-in-out infinite alternate; }
+.estado-supercarga { filter: sepia(1) saturate(5) hue-rotate(160deg) drop-shadow(0 0 7px #22d3ee); animation: estadoLatido 0.6s steps(2, end) infinite alternate; }
+@keyframes estadoLatido { from { opacity: 1; } to { opacity: 0.82; } }
+
 /* ===================== Cosméticos (Extras) — catálogo en App\Support\Cosmeticos ===================== */
 
 /* --- Burbujas de chat (van sobre la burbuja del mensaje, pisan su fondo) --- */

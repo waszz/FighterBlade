@@ -17,6 +17,20 @@
   // Al volver a ver una pelea guardada (Mis peleas) vienen los sets con los que peleó cada uno ese día
   $postPjRep = $postPjRepeticion ?? null;
   $postEnRep = $postEnRepeticion ?? null;
+
+  // Si un lado entró en un estado (Frenesí, Furia Ciega, Trance, Super Nova, Super Carga), sus gifs se tiñen de su color
+  // (clases .estado-* en app.css). Se guarda si se activó en la pelea, no en qué ronda: se tiñen todos los de ese lado
+  $claseEstado = [];
+  foreach (['personaje' => 'Personaje', 'enemigo' => 'Enemigo'] as $ladoEstado => $sufijoEstado) {
+      $claseEstado[$ladoEstado] = match (true) {
+          ! empty(${'poderActivoFrenesi' . $sufijoEstado}) => 'estado-frenesi',
+          ! empty(${'poderActivoFuriaCiega' . $sufijoEstado}) => 'estado-furia',
+          ! empty(${'poderActivoTrance' . $sufijoEstado}) => 'estado-trance',
+          ! empty(${'poderActivoSuperNova' . $sufijoEstado}) => 'estado-supernova',
+          ! empty(${'poderActivoSuperCarga' . $sufijoEstado}) => 'estado-supercarga',
+          default => '',
+      };
+  }
   $tipoVistaPersonaje = $postPjRep->tipo ?? $tipoDeCombate($personaje);
   $tipoVistaEnemigo = $postEnRep->tipo ?? $tipoDeCombate($enemigo);
 
@@ -400,7 +414,7 @@
         @if ($gifAtaque)
         <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
           <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque ronda 6"
-            style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }}">
+            style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$atacante] ?? '' }}">
         </div>
         @endif
 
@@ -455,7 +469,7 @@
           @if ($gifAtaque)
           <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
             <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque ronda 6"
-              style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }}">
+              style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$atacante] ?? '' }}">
           </div>
           @endif
 
@@ -533,7 +547,7 @@
           @if ($gifAtaque)
           <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
             <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque"
-              style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }}">
+              style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$res['atacante']] ?? '' }}">
           </div>
           @endif
 
@@ -586,7 +600,7 @@
           @if ($gifDefensa)
           <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
             <img src="{{ asset('storage/' . $gifDefensa) }}" alt="Gif defensa"
-              style="{{ \App\Models\Post::estiloGif($gifDefensa) }}" class="block max-w-none {{ $claseFlipDef }}">
+              style="{{ \App\Models\Post::estiloGif($gifDefensa) }}" class="block max-w-none {{ $claseFlipDef }} {{ $claseEstado[$ladoBloquea] ?? '' }}">
           </div>
           @endif
 
@@ -614,7 +628,7 @@
           @if ($gifContra)
           <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
             <img src="{{ asset('storage/' . $gifContra) }}" alt="Gif contraataque"
-              style="{{ \App\Models\Post::estiloGif($gifContra) }}" class="block max-w-none {{ $claseFlipContra }}">
+              style="{{ \App\Models\Post::estiloGif($gifContra) }}" class="block max-w-none {{ $claseFlipContra }} {{ $claseEstado[$contra['atacante']] ?? '' }}">
           </div>
           @endif
 
@@ -657,11 +671,11 @@
           <div class="flex justify-center items-end gap-2 w-full min-h-[160px] overflow-hidden mt-2 mb-4 {{ $res['atacante'] === 'personaje' ? '' : 'flex-row-reverse' }}">
             @if ($gifResiste)
               <img src="{{ asset('storage/' . $gifResiste) }}" alt="Gif resiste"
-                style="{{ \App\Models\Post::estiloGif($gifResiste) }}" class="block max-w-none {{ $claseFlipResiste }}">
+                style="{{ \App\Models\Post::estiloGif($gifResiste) }}" class="block max-w-none {{ $claseFlipResiste }} {{ $claseEstado[$res['atacante']] ?? '' }}">
             @endif
             @if ($gifRebotado)
               <img src="{{ asset('storage/' . $gifRebotado) }}" alt="Gif rebotado"
-                style="{{ \App\Models\Post::estiloGif($gifRebotado) }}" class="block max-w-none {{ $claseFlipRebotado }}">
+                style="{{ \App\Models\Post::estiloGif($gifRebotado) }}" class="block max-w-none {{ $claseFlipRebotado }} {{ $claseEstado[$res['atacante'] === 'personaje' ? 'enemigo' : 'personaje'] ?? '' }}">
             @endif
           </div>
 
@@ -961,30 +975,30 @@
         {{-- Victoria del personaje --}}
         <div class="absolute bottom-1 left-[3%] sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Victoria Personaje"
-            style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none">
+            style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none {{ $claseEstado['personaje'] ?? '' }}">
         </div>
         <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
           <img src="{{ asset('storage/' . $gifDerrotaEnemigo) }}" alt="GIF Derrota Enemigo"
-            style="{{ \App\Models\Post::estiloGif($gifDerrotaEnemigo) }}" class="block max-w-none">
+            style="{{ \App\Models\Post::estiloGif($gifDerrotaEnemigo) }}" class="block max-w-none {{ $claseEstado['enemigo'] ?? '' }}">
         </div>
         @elseif($totalDanioPersonaje < $totalDanioEnemigo) {{-- Victoria del enemigo --}} <div
           class="absolute bottom-1 left-[3%] sm:left-[8%] z-10 ">
           <img src="{{ asset('storage/' . $gifDerrotaPersonaje) }}" alt="GIF Derrota Personaje"
-            style="{{ \App\Models\Post::estiloGif($gifDerrotaPersonaje) }}" class="block max-w-none drop-shadow-md">
+            style="{{ \App\Models\Post::estiloGif($gifDerrotaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}">
       </div>
       <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
         <img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Victoria Enemigo"
-          style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md">
+          style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}">
       </div>
       @else
       {{-- Empate --}}
       <div class="absolute bottom-1 left-[3%] sm:left-[8%] z-10">
         <img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Empate Personaje"
-          style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none drop-shadow-md">
+          style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}">
       </div>
       <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1] ">
         <img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Empate Enemigo"
-          style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md">
+          style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}">
       </div>
       @endif
     </div>
