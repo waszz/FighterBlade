@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 
+/* Tamaño de todos los gifs de los sets (Post::estiloGif lo multiplica por esto): en el celular más chicos, así no
+   quedan pegados en el escenario ni en las rondas */
+:root { --escala-gif: 1; }
+@media (max-width: 639px) { :root { --escala-gif: .7; } }
+
 /* Alpine: ocultar lo que tiene x-cloak hasta que Alpine lo inicialice (evita que modales/avisos se vean un instante) */
 [x-cloak] { display: none !important; }
 

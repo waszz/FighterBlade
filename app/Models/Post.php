@@ -363,8 +363,10 @@ public function getNombreAttribute()
             self::cargarEstilosGif();
         }
 
+        // El tamaño se multiplica por --escala-gif (1 en PC; en el celular es menor, ver app.css): así todos los gifs
+        // se achican juntos en pantallas chicas sin tocar cada vista.
         // Sin medidas (ej. sets que solo tienen una foto): se limita el alto para que no salga gigante
-        $sinMedidas = sprintf('max-height:%dpx', self::GIF_ALTO_OBJETIVO * $factor);
+        $sinMedidas = sprintf('max-height:calc(%dpx * var(--escala-gif, 1))', self::GIF_ALTO_OBJETIVO * $factor);
 
         $estilo = self::$estilosGif[$ruta] ?? null;
         if (! $estilo) {
@@ -373,7 +375,7 @@ public function getNombreAttribute()
 
         [$zoom, $pie, $girado, $subir] = $estilo;
         $filtro = $estilo[4] ?? null; // tinte de las variantes Black / Gold
-        $css = $zoom !== null ? sprintf('zoom:%.3f;margin-bottom:%dpx', $zoom * $factor, $subir - $pie) : $sinMedidas;
+        $css = $zoom !== null ? sprintf('zoom:calc(%.3f * var(--escala-gif, 1));margin-bottom:%dpx', $zoom * $factor, $subir - $pie) : $sinMedidas;
 
         return ltrim($css . ($girado ? ';rotate:y 180deg' : '') . ($filtro ? ';filter:' . $filtro : ''), ';');
     }
