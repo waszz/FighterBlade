@@ -69,32 +69,76 @@
                 @endforeach
             </div>
 
-            {{-- Partes: bonus y requisitos --}}
+            {{-- Partes (como en el Mercado y el Inventario): borde del color de la parte, stats en recuadros y requisitos.
+                 Tocando una se abre su tarjeta (como la del Inventario) --}}
             <div class="w-full grid grid-cols-3 gap-1.5">
-                @foreach (['equipo_imagen' => 'Equipo', 'entrenamiento_imagen' => 'Entrenam.', 'accesorio_imagen' => 'Accesorio'] as $campo => $label)
+                @foreach (['equipo' => 'Equipo', 'entrenamiento' => 'Entrenamiento', 'accesorio' => 'Accesorio'] as $tipoParte => $label)
                 @php
-                $tipoParte = str_replace('_imagen', '', $campo);
-                $ajustes = $personaje->{'ajustes_manuales_' . $tipoParte} ?? [];
+                $imagenParte = $personaje->{$tipoParte . '_imagen'} ?? null;
+                $nombreParte = $personaje->{$tipoParte . '_nombre'} ?: ($label . ' de ' . $personaje->titulo);
+                $ajustes = array_filter((array) ($personaje->{'ajustes_manuales_' . $tipoParte} ?? []), fn ($v) => $v > 0);
                 $requisitos = $personaje->{'requisitos_' . $tipoParte} ?? [];
+                $requisitos = array_filter(is_string($requisitos) ? (json_decode($requisitos, true) ?: []) : (array) $requisitos, fn ($v) => $v > 0);
+                [$bordeParte, $textoParte] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300']][$tipoParte];
                 @endphp
-                <div class="flex flex-col items-center p-1.5 rounded-lg {{ $caja3d }}">
-                    @if (!empty($personaje->$campo))
-                    <img src="{{ asset('storage/posts/' . $personaje->$campo) }}" alt="{{ $label }}"
-                        class="w-10 h-10 rounded-md object-cover border border-black shadow-[0_2px_0_#000]" loading="lazy" />
+                <div x-data="{ ver: false }" class="flex flex-col items-center gap-1 p-1.5 rounded-lg cursor-pointer hover:brightness-125 transition {{ $caja3d }}"
+                     x-on:click="ver = true" title="Ver {{ $label }}">
+                    @if ($imagenParte)
+                    <img src="{{ asset('storage/posts/' . $imagenParte) }}" alt="{{ $label }}" loading="lazy"
+                        class="w-11 h-11 rounded-md object-cover bg-black/50 border-2 {{ $bordeParte }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]" />
                     @else
-                    <div class="w-10 h-10 rounded-md border border-black bg-black/50"></div>
+                    <div class="w-11 h-11 rounded-md bg-black/50 border-2 {{ $bordeParte }}"></div>
                     @endif
-                    <span class="mt-1 text-[9px] text-gray-300 select-none">{{ $label }}</span>
-                    @foreach ($ajustes as $stat => $valor)
-                    @if ($valor > 0)
-                    <span class="text-[10px] font-bold text-emerald-300 leading-tight whitespace-nowrap">+{{ $valor }} {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-tight leading-none {{ $textoParte }} select-none">{{ $label }}</span>
+                    <div class="flex flex-wrap justify-center gap-0.5">
+                        @foreach ($ajustes as $stat => $valor)
+                        <span class="border border-black bg-gradient-to-b from-green-600 to-green-900 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] text-white text-[10px] font-bold px-1 rounded whitespace-nowrap">
+                            {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} +{{ $valor }}
+                        </span>
+                        @endforeach
+                    </div>
+                    @if ($requisitos)
+                    <span class="text-[9px] text-purple-400 italic leading-tight text-center" title="Requisito para equipar">
+                        Requisitos: {{ collect($requisitos)->map(fn ($v, $s) => $v . ' ' . ($abreviaturas[strtolower($s)] ?? strtoupper(substr($s, 0, 3))))->join(', ') }}
+                    </span>
                     @endif
-                    @endforeach
-                    @foreach ($requisitos as $stat => $valor)
-                    @if ($valor > 0)
-                    <span class="text-[10px] font-bold text-red-400 leading-tight whitespace-nowrap" title="Requisito para equipar">Req {{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} {{ $valor }}</span>
-                    @endif
-                    @endforeach
+
+                    {{-- Tarjeta de la parte (misma que en el Inventario) --}}
+                    <template x-teleport="body">
+                    <div x-show="ver" x-cloak x-transition.opacity x-on:click.self="ver = false" x-on:keydown.escape.window="ver = false"
+                         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
+                        <div class="w-full max-w-[220px] text-white bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] border-2 border-black rounded-xl p-3 relative">
+                            <button type="button" x-on:click="ver = false" class="absolute top-1 right-2 text-gray-400 hover:text-white text-2xl leading-none transition">&times;</button>
+                            <div class="flex flex-col items-center text-center">
+                                <p class="text-sm font-bold text-white mb-1 px-4 truncate max-w-full">{{ $nombreParte }}</p>
+                                <p class="text-[11px] font-bold uppercase mb-2 {{ $textoParte }}">{{ $label }} · Nivel {{ $personaje->nivel }}</p>
+                                @if ($imagenParte)
+                                <img src="{{ asset('storage/posts/' . $imagenParte) }}" alt="{{ $nombreParte }}"
+                                     class="w-20 h-20 object-cover rounded-lg mb-2 bg-black/50 border-2 {{ $bordeParte }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000]" />
+                                @endif
+                                @if ($personaje->tipo)
+                                <div class="mb-1 flex justify-center"><x-icono-tipo :tipo="$personaje->tipo" tam="w-8 h-8" /></div>
+                                @endif
+                                <div class="w-full grid grid-cols-2 gap-x-2 gap-y-1.5">
+                                    @forelse ($ajustes as $stat => $valor)
+                                    <p class="text-green-400 text-xs font-semibold px-1 py-0.5 rounded {{ $etiqueta3d }}">{{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} +{{ $valor }}</p>
+                                    @empty
+                                    <p class="text-gray-500 text-xs italic col-span-2">Sin stats</p>
+                                    @endforelse
+                                </div>
+                                <div class="w-full mt-2 pt-2 border-t border-white/10 text-xs text-left">
+                                    <p class="text-gray-400 font-semibold mb-1">Requiere:</p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <span class="px-1.5 py-0.5 rounded border border-black font-bold text-yellow-300 bg-black/40">Nivel {{ $personaje->nivel }}</span>
+                                        @foreach ($requisitos as $stat => $valor)
+                                        <span class="px-1.5 py-0.5 rounded border border-black font-bold text-purple-300 bg-black/40">{{ $abreviaturas[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} {{ $valor }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </template>
                 </div>
                 @endforeach
             </div>

@@ -481,9 +481,35 @@ public function claseChat(): string
     return \App\Support\Cosmeticos::clase($this->efecto_chat);
 }
 
+// Nombre: el efecto comprado en Extras; si no tiene y está conectado, dorado (lo ven los demás, no uno mismo)
 public function claseNombre(): string
 {
-    return \App\Support\Cosmeticos::clase($this->efecto_nombre);
+    $cosmetico = \App\Support\Cosmeticos::clase($this->efecto_nombre);
+    if ($cosmetico) {
+        return $cosmetico;
+    }
+    return $this->user_id !== auth()->id() && $this->estaConectado() ? 'nombre-conectado' : '';
+}
+
+// Conectado: su cuenta tuvo actividad en los últimos minutos (misma regla que "Conectados" del chat)
+public function estaConectado(): bool
+{
+    return in_array($this->user_id, self::usuariosConectados());
+}
+
+// Ids de las cuentas conectadas (se consulta una vez por pedido)
+public static function usuariosConectados(): array
+{
+    static $ids = null;
+    if ($ids === null) {
+        $ids = config('session.driver') === 'database'
+            ? \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(\App\Livewire\ChatComponent::MINUTOS_ONLINE)->timestamp)
+                ->distinct()->pluck('user_id')->all()
+            : [];
+    }
+    return $ids;
 }
 
 public function claseAura(): string

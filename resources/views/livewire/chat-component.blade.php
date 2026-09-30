@@ -3,7 +3,8 @@
         $boton3d = 'flex items-center justify-center gap-1.5 rounded-lg border border-black text-xs font-bold bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all';
         // Color fijo del nombre para cada jugador (si no tiene un efecto de nombre comprado)
         $coloresNombre = ['text-emerald-400', 'text-sky-400', 'text-amber-400', 'text-pink-400', 'text-violet-400', 'text-lime-400', 'text-orange-400', 'text-cyan-300', 'text-rose-400', 'text-teal-300'];
-        $colorNombre = fn ($pj) => $pj?->claseNombre() ?: $coloresNombre[($pj->id ?? 0) % count($coloresNombre)];
+        // (acá no va el dorado de conectado: los que escriben están todos conectados)
+        $colorNombre = fn ($pj) => \App\Support\Cosmeticos::clase($pj?->efecto_nombre) ?: $coloresNombre[($pj->id ?? 0) % count($coloresNombre)];
         // Foto de cada personaje, una consulta por personaje
         $fotosChat = [];
         $foto = function ($pj) use (&$fotosChat) {
