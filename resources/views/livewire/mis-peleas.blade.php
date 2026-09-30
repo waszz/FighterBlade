@@ -128,7 +128,7 @@
         <span class="text-green-400">EXP +{{ number_format($repeticion['pelea']->exp_ganada ?? 0) }}</span>
         <span class="flex items-center gap-1 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="" class="w-4 h-4">+{{ number_format($repeticion['pelea']->oro_ganado ?? 0) }}</span>
         @if (! empty($datosRep['diamante']))
-          <span class="flex items-center gap-1 text-cyan-300"><img src="{{ asset('images/diamante.png') }}" alt="" class="w-4 h-4">+{{ number_format($datosRep['diamante']) }}</span>
+          <span class="flex items-center gap-1"><img src="{{ asset('images/diamante.png') }}" alt="" class="w-4 h-4"><span class="num-esmeralda">+{{ number_format($datosRep['diamante']) }}</span></span>
         @endif
       </div>
     </div>
@@ -359,9 +359,9 @@
 
     {{-- Diamantes (solo si ganó y hay diamantes) --}}
     @if(($peleaSeleccionada->resultado ?? '') === 'victoria' && !empty($datosCombate['diamante']) && $datosCombate['diamante'] > 0)
-    <p class="flex justify-center items-center gap-1 text-cyan-400 font-bold mt-1">
+    <p class="flex justify-center items-center gap-1 font-bold mt-1">
         <img src="{{ asset('images/diamante.png') }}" alt="Esmeralda" class="w-6 h-6" />
-        <span>{{ number_format($datosCombate['diamante']) }}</span>
+        <span class="num-esmeralda">{{ number_format($datosCombate['diamante']) }}</span>
         <span class="text-white">esmeraldas.</span>
     </p>
     @endif

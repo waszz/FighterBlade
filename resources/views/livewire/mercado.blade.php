@@ -163,7 +163,7 @@
                     class="w-full bg-gradient-to-b from-blue-500 to-blue-800 text-white font-bold text-xs py-1.5 rounded border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 disabled:opacity-50 disabled:active:translate-y-0 disabled:cursor-not-allowed">
                     <span wire:loading.remove wire:target="comprarPersonaje({{ $post->id }})">
                       
-                        <span>Comprar por <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"> {{ $costo }} </span>
+                        <span>Comprar por <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"> <span class="num-esmeralda">{{ $costo }}</span> </span>
                     </span>
                     <span wire:loading wire:target="comprarPersonaje({{ $post->id }})">
                         Comprando...

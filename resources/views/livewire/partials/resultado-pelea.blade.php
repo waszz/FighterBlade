@@ -844,7 +844,7 @@
           @if(!empty($recompensas['diamante']))
           <p class="text-xl font-semibold flex items-center justify-center gap-2">
             <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="w-6 h-6">
-            <span style="color:#00ffff">{{ number_format($recompensas['diamante'] ?? 0) }}</span>
+            <span class="num-esmeralda">{{ number_format($recompensas['diamante'] ?? 0) }}</span>
             <span class="text-white">esmeraldas.</span>
           </p>
         

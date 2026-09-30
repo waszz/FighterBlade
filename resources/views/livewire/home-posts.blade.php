@@ -184,7 +184,7 @@
 
                     <div class="mt-3 flex justify-center gap-4 text-sm font-bold">
                         <span class="flex items-center gap-1 text-yellow-300"><img src="{{ asset('images/oro.png') }}" alt="" class="h-4 w-4">{{ number_format($personajeUsuario->oro ?? 0, 0, ',', '.') }}</span>
-                        <span class="flex items-center gap-1 text-cyan-300"><img src="{{ asset('images/diamante.png') }}" alt="" class="h-4 w-4">{{ number_format($personajeUsuario->diamante ?? 0, 0, ',', '.') }}</span>
+                        <span class="flex items-center gap-1"><img src="{{ asset('images/diamante.png') }}" alt="" class="h-4 w-4"><span class="num-esmeralda">{{ number_format($personajeUsuario->diamante ?? 0, 0, ',', '.') }}</span></span>
                     </div>
 
                     <a href="{{ route('juego.mostrar', ['personajeId' => $personajeUsuario->id]) }}"

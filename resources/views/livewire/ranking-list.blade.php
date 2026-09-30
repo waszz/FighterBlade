@@ -192,7 +192,7 @@
                 </div>
                 <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg {{ $caja3d }}">
                     <img src="{{ asset('images/diamante.png') }}" alt="Esmeralda" class="w-4 h-4">
-                    <span class="text-cyan-300">{{ number_format($personajeSeleccionadoModal->diamante ?? 0, 0, ',', '.') }}</span>
+                    <span class="num-esmeralda">{{ number_format($personajeSeleccionadoModal->diamante ?? 0, 0, ',', '.') }}</span>
                 </div>
             </div>
 

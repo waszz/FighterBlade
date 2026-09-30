@@ -21,6 +21,9 @@
 .lista-drops::-webkit-scrollbar { display: none; }
 
 /* Pelea: gifs teñidos del color del estado en que entró el personaje (ver partials/resultado-pelea) */
+/* Números de esmeraldas: verde (el mismo degradé del panel lateral) */
+.num-esmeralda { font-weight: 700; background-image: linear-gradient(to right, #6ee7b7, #34d399, #10b981); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(1px 1px 0 #000); }
+
 /* Nombre dorado de un jugador conectado (lo ven los demás; ver Personaje::claseNombre) */
 .nombre-conectado { color: #facc15 !important; text-shadow: 0 0 6px rgba(250, 204, 21, .65), 0 1px 0 #000; }
 

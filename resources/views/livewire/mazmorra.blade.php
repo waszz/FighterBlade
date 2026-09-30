@@ -41,7 +41,7 @@
                         wire:confirm="¿Comprar {{ M::ENERGIA_COMPRA }} de energía por {{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }} esmeraldas? (una vez por día)"
                         class="{{ $boton3d }} shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-black bg-gradient-to-b from-yellow-300 to-yellow-600">
                     ⚡ +{{ M::ENERGIA_COMPRA }} ·
-                    <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4">{{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }}
+                    <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4"><span class="num-esmeralda">{{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }}</span>
                 </button>
             @else
                 <span class="shrink-0 text-xs font-bold text-gray-400 text-center">Ya compraste energía hoy</span>
@@ -62,7 +62,7 @@
                     <ul class="text-xs text-gray-300 space-y-0.5 flex-1">
                         <li>Rivales {{ $dif['stats'] == 1 ? 'normales' : 'un ' . round(($dif['stats'] - 1) * 100) . '% más fuertes' }}</li>
                         <li>Oro <b class="text-yellow-300">×{{ $dif['premio'] }}</b></li>
-                        <li>Jefe: <b class="text-cyan-300">{{ $dif['esmeraldas'] }}</b> esmeraldas</li>
+                        <li>Jefe: <b class="num-esmeralda">{{ $dif['esmeraldas'] }}</b> esmeraldas</li>
                     </ul>
                     <button type="button" wire:click="elegir('{{ $clave }}')" wire:loading.attr="disabled" @disabled(! $puedeEntrar)
                             class="{{ $boton3d }} w-full py-2 text-white bg-gradient-to-b {{ $colorDificultad[$clave] }}">

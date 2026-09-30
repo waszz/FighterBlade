@@ -145,7 +145,7 @@
                             {{-- Oro y esmeraldas --}}
                             <div class="mt-1 grid grid-cols-2 gap-1 font-mono text-xs font-bold">
                                 <span class="flex items-center justify-center gap-1 py-0.5 rounded bg-black/50 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="" class="h-3.5">{{ number_format($lado['oferta']['oro'] ?? 0, 0, ',', '.') }}</span>
-                                <span class="flex items-center justify-center gap-1 py-0.5 rounded bg-black/50 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="" class="h-3.5">{{ number_format($lado['oferta']['diamante'] ?? 0, 0, ',', '.') }}</span>
+                                <span class="flex items-center justify-center gap-1 py-0.5 rounded bg-black/50 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="" class="h-3.5"><span class="num-esmeralda">{{ number_format($lado['oferta']['diamante'] ?? 0, 0, ',', '.') }}</span></span>
                             </div>
 
                             <p class="mt-1 text-center text-[11px] font-bold {{ $lado['listo'] ? 'text-emerald-300' : 'text-gray-400' }}">

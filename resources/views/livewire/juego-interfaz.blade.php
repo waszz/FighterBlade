@@ -313,7 +313,7 @@
                     <p class="truncate text-sm font-bold"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre }}</span> <span class="text-sky-300">Nv. {{ $personaje->nivel ?? 1 }}</span></p>
                     <p class="flex items-center justify-center gap-3 text-xs font-bold">
                         <span class="flex items-center gap-1 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="Oro" class="h-3.5">{{ number_format($personaje->oro, 0, ',', '.') }}</span>
-                        <span class="flex items-center gap-1 text-emerald-300"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5">{{ number_format($personaje->diamante, 0, ',', '.') }}</span>
+                        <span class="flex items-center gap-1"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5"><span class="num-esmeralda">{{ number_format($personaje->diamante, 0, ',', '.') }}</span></span>
                     </p>
                 </div>
                 {{-- Notificaciones del juego y transacciones --}}

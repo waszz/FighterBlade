@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {{ $diamantesSuficientes ? 'from-blue-500 to-blue-800 text-blue-50 cursor-pointer hover:brightness-110 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.5)]' : 'from-blue-300 to-blue-500 text-blue-100 opacity-50 cursor-not-allowed' }}"
                     @if($diamantesSuficientes) wire:click="resetearStats('diamante')" @endif>
                     <img src="{{ asset('images/diamante.png') }}" class="h-5 w-5" />
-                    <span class="text-sm font-semibold">{{ $costoEsmeraldas }} {{ $costoEsmeraldas === 1 ? "Esmeralda" : "Esmeraldas" }}</span>
+                    <span class="text-sm font-semibold"><span class="num-esmeralda">{{ $costoEsmeraldas }}</span> {{ $costoEsmeraldas === 1 ? "Esmeralda" : "Esmeraldas" }}</span>
                 </div>
             </div>
 

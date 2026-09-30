@@ -53,7 +53,7 @@
           <div class="flex items-center justify-center gap-1 mb-2 font-semibold text-sm">
               @if($moneda === 'diamante')
                   <span class="text-lg text-center"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"></span>
-                  <span class="text-blue-400 text-center">{{ number_format($pocion->precio) }}</span>
+                  <span class="num-esmeralda text-center">{{ number_format($pocion->precio) }}</span>
               @else
                   <span class="text-xs text-yellow-400 mb-2 mt-2 flex items-center gap-1 justify-center">
                       <img src="{{ asset('images/oro.png') }}" alt="Oro" class="w-4 h-4 inline-block" />

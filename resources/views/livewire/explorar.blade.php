@@ -28,7 +28,7 @@
                     bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),0_3px_0_#000]">
           📜 Misión {{ $misionVista->orden }}: {{ $enemigo->titulo }} <span class="text-gray-300">(Nv {{ $enemigo->nivel }})</span>
           <span class="text-yellow-300">· premio: {{ number_format($misionVista->recompensa_oro, 0, ',', '.') }} oro</span>
-          <span class="text-cyan-300">+ {{ $misionVista->recompensa_diamantes }} <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"></span>
+          <span>+ <span class="num-esmeralda">{{ $misionVista->recompensa_diamantes }}</span> <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"></span>
         </div>
       @endif
 
@@ -647,7 +647,7 @@
         </div>
         <div class="flex items-center justify-center gap-1.5 py-1 rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]">
           <img src="{{ asset('images/diamante.png') }}" alt="Esmeralda" class="w-4 h-4">
-          <span class="text-cyan-300">{{ number_format($personajeSeleccionadoModal->diamante ?? 0, 0, ',', '.') }}</span>
+          <span class="num-esmeralda">{{ number_format($personajeSeleccionadoModal->diamante ?? 0, 0, ',', '.') }}</span>
         </div>
       </div>
 

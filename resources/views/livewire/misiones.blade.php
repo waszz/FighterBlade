@@ -84,8 +84,8 @@
                             <span class="flex items-center gap-1 text-yellow-300 font-bold">
                                 <img src="{{ asset('images/oro.png') }}" alt="" class="h-3.5 w-3.5">{{ number_format($mision->recompensa_oro, 0, ',', '.') }}
                             </span>
-                            <span class="flex items-center gap-1 text-cyan-300 font-bold">
-                                <img src="{{ asset('images/diamante.png') }}" alt="" class="h-3.5 w-3.5">{{ $mision->recompensa_diamantes }}
+                            <span class="flex items-center gap-1 font-bold">
+                                <img src="{{ asset('images/diamante.png') }}" alt="" class="h-3.5 w-3.5"><span class="num-esmeralda">{{ $mision->recompensa_diamantes }}</span>
                             </span>
                             <span class="text-gray-400">+ exp</span>
                             @if (isset(\App\Support\RecompensasTorre::misionesConPremio()[$mision->id]) && ! $hecha)
