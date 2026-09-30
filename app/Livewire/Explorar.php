@@ -2306,6 +2306,7 @@ $defensaDefensor = ($statsDefensor['defensa'] ?? 0) * (1 + ($nivelDefensor * 0.0
 $esPersonajeDefensor = $nombreDefensor === $this->personaje->nombre;
 $poderesDefensor = $esPersonajeDefensor ? $this->personaje->poderes : ($this->enemigo->poderes ?? []);
 
+$dados = null; // dados del crítico contra la defensa (de este golpe)
 if ($tipoAtaque === 'defensa') {
     $danioFisicoFinal    = 0;
     $danioElementalFinal = 0;
@@ -2315,11 +2316,32 @@ if ($tipoAtaque === 'defensa') {
     $tipoAtaque          = 'bloqueo';
 
 } else {
-    // Contra los enemigos del juego: si el ataque no supera la defensa, se bloquea entero.
-    // En PvP no hay bloqueo total: la defensa reduce el daño en proporción (ver más abajo), así cuentan los stats
-    $puedeDefender = ! $this->esPvp && ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
+    // Si el ataque no supera la defensa, se bloquea entero (contra enemigos y en PvP, igual)
+    $puedeDefender = ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
 
-    if ($puedeDefender && $tipoAtaque !== 'critico') {
+    // El crítico se mide con la fuerza del que pega contra la defensa del que recibe: el que tenga claramente más
+    // gana; si están parejos (dentro del 10%), se tiran dados (1 a 6, si empatan se vuelven a tirar)
+    $dados = null;
+    if ($tipoAtaque === 'critico') {
+        $fuerzaCritico = $statsAtacante['fuerza'] ?? 0;
+        if ($fuerzaCritico > $defensaDefensor * 1.1) {
+            $puedeDefender = false;
+        } elseif ($defensaDefensor > $fuerzaCritico * 1.1) {
+            $puedeDefender = true;
+        } else {
+            do {
+                $dadoAtacante = random_int(1, 6);
+                $dadoDefensor = random_int(1, 6);
+            } while ($dadoAtacante === $dadoDefensor);
+            $puedeDefender = $dadoDefensor > $dadoAtacante;
+            $dados = [
+                'atacante' => $dadoAtacante, 'defensor' => $dadoDefensor,
+                'nombre_atacante' => $nombreAtacante, 'nombre_defensor' => $nombreDefensor,
+            ];
+        }
+    }
+
+    if ($puedeDefender) {
         $bloqueoPorDefensa   = true; // bloqueó un golpe: puede contraatacar (ver más abajo)
         $danioFisicoFinal    = 0;
         $danioElementalFinal = 0;
@@ -2339,15 +2361,6 @@ if ($tipoAtaque === 'defensa') {
         } else {
             $danioFisicoFinal = $this->aplicarReduccionDanioPorTipo($danios['fisico'], $poderesDefensor, 'fisico');
             $danioElementalFinal = 0;
-        }
-
-        // PvP: la defensa (que sube un poco con el nivel) baja el daño en proporción: daño × 100 / (100 + defensa).
-        // El crítico atraviesa la mitad de la defensa
-        if ($this->esPvp) {
-            $defensaEfectiva = ($statsDefensor['defensa'] ?? 0) * (1 + $nivelDefensor * 0.02) * ($tipoAtaque === 'critico' ? 0.5 : 1);
-            $factorDefensa   = 100 / (100 + max(0, $defensaEfectiva));
-            $danioFisicoFinal    = round($danioFisicoFinal * $factorDefensa);
-            $danioElementalFinal = round($danioElementalFinal * $factorDefensa);
         }
 
         $danioFinal     = $danioFisicoFinal + $danioElementalFinal;
@@ -2408,6 +2421,7 @@ if ($contraataqueOcurre) {
         'gif'              => $gifDefensaDefensor,
         'tipo_ataque'      => 'bloqueo',
         'texto_tipo_danio' => "$nombreDefensor bloquea el golpe.",
+        'dados'            => $dados ?? null, // crítico parejo con la defensa: los dados que se tiraron
     ];
 
     $res[] = [
@@ -2463,6 +2477,7 @@ if ($contraataqueOcurre) {
         'gif'              => $gif,
         'tipo_ataque'      => $tipoAtaque,
         'texto_tipo_danio' => $textoDanio,
+        'dados'            => $dados ?? null, // crítico parejo con la defensa: los dados que se tiraron
     ];
 
     // El rebote va como una acción aparte del que resistió (en la pantalla: su gif base y el de derrota del otro)

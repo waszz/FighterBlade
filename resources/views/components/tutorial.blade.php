@@ -35,6 +35,7 @@
         ]],
         ['Pelear', 'fa-khanda', [
             'Cuando aparece un enemigo elegís "Atacar" o "Huir". La pelea se juega sola, por rondas: los atributos, el tipo de daño y los poderes de cada uno deciden quién gana.',
+            'Defensa: si el ataque del rival no la supera, bloqueás el golpe. Los críticos se miden con su Fuerza: si la fuerza es claramente mayor entra, si tu defensa es claramente mayor lo bloqueás, y si están parejas se tiran dados.',
             'Con más de 30 de Defensa podés contraatacar (bloqueás el golpe y pegás): cuanta más defensa, más chance. Con más de 30 de Resistencia podés rebotar golpes (no recibís el daño y se lo rebotás entero al que te pegó): cuanta más resistencia, más chance.',
             'Después de cada pelea hay un tiempo de recuperación:',
             ['Explorando, en misiones y en la torre: 15 segundos si ganás y 1 minuto si perdés.', 'Contra jugadores (PvP): 10 segundos hasta el nivel 20 y 1 minuto desde el 21.', 'Si empatás: 5 segundos, siempre.', 'Podés saltearlo pagando oro con "Recuperar ya".'],

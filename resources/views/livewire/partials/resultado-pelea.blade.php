@@ -519,6 +519,19 @@
           @endif
           @endif
 
+          {{-- Crítico parejo con la defensa: se tiraron dados (el que pega gana si saca más) --}}
+          @if (! empty($res['dados']))
+          @php $dadosRonda = $res['dados']; $entroCritico = $dadosRonda['atacante'] > $dadosRonda['defensor']; @endphp
+          <div class="mx-auto mb-3 w-fit px-3 py-1.5 rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),0_2px_0_#000] text-center">
+            <p class="text-xs uppercase tracking-wide text-gray-400">Crítico parejo con la defensa: se tiran los dados</p>
+            <p class="text-lg font-bold">
+              🎲 <span class="text-indigo-300">{{ $dadosRonda['nombre_atacante'] }}</span> saca <span class="text-yellow-300">{{ $dadosRonda['atacante'] }}</span>
+              · <span class="text-indigo-300">{{ $dadosRonda['nombre_defensor'] }}</span> saca <span class="text-yellow-300">{{ $dadosRonda['defensor'] }}</span>
+            </p>
+            <p class="text-sm {{ $entroCritico ? 'text-red-400' : 'text-emerald-400' }}">{{ $entroCritico ? 'El crítico entra' : 'El crítico se bloquea' }}</p>
+          </div>
+          @endif
+
           {{-- Mostrar ataque si no fue bloqueado con contraataque (el rebote se muestra aparte, más abajo) --}}
           @if (!$bloqueadoYContra && !$esBloqueo && !$esContra && $tipoAtaque !== 'rebote' && !is_null($res['gif']))
           @php
