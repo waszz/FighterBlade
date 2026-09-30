@@ -526,6 +526,44 @@ public function getNombreAttribute()
         return true;
     }
 
+    // Rivales de misión (también pelean en la Torre): no tienen partes, así que la regla va en sus stats de pelea.
+    // Hay uno por nivel y la combinación rota en cada nivel (5 → la 1ª, 6 → la 2ª, 7 → la 3ª, 8 → la 1ª...).
+    // Cada stat conserva una base de 5 (como un jugador sin nada equipado) y el resto del total se reparte en partes
+    // iguales entre los stats de su tipo. El total no cambia.
+    const BASE_STAT_RIVAL = 5;
+
+    public function statsPorTipoRival(): ?array
+    {
+        $opciones = self::STATS_POR_TIPO[$this->tipo] ?? null;
+        if (! $opciones || (int) $this->es_enemigo !== self::RIVAL_MISION) {
+            return null;
+        }
+        $indice = ((int) $this->nivel - 5) % count($opciones);
+        return $opciones[$indice < 0 ? $indice + count($opciones) : $indice];
+    }
+
+    public function aplicarStatsPorTipoRival(): bool
+    {
+        $elegidos = $this->statsPorTipoRival();
+        if (! $elegidos) {
+            return false;
+        }
+        $orden = ['fuerza', 'resistencia', 'ataque', 'defensa', 'velocidad', 'energia'];
+        $actuales = is_array($this->stats) ? $this->stats : (json_decode($this->stats ?? '[]', true) ?: []);
+        $total = array_sum(array_map(fn ($v) => max(0, (int) $v), $actuales));
+
+        $base = min(self::BASE_STAT_RIVAL, intdiv($total, count($orden)));
+        $resto = $total - $base * count($orden);
+        $nuevos = array_fill_keys($orden, $base);
+        foreach ($elegidos as $i => $stat) {
+            $nuevos[$stat] += intdiv($resto, count($elegidos)) + ($i < $resto % count($elegidos) ? 1 : 0);
+        }
+
+        $this->stats = $nuevos;
+        $this->saveQuietly();
+        return true;
+    }
+
     // Stats para mostrar del set: lo que da el set completo equipado, la suma de sus 3 partes (solo los stats que da).
     // Si no tiene tipo o las partes no tienen nada cargado, los stats del set
     public function statsSetCompleto(): array

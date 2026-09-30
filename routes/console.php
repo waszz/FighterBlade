@@ -203,7 +203,16 @@ Artisan::command('sets:stats-por-tipo', function () {
         }
     }
     $this->info("Sets actualizados: $total");
-})->purpose('Sets: sus partes dan solo los stats de su tipo de daño, rotando por nivel');
+
+    // Rivales de misión (y de la Torre): sus stats de pelea (ver Post::aplicarStatsPorTipoRival)
+    $rivales = 0;
+    foreach (\App\Models\Post::conRivales()->where('es_enemigo', \App\Models\Post::RIVAL_MISION)->orderBy('nivel')->get() as $rival) {
+        if ($rival->aplicarStatsPorTipoRival()) {
+            $rivales++;
+        }
+    }
+    $this->info("Rivales de misión actualizados: $rivales");
+})->purpose('Sets y rivales de misión: solo los stats de su tipo de daño, rotando por nivel');
 
 // Hace admin a una cuenta (por su email): ve y edita todos los sets, noticias y ciudades, los haya creado quien sea.
 // Las pantallas de admin piden el email verificado: si no lo estaba, lo marca. Con --quitar la vuelve usuario normal.
