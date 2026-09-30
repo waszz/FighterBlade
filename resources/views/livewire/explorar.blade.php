@@ -186,6 +186,20 @@
       }
       $poderesLadoEnemigo = $enemigo ? ($this->gifsEnemigo()->poderes ?? collect()) : collect();
       $pildoraPoder = 'block px-2 py-1 rounded border border-black text-xs bg-gradient-to-b from-[#2f5470] to-[#0a1a26] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]';
+
+      // Si en la pelea entró en un estado (Frenesí, Trance...), su gif del escenario también se tiñe (como en las rondas).
+      // Solo con la pelea en pantalla: si aparece otro enemigo, los estados de la pelea anterior no cuentan
+      $claseEstadoEscena = [];
+      foreach (['personaje' => 'Personaje', 'enemigo' => 'Enemigo'] as $ladoEstado => $sufijoEstado) {
+          $claseEstadoEscena[$ladoEstado] = empty($resultadosRondas) ? '' : match (true) {
+              ! empty(${'poderActivoFrenesi' . $sufijoEstado}) => 'estado-frenesi',
+              ! empty(${'poderActivoFuriaCiega' . $sufijoEstado}) => 'estado-furia',
+              ! empty(${'poderActivoTrance' . $sufijoEstado}) => 'estado-trance',
+              ! empty(${'poderActivoSuperNova' . $sufijoEstado}) => 'estado-supernova',
+              ! empty(${'poderActivoSuperCarga' . $sufijoEstado}) => 'estado-supercarga',
+              default => '',
+          };
+      }
       @endphp
 
       <div class="w-full flex items-center justify-center gap-3">
@@ -220,7 +234,7 @@
         <div class="absolute bottom-1 left-0 sm:left-[8%] z-10">
           <img src="{{ asset('storage/' . $gifMostrar) }}" alt="Personaje {{ $personaje->nombre }}"
             style="{{ \App\Models\Post::estiloGif($gifMostrar) }}"
-            class="block max-w-none {{ $personaje->orientacion_gif === 'derecha' ? 'scale-x-[-1]' : '' }} {{ $personaje->claseAura() }}" />
+            class="block max-w-none {{ $personaje->orientacion_gif === 'derecha' ? 'scale-x-[-1]' : '' }} {{ $claseEstadoEscena['personaje'] ?: $personaje->claseAura() }}" />
         </div>
 
         {{-- Enemigo --}}
@@ -228,7 +242,7 @@
         <div class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1] cursor-pointer" wire:click="mostrarModalEnemigo">
           <img src="{{ asset('storage/' . ($this->gifEnemigo() ?? 'default_enemigo.gif')) }}"
             alt="Enemigo {{ $enemigo->nombre ?? $enemigo->titulo }}"
-            style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '' }}" />
+            style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $claseEstadoEscena['enemigo'] ?: ($enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '') }}" />
         </div>
         @endif
       </div> {{-- FIN overflow-hidden --}}

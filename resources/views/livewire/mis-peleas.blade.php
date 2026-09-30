@@ -34,6 +34,18 @@
       // Tipo de daño de cada uno en esa pelea (las viejas no lo guardaron: el del set con el que peleó)
       $tipoRepPj = $datosRep['tipo_personaje'] ?? $repeticion['postPjRepeticion']?->tipo;
       $tipoRepEn = $datosRep['tipo_enemigo'] ?? $repeticion['postEnRepeticion']?->tipo;
+      // Si en esa pelea entró en un estado (Frenesí, Trance...), su gif del escenario se tiñe (como en las rondas)
+      $claseEstadoRep = [];
+      foreach (['personaje' => 'Personaje', 'enemigo' => 'Enemigo'] as $ladoEstado => $sufijoEstado) {
+          $claseEstadoRep[$ladoEstado] = match (true) {
+              ! empty($repeticion['poderActivoFrenesi' . $sufijoEstado]) => 'estado-frenesi',
+              ! empty($repeticion['poderActivoFuriaCiega' . $sufijoEstado]) => 'estado-furia',
+              ! empty($repeticion['poderActivoTrance' . $sufijoEstado]) => 'estado-trance',
+              ! empty($repeticion['poderActivoSuperNova' . $sufijoEstado]) => 'estado-supernova',
+              ! empty($repeticion['poderActivoSuperCarga' . $sufijoEstado]) => 'estado-supercarga',
+              default => '',
+          };
+      }
     @endphp
 
     {{-- Encabezado: quién contra quién y resultado --}}
@@ -73,7 +85,7 @@
       @endif
       @if ($gifPjRep)
         <div class="absolute bottom-1 left-[3%] sm:left-[8%] z-10">
-          <img src="{{ asset('storage/' . $gifPjRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifPjRep) }}" class="block max-w-none">
+          <img src="{{ asset('storage/' . $gifPjRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifPjRep) }}" class="block max-w-none {{ $claseEstadoRep['personaje'] }}">
         </div>
       @endif
       <div class="absolute top-[62%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
@@ -81,7 +93,7 @@
       </div>
       @if ($gifEnRep)
         <div class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
-          <img src="{{ asset('storage/' . $gifEnRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifEnRep) }}" class="block max-w-none">
+          <img src="{{ asset('storage/' . $gifEnRep) }}" alt="" style="{{ \App\Models\Post::estiloGif($gifEnRep) }}" class="block max-w-none {{ $claseEstadoRep['enemigo'] }}">
         </div>
       @endif
     </div>
