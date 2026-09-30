@@ -1033,7 +1033,7 @@ public function colorBarraPorStat($valor)
                     if (! in_array($stats['afecta'] ?? '', ['recuperacion', 'drop_partes'], true)) {
                         if ($usosRestantes > 0) {
                             $stats['usos_restantes'] = $usosRestantes - 1;
-                            $objeto->stats           = json_encode($stats);
+                            $objeto->stats           = $stats;
 
                             if ($usosRestantes <= 1) {
                                 $objeto->delete();
@@ -1097,9 +1097,17 @@ public function colorBarraPorStat($valor)
                 if ($objeto) {
                     $stats = is_array($objeto->stats) ? $objeto->stats : json_decode($objeto->stats, true);
                     if (($stats['afecta'] ?? '') === 'drop_partes') {
-                        $this->personaje->objeto_consumible_id = null;
-                        $this->personaje->save();
-                        $objeto->delete();
+                        // Gasta un uso; con el último se termina
+                        $usosRestantes = (int) ($stats['usos_restantes'] ?? 1);
+                        if ($usosRestantes <= 1) {
+                            $this->personaje->objeto_consumible_id = null;
+                            $this->personaje->save();
+                            $objeto->delete();
+                        } else {
+                            $stats['usos_restantes'] = $usosRestantes - 1;
+                            $objeto->stats           = $stats;
+                            $objeto->save();
+                        }
                     }
                 }
             }
@@ -1136,7 +1144,7 @@ public function colorBarraPorStat($valor)
                             $usarPocionRecuperacion = true;
 
                             $stats['usos_restantes'] = $usosRestantes - 1;
-                            $objeto->stats           = json_encode($stats);
+                            $objeto->stats           = $stats;
 
                             if ($usosRestantes <= 1) {
                                 $objeto->delete();
@@ -3712,6 +3720,11 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         if ($drop && ! $this->personaje->tieneLugar()) {
             $this->dispatch('error', ['message' => '🎒 Inventario lleno: se perdió ' . ($drop['nombre'] ?? 'el objeto') . '. Hacé lugar o comprá más lugares.']);
             $drop = null;
+        }
+
+        // Las pociones salen con sus 5 usos (así también se ve 5/5 en el resultado de la pelea)
+        if ($drop && ($drop['tipo'] ?? '') === 'pocion') {
+            $drop['stats'] = Objeto::conUsosDePocion($drop['stats'] ?? []);
         }
 
         // Crear el objeto en BD si hay drop
