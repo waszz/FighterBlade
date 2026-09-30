@@ -170,15 +170,15 @@
         </h4>
      
 
-        @if($poderesPersonaje->isNotEmpty())
         <div class="flex flex-wrap justify-start gap-1.5">
-          @foreach($poderesPersonaje as $poder)
+          {{-- Tipo de daño con el que peleó y sus poderes --}}
+          <x-icono-tipo :tipo="$tipoVistaPersonaje" tam="w-10 h-10" />
+          @forelse($poderesPersonaje as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" />
-          @endforeach
+          @empty
+          <p class="text-gray-400 italic self-center">Sin poderes</p>
+          @endforelse
         </div>
-        @else
-        <p class="text-gray-400 text-center italic">Sin poderes activos</p>
-        @endif
       </div>
 
       {{-- Poderes enemigo --}}
@@ -188,15 +188,14 @@
           <span class="block text-yellow-400">{{ $nombreEnemigo }}</span>
         </h4>
      
-        @if($poderesEnemigo->isNotEmpty())
         <div class="flex flex-wrap justify-end gap-1.5">
-          @foreach($poderesEnemigo as $poder)
+          <x-icono-tipo :tipo="$tipoVistaEnemigo" tam="w-10 h-10" />
+          @forelse($poderesEnemigo as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" />
-          @endforeach
+          @empty
+          <p class="text-gray-400 italic self-center">Sin poderes</p>
+          @endforelse
         </div>
-        @else
-        <p class="text-gray-400 text-center italic">Sin poderes activos</p>
-        @endif
       </div>
     </div>
 

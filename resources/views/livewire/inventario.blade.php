@@ -923,8 +923,13 @@
           };
           @endphp
 
-          <p class="text-xs font-semibold {{ $colorClase }} mb-1">
-            {{ ucfirst($tipoPost) }}
+          {{-- Partes: el icono del tipo de daño del set (el nombre aparece al tocarlo). Joyas y cofres: el texto --}}
+          <p class="text-xs font-semibold {{ $colorClase }} mb-1 flex justify-center">
+            @if (in_array(strtolower($tipoPost), ['fisico', 'elemental', 'hibrido'], true))
+              <x-icono-tipo :tipo="$tipoPost" tam="w-8 h-8" />
+            @else
+              {{ ucfirst($tipoPost) }}
+            @endif
           </p>
 
           @php

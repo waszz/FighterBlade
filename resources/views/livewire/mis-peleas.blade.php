@@ -31,6 +31,9 @@
       $poderesRepEn = $poderesPorNombre($datosRep['poderes_enemigo'] ?? []);
       $nombrePjRep = $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre;
       $nombreEnRep = $repeticion['pelea']->nombreRival();
+      // Tipo de daño de cada uno en esa pelea (las viejas no lo guardaron: el del set con el que peleó)
+      $tipoRepPj = $datosRep['tipo_personaje'] ?? $repeticion['postPjRepeticion']?->tipo;
+      $tipoRepEn = $datosRep['tipo_enemigo'] ?? $repeticion['postEnRepeticion']?->tipo;
     @endphp
 
     {{-- Encabezado: quién contra quién y resultado --}}
@@ -52,6 +55,9 @@
     <aside class="hidden md:flex w-36 shrink-0 flex-col items-end gap-1.5 text-right text-white">
       <p class="text-sm font-semibold leading-tight [text-shadow:0_2px_0_#000]">Poderes de<br><span class="text-yellow-400">{{ $nombrePjRep }}</span></p>
       <div class="flex flex-wrap justify-end gap-1.5">
+        @if ($tipoRepPj)
+          <x-icono-tipo :tipo="$tipoRepPj" tam="w-10 h-10" class="cursor-pointer" />
+        @endif
         @forelse ($poderesRepPj as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" class="cursor-pointer" />
         @empty
@@ -82,6 +88,9 @@
     <aside class="hidden md:flex w-36 shrink-0 flex-col items-start gap-1.5 text-left text-white">
       <p class="text-sm font-semibold leading-tight [text-shadow:0_2px_0_#000]">Poderes de<br><span class="text-yellow-400">{{ $nombreEnRep }}</span></p>
       <div class="flex flex-wrap justify-start gap-1.5">
+        @if ($tipoRepEn)
+          <x-icono-tipo :tipo="$tipoRepEn" tam="w-10 h-10" class="cursor-pointer" />
+        @endif
         @forelse ($poderesRepEn as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" class="cursor-pointer" />
         @empty

@@ -194,6 +194,10 @@
       <aside class="hidden md:flex w-36 shrink-0 flex-col items-end gap-1.5 text-right text-white">
         <p class="text-sm font-semibold leading-tight [text-shadow:0_2px_0_#000]">Poderes de<br><span class="text-yellow-400">{{ $personaje->nombre }}</span></p>
         <div class="flex flex-wrap justify-end gap-1.5">
+        {{-- Tipo de daño con el que pelea (el del set completo equipado o el base) --}}
+        @if ($tipoLadoPersonaje = $personaje->postDeCombate()?->tipo)
+          <x-icono-tipo :tipo="$tipoLadoPersonaje" tam="w-10 h-10" />
+        @endif
         @forelse ($poderesLadoPersonaje as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" />
         @empty
@@ -234,6 +238,9 @@
       <aside class="hidden md:flex w-36 shrink-0 flex-col items-start gap-1.5 text-left text-white">
         <p class="text-sm font-semibold leading-tight [text-shadow:0_2px_0_#000]">Poderes de<br><span class="text-yellow-400">{{ $enemigo->nombre ?? $enemigo->titulo }}</span></p>
         <div class="flex flex-wrap justify-start gap-1.5">
+        @if ($tipoLadoEnemigo = $this->gifsEnemigo()?->tipo ?? $enemigo->tipo ?? null)
+          <x-icono-tipo :tipo="$tipoLadoEnemigo" tam="w-10 h-10" />
+        @endif
         @forelse ($poderesLadoEnemigo as $poder)
           <x-icono-poder :poder="$poder" tam="w-10 h-10" />
         @empty
