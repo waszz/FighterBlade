@@ -1631,9 +1631,9 @@ protected function obtenerPoderesAnulados($combatiente)
                 return 'especial';
             } elseif (($stats['fuerza'] ?? 0) > 30 && rand(0, 100) < 40) {
                 return 'critico';
-            } elseif (($stats['defensa'] ?? 0) > 30 && rand(0, 100) < 30) {
-                return 'defensa';
             }
+            // La defensa ya no hace perder el turno (antes, con más de 30, el 30% de los turnos se quedaba en guardia
+            // sin atacar): trabaja cuando le pegan, con el bloqueo y el contraataque
             return 'normal';
         };
 
