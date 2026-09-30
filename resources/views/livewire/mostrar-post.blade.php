@@ -16,7 +16,8 @@
         'gif_derrota'  => 'Derrota',
     ];
 
-    $stats = $post->stats ?? [];
+    // Lo que da el set completo equipado (la suma de sus 3 partes), igual que en el juego
+    $stats = $post->statsSetCompleto();
     $ordenStats = ['fuerza', 'ataque', 'energia', 'velocidad', 'defensa', 'resistencia'];
     $maxStat = max(1, max($stats ?: [1]));
 
@@ -150,7 +151,7 @@
             {{-- Stats --}}
             <section>
                 <h2 class="text-lg font-semibold text-gray-800 mb-3">
-                    Stats <span class="text-sm font-normal text-gray-500">(total {{ array_sum($stats) }})</span>
+                    Stats del set completo <span class="text-sm font-normal text-gray-500">(total {{ array_sum($stats) }})</span>
                 </h2>
                 <div class="grid sm:grid-cols-2 gap-x-6 gap-y-2">
                     @foreach ($ordenStats as $stat)
