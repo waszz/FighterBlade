@@ -2320,6 +2320,7 @@ if ($tipoAtaque === 'defensa') {
     $puedeDefender = ! $this->esPvp && ($statsAtacante['ataque'] ?? 0) <= $defensaDefensor;
 
     if ($puedeDefender && $tipoAtaque !== 'critico') {
+        $bloqueoPorDefensa   = true; // bloqueó un golpe: puede contraatacar (ver más abajo)
         $danioFisicoFinal    = 0;
         $danioElementalFinal = 0;
         $danioFinal          = 0;
@@ -2360,10 +2361,12 @@ if ($tipoAtaque === 'defensa') {
     }
 }
 
-// Contraataque: la chance sale de la defensa del que recibe el golpe, si tiene más de 30 (ver CONTRA_POR_DEFENSA)
+// Contraataque: la chance sale de la defensa del que recibe el golpe, si tiene más de 30 (ver CONTRA_POR_DEFENSA).
+// Puede salir cuando el golpe le hace daño o cuando lo bloqueó con la defensa (no en la guardia de su propio turno)
 $defensaContra = $statsDefensor['defensa'] ?? 0;
 $chanceContraataque = $defensaContra > self::MINIMO_CONTRA_REBOTE ? min(self::CONTRA_TOPE, $defensaContra * self::CONTRA_POR_DEFENSA) : 0;
-$contraataqueOcurre = mt_rand(1, 10000) <= $chanceContraataque * 100 && $danioFinal > 0;
+$contraataqueOcurre = mt_rand(1, 10000) <= $chanceContraataque * 100 && ($danioFinal > 0 || ! empty($bloqueoPorDefensa));
+$bloqueoPorDefensa = false;
 
 if ($contraataqueOcurre) {
     $daniosContraataque = $calcularContraataque($tipoDefensor, $statsDefensor, $nivelDefensor, $nombreDefensor, $poderesDefensor);
