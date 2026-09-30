@@ -6,6 +6,45 @@
     $costoTeleport = \App\Livewire\Viajar::COSTO_TELEPORT;
     $rarezas = \App\Models\Caza::RAREZAS;
 
+    // "Cómo repartir tus puntos": qué atributo aprovecha cada poder. Sale de Post::AFINIDAD_PODERES, de los SUPER
+    // (PoderesStats::MULTIPLICAR) y de los poderes que optimizan stats (sus modificadores); se guarda 1 hora
+    $abrevAtributo = ['ataque' => 'Ataque', 'fuerza' => 'Fuerza', 'energia' => 'Energía', 'velocidad' => 'Velocidad', 'defensa' => 'Defensa', 'resistencia' => 'Resistencia'];
+    $poderesPorAtributo = cache()->remember('tutorial-poderes-por-atributo', 3600, function () use ($abrevAtributo) {
+        $afinidad = \App\Models\Post::AFINIDAD_PODERES;
+        foreach (\App\Support\PoderesStats::MULTIPLICAR as $nombre => $stat) {
+            $afinidad[$nombre] = [$stat];
+        }
+        foreach (\App\Models\Poder::all() as $poder) {
+            $mods = is_array($poder->modificadores) ? $poder->modificadores : (json_decode($poder->modificadores ?? '[]', true) ?: []);
+            foreach ($mods as $mod) {
+                if (($mod['tipo'] ?? '') === 'optimizar_stats' && ! empty($mod['stats'])) {
+                    $afinidad[mb_strtoupper($poder->nombre)] = $mod['stats'];
+                }
+            }
+        }
+        $porAtributo = array_fill_keys(array_keys($abrevAtributo), []);
+        foreach ($afinidad as $nombre => $stats) {
+            foreach ($stats as $stat) {
+                if (isset($porAtributo[$stat])) {
+                    $porAtributo[$stat][] = mb_convert_case(mb_strtolower($nombre), MB_CASE_TITLE);
+                }
+            }
+        }
+        return array_map(fn ($lista) => array_values(array_unique($lista)), $porAtributo);
+    });
+    $listaPoderesPorAtributo = [];
+    foreach ($poderesPorAtributo as $stat => $poderes) {
+        if ($poderes) {
+            sort($poderes);
+            $listaPoderesPorAtributo[] = $abrevAtributo[$stat] . ': ' . implode(', ', $poderes) . '.';
+        }
+    }
+    $contraPorDefensa = str_replace('.', ',', (string) \App\Livewire\Explorar::CONTRA_POR_DEFENSA);
+    $topeContra = \App\Livewire\Explorar::CONTRA_TOPE;
+    $topeRebote = \App\Livewire\Explorar::REBOTE_TOPE;
+    $rebotePorResistencia = str_replace('.', ',', (string) \App\Livewire\Explorar::REBOTE_POR_RESISTENCIA);
+    $minimoContraRebote = \App\Livewire\Explorar::MINIMO_CONTRA_REBOTE;
+
     // [título, ícono, [párrafos o listas]]. Un string es un párrafo; un array es una lista de puntos
     $temas = [
         ['¡Bienvenido!', 'fa-hand-fist', [
@@ -50,6 +89,27 @@
             'Cada set tiene un tipo de daño (físico, elemental o híbrido) y uno o más poderes.',
             'Los poderes pueden aumentar tu daño, curarte, dejar al rival aturdido, congelado, envenenado o quemado, acortar los viajes y mucho más.',
             'En todo el juego, tocando o pasando el mouse por el ícono de un poder ves su nombre y qué hace.',
+        ]],
+        ['Cómo repartir tus puntos', 'fa-list-check', [
+            'Qué hace cada atributo en la pelea (los puntos amarillos de tus partes, tu joya y tus poderes también cuentan):',
+            [
+                'Ataque: la base de todo tu daño. Si no supera la defensa del rival, el golpe se bloquea (el ataque y la defensa suben un 3% por nivel).',
+                'Fuerza: suma daño físico. Con más de 30, 40% de golpes críticos: el crítico se mide contra la defensa del rival y, si están parejas, se tiran dados.',
+                'Energía: suma daño elemental.',
+                'Velocidad: decide quién pega primero (velocidad + nivel). Con más de 30, 40% de movimientos especiales.',
+                "Defensa: bloquea los golpes que no la superan. Con más de {$minimoContraRebote}, podés contraatacar (defensa × {$contraPorDefensa} % de chance, hasta {$topeContra}%), también cuando bloqueás.",
+                "Resistencia: con más de {$minimoContraRebote}, podés rebotar golpes: no recibís el daño y se lo devolvés entero al que te pegó (resistencia × {$rebotePorResistencia} % de chance, hasta {$topeRebote}%).",
+            ],
+            'Según el tipo de daño de tu set (lo ves en tu panel):',
+            [
+                'Físico: Ataque y Fuerza. La Energía no te sirve para pegar.',
+                'Elemental: Ataque y Energía. La Fuerza no te sirve para pegar (solo para los críticos).',
+                'Híbrido: Ataque, Fuerza y Energía. Pega físico y elemental a la vez (65% de cada uno).',
+                'En los tres: un poco de Velocidad para pegar primero, y Defensa o Resistencia si querés aguantar y devolver golpes.',
+            ],
+            'Según tus poderes, conviene sumarle a:',
+            $listaPoderesPorAtributo,
+            'Ojo con los requisitos: cada parte de un set pide un mínimo de un atributo para equiparla (en Mis Personajes ves cuál).',
         ]],
         ['Inventario', 'fa-bag-shopping', [
             'Tocando un objeto de tu inventario podés:',
