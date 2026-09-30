@@ -412,7 +412,7 @@
         @endif
 
         @if ($gifAtaque)
-        <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
+        <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4 {{ $tipoAtaque === 'critico' ? 'fondo-critico' : ($tipoAtaque === 'especial' ? 'fondo-especial' : '') }}">
           <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque ronda 6"
             style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$atacante] ?? '' }}">
         </div>
@@ -467,7 +467,7 @@
           </p>
 
           @if ($gifAtaque)
-          <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
+          <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4 {{ $tipoAtaque === 'critico' ? 'fondo-critico' : ($tipoAtaque === 'especial' ? 'fondo-especial' : '') }}">
             <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque ronda 6"
               style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$atacante] ?? '' }}">
           </div>
@@ -545,7 +545,7 @@
           @endphp
 
           @if ($gifAtaque)
-          <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4">
+          <div class="flex justify-center items-end w-full min-h-[160px] overflow-hidden mt-2 mb-4 {{ $tipoAtaque === 'critico' ? 'fondo-critico' : ($tipoAtaque === 'especial' ? 'fondo-especial' : '') }}">
             <img src="{{ asset('storage/' . $gifAtaque) }}" alt="Gif ataque"
               style="{{ \App\Models\Post::estiloGif($gifAtaque) }}" class="block max-w-none {{ $claseFlip }} {{ $claseEstado[$res['atacante']] ?? '' }}">
           </div>
