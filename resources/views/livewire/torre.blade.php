@@ -55,7 +55,9 @@
                     <img src="{{ asset('storage/posts/' . $piso->escenario) }}" alt="" loading="lazy"
                          class="absolute inset-0 w-full h-full object-cover {{ $bloqueado ? 'grayscale brightness-[0.35]' : 'brightness-[0.55]' }}">
 
-                    <div class="relative flex items-center gap-3 p-2">
+                    {{-- Tocando la card (no el botón ni los iconos) se abre el modal del rival --}}
+                    <div class="relative flex items-center gap-3 p-2 {{ $bloqueado ? '' : 'cursor-pointer' }}"
+                         @unless ($bloqueado) x-on:click="if (! $event.target.closest('button, [tabindex]')) $wire.verRival({{ $piso->piso }})" title="Ver rival" @endunless>
                         {{-- Número de piso --}}
                         <div class="w-12 shrink-0 text-center">
                             <p class="text-[10px] uppercase text-gray-300 leading-none">Piso</p>
@@ -93,7 +95,7 @@
                             @if ($superadoPiso)
                                 <span class="px-2 py-1 rounded-lg text-xs font-bold text-emerald-200 bg-emerald-900/70 border border-emerald-600">✔ Superado</span>
                             @elseif ($esActual)
-                                <button wire:click="subir" wire:loading.attr="disabled" x-bind:disabled="recup > 0 || {{ $puedeEntrar ? 'false' : 'true' }}"
+                                <button wire:click.stop="subir" wire:loading.attr="disabled" x-bind:disabled="recup > 0 || {{ $puedeEntrar ? 'false' : 'true' }}"
                                         x-bind:title="recup > 0 ? 'Te estás recuperando' : ''"
                                         class="px-4 py-2 rounded-lg border border-black font-bold text-white bg-gradient-to-b from-violet-500 to-violet-800
                                                shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all
@@ -111,4 +113,6 @@
             @endif
         </div>
     </div>
+
+    @include('livewire.partials.modal-rival')
 </div>

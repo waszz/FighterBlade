@@ -11,10 +11,21 @@ use Livewire\Component;
 class Torre extends Component
 {
     public $personajeId;
+    // Piso cuyo rival se ve en el modal (tocando su card)
+    public $rivalModalId = null;
 
     public function mount($personaje)
     {
         $this->personajeId = $personaje->id;
+    }
+
+    // Modal del rival: solo de los pisos superados o del actual (los de más arriba siguen siendo "???")
+    public function verRival($piso)
+    {
+        $personaje = Personaje::find($this->personajeId);
+        if ($personaje && (int) $piso >= 1 && (int) $piso <= (int) ($personaje->torre_piso ?? 0) + 1) {
+            $this->rivalModalId = (int) $piso;
+        }
     }
 
     // Pelear contra el rival del piso que le toca
@@ -92,7 +103,12 @@ class Torre extends Component
         $hasta = min($total, $actual + 6);
         $pisos = TorrePiso::with('rival.poderes')->whereBetween('piso', [$desde, $hasta])->orderByDesc('piso')->get();
 
+        $pisoModal = $this->rivalModalId ? TorrePiso::with('rival.poderes')->where('piso', $this->rivalModalId)->first() : null;
+
         return view('livewire.torre', [
+            'rivalModal'      => $pisoModal?->rival,
+            'escenarioModal'  => $pisoModal?->escenario,
+            'statsRivalModal' => $pisoModal?->rival ? Explorar::statsRivalMisionTorre($pisoModal->rival) : [],
             'personaje'    => $personaje,
             'pisos'        => $pisos,
             'superado'     => $superado,

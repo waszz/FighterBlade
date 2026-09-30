@@ -49,7 +49,9 @@
                      class="absolute inset-0 w-full h-full object-cover {{ $bloqueada ? 'opacity-20 grayscale' : 'opacity-40' }}">
                 <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/80"></div>
 
-                <div class="relative flex items-center gap-3 p-2 w-full">
+                {{-- Tocando la card (no el botón) se abre el modal del rival --}}
+                <div class="relative flex items-center gap-3 p-2 w-full {{ $bloqueada ? '' : 'cursor-pointer' }}"
+                     @unless ($bloqueada) wire:click="verRival({{ $mision->id }})" title="Ver rival" @endunless>
                     {{-- Número --}}
                     <div class="w-10 shrink-0 text-center text-lg font-extrabold {{ $esSiguiente ? 'text-amber-300' : ($hecha ? 'text-green-400' : 'text-gray-500') }} [text-shadow:0_2px_0_#000]">
                         {{ $mision->orden }}
@@ -97,7 +99,7 @@
                         @if ($hecha)
                             <span class="text-green-400 font-bold text-sm">✅ Completada</span>
                         @elseif ($esSiguiente)
-                            <button wire:click="pelear({{ $mision->id }})" wire:loading.attr="disabled" x-bind:disabled="recup > 0"
+                            <button wire:click.stop="pelear({{ $mision->id }})" wire:loading.attr="disabled" x-bind:disabled="recup > 0"
                                 class="{{ $boton3d }} w-full px-3 py-2 bg-gradient-to-b from-red-500 to-red-800 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                                 ⚔️ Pelear
                             </button>
@@ -109,4 +111,6 @@
             </div>
         @endforeach
     </div>
+
+    @include('livewire.partials.modal-rival')
 </div>

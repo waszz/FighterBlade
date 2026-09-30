@@ -11,10 +11,22 @@ use Livewire\Component;
 class Misiones extends Component
 {
     public $personajeId;
+    // Misión cuyo rival se ve en el modal (tocando su card)
+    public $rivalModalId = null;
 
     public function mount($personaje)
     {
         $this->personajeId = $personaje->id;
+    }
+
+    // Modal del rival: solo de las misiones ya ganadas o de la siguiente (las bloqueadas siguen siendo "???")
+    public function verRival($misionId)
+    {
+        $siguiente = Mision::siguientePara($this->personajeId);
+        $hecha = DB::table('mision_personaje')->where('personaje_id', $this->personajeId)->where('mision_id', $misionId)->exists();
+        if ($hecha || ($siguiente && $siguiente->id == $misionId)) {
+            $this->rivalModalId = (int) $misionId;
+        }
     }
 
     // Pelear contra el rival de la siguiente misión de la escalera
@@ -82,8 +94,12 @@ class Misiones extends Component
     {
         $completadas = DB::table('mision_personaje')->where('personaje_id', $this->personajeId)->pluck('mision_id')->all();
         $siguiente = Mision::siguientePara($this->personajeId);
+        $misionModal = $this->rivalModalId ? Mision::with('rival.poderes')->find($this->rivalModalId) : null;
 
         return view('livewire.misiones', [
+            'rivalModal'      => $misionModal?->rival,
+            'escenarioModal'  => $misionModal?->escenario,
+            'statsRivalModal' => $misionModal?->rival ? Explorar::statsRivalMisionTorre($misionModal->rival) : [],
             'recuperacion' => Personaje::find($this->personajeId)?->segundosRecuperacion() ?? 0,
             'misiones'    => Mision::with('rival.poderes')->orderBy('orden')->get(),
             'completadas' => array_flip($completadas),

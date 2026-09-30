@@ -66,6 +66,20 @@ class Explorar extends Component
         return ($base + 5 * max(1, $nivel) * $fraccion) / $base;
     }
 
+    // Stats con los que pelea un rival de Misión o Torre: los del set reforzados como un jugador equipado de su nivel,
+    // más sus poderes que suben stats (la misma cuenta que hace la pelea). Los usan los modales de Misiones y Torre
+    public static function statsRivalMisionTorre(Post $rival): array
+    {
+        $stats  = Personaje::decodificarStats($rival->stats);
+        $factor = self::refuerzoRivalMisionTorre((int) ($rival->nivel ?? 1));
+        foreach ($stats as $stat => $valor) {
+            if (is_numeric($valor)) {
+                $stats[$stat] = (int) round($valor * $factor);
+            }
+        }
+        return \App\Support\PoderesStats::aplicar($stats, $rival->poderes ?? collect());
+    }
+
     const EXP_POR_NIVEL = [
         [1, 25, 0.03],
         [26, 49, 0.02],
