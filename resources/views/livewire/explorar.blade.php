@@ -251,6 +251,12 @@
           <img src="{{ $gifComerciante ? asset('storage/' . $gifComerciante) : asset('images/comerciante/khonshu.gif') }}" alt="El Comerciante Khonshu"
             style="{{ $gifComerciante ? \App\Models\Post::estiloGif($gifComerciante) : '' }}" class="block max-w-none [filter:drop-shadow(0_0_8px_rgba(250,204,21,0.45))]" />
         </div>
+        {{-- Lo que dice, en un globo arriba de él --}}
+        <div class="absolute top-2 right-2 sm:right-[5%] z-20 max-w-[62%] sm:max-w-[48%] rounded-lg border-2 border-black bg-[#fdf6e3] px-2.5 py-1.5 text-left text-black shadow-[0_3px_0_#000]">
+          <p class="text-[10px] font-extrabold uppercase tracking-wide text-amber-700">El Comerciante Khonshu</p>
+          <p class="text-xs sm:text-sm italic leading-snug">“{{ $personaje->comerciante_oferta['saludo'] ?? '' }}”</p>
+          <span class="absolute -bottom-2 right-10 w-3 h-3 rotate-45 bg-[#fdf6e3] border-r-2 border-b-2 border-black"></span>
+        </div>
         @endif
       </div> {{-- FIN overflow-hidden --}}
 

@@ -31,7 +31,7 @@
                 </div>
                 <div class="flex-1 min-w-0 flex flex-col">
                     <p class="text-xs font-semibold {{ $esBienvenida ? 'text-emerald-700' : ($esComerciante ? 'text-amber-700' : 'text-indigo-700') }}">
-                        {{ $esBienvenida ? '⭐ Enemigo de bienvenida' : ($esComerciante ? '💰 Comerciante · aparece al explorar: ' . ($post->chance_aparicion ?? \App\Support\Comerciante::CHANCE) . '%' : '📜 Misión ' . $post->orden_mision) }}
+                        {{ $esBienvenida ? '⭐ Enemigo de bienvenida' : ($esComerciante ? 'Comerciante · aparece al explorar: ' . ($post->chance_aparicion ?? \App\Support\Comerciante::CHANCE) . '%' : '📜 Misión ' . $post->orden_mision) }}
                     </p>
                     <a href="{{ route('posts.show', $post->id) }}" class="text-lg font-bold text-gray-800 hover:underline truncate">{{ $post->titulo }}</a>
                     <p class="text-xs text-gray-600 flex items-center gap-2">

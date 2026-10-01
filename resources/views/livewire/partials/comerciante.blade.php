@@ -11,7 +11,7 @@
         <img src="{{ asset('images/comerciante/khonshu.gif') }}" alt="" class="w-12 h-14 shrink-0 object-contain object-bottom [image-rendering:pixelated]">
         <div class="relative flex-1 rounded-lg border-2 border-black bg-[#fdf6e3] px-3 py-2 text-black shadow-[0_3px_0_#000]">
             <span class="absolute -left-2 top-4 w-3 h-3 rotate-45 bg-[#fdf6e3] border-l-2 border-b-2 border-black"></span>
-            <p class="text-xs font-extrabold text-amber-700 uppercase tracking-wide">💰 El Comerciante Khonshu</p>
+            <p class="text-xs font-extrabold text-amber-700 uppercase tracking-wide">El Comerciante Khonshu</p>
             <p class="text-sm italic">“{{ $oferta['saludo'] ?? '' }}”</p>
             <p class="mt-1 text-[11px] text-gray-600">Partes de los sets de esta zona. {{ $quedan ? 'Me quedan ' . $quedan . '.' : '¡Me dejaste sin nada!' }}</p>
         </div>
@@ -37,7 +37,7 @@
                     <p class="text-[10px] text-purple-400 italic">Requisitos: {{ collect($parte['requisitos'])->map(fn ($v, $s) => $v . ' ' . ($abrev[$s] ?? strtoupper(substr($s, 0, 3))))->join(', ') }}</p>
                 @endif
                 @if ($parte['comprada'])
-                    <span class="mt-auto w-full py-1 rounded-lg text-xs font-bold text-emerald-300 bg-black/40 border border-emerald-700">✔ Comprada</span>
+                    <span class="mt-auto w-full py-1 rounded-lg text-xs font-bold text-emerald-300 bg-black/40 border border-emerald-700">Comprada</span>
                 @else
                     <button type="button" wire:click="comprarAlComerciante({{ $i }})" wire:loading.attr="disabled"
                             class="mt-auto w-full py-1 rounded-lg border border-black text-xs font-bold text-white bg-gradient-to-b from-green-500 to-green-800 flex items-center justify-center gap-1
@@ -54,10 +54,10 @@
         @if ($quedan)
             <x-confirmar titulo="¿Despedirte del comerciante?" accion="despedirComerciante" boton="Despedirme" color="from-amber-500 to-amber-800"
                 texto="Las partes que no compraste se van con él.">
-                <button type="button" class="px-4 py-1.5 rounded-lg border border-black text-sm font-bold text-white bg-gradient-to-b from-gray-600 to-gray-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">👋 Despedirse y seguir</button>
+                <button type="button" class="px-4 py-1.5 rounded-lg border border-black text-sm font-bold text-white bg-gradient-to-b from-gray-600 to-gray-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Despedirse y seguir</button>
             </x-confirmar>
         @else
-            <button type="button" wire:click="despedirComerciante" class="px-4 py-1.5 rounded-lg border border-black text-sm font-bold text-white bg-gradient-to-b from-amber-500 to-amber-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">👋 Seguir explorando</button>
+            <button type="button" wire:click="despedirComerciante" class="px-4 py-1.5 rounded-lg border border-black text-sm font-bold text-white bg-gradient-to-b from-amber-500 to-amber-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">Seguir explorando</button>
         @endif
     </div>
 </div>

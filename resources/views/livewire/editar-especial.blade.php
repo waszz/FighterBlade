@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-gray-800">Editar {{ $post->titulo }}</h1>
         <span class="text-sm font-semibold text-indigo-700">
             @if ($post->es_enemigo == \App\Models\Post::COMERCIANTE)
-                💰 Comerciante: no pelea, aparece a veces al terminar una exploración y vende partes
+                Comerciante: no pelea, aparece a veces al terminar una exploración y vende partes
             @elseif ($post->es_enemigo == \App\Models\Post::ENEMIGO_ESPECIAL)
                 ⭐ Enemigo de bienvenida
             @elseif ($mision)
@@ -19,7 +19,7 @@
         @if ($post->es_enemigo == \App\Models\Post::COMERCIANTE)
         {{-- Comerciante: cada cuánto aparece --}}
         <section class="p-5 bg-amber-50 rounded-lg shadow border border-amber-300">
-            <h2 class="text-lg font-semibold text-gray-800 mb-1">💰 Probabilidad de aparecer</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">Probabilidad de aparecer</h2>
             <p class="text-sm text-gray-600 mb-3">Chance de que aparezca en vez del enemigo al terminar una exploración. 0 = no aparece nunca.</p>
             <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
                 <input type="number" min="0" max="100" wire:model="chance" class="w-24 rounded-md border-gray-300 shadow-sm">

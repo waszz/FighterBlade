@@ -815,7 +815,7 @@ public function colorBarraPorStat($valor)
             $this->dispatch('error', ['message' => $error]);
             return;
         }
-        $this->dispatch('success', ['message' => '💰 ¡Compraste la parte! Ya está en tu inventario.']);
+        $this->dispatch('success', ['message' => '¡Compraste la parte! Ya está en tu inventario.']);
         $this->dispatch('statsActualizados');
         $this->dispatch('actualizarInventario');
     }
@@ -831,7 +831,7 @@ public function colorBarraPorStat($valor)
     public function toggleExplorar()
     {
         if ($this->personaje->comerciante_oferta) {
-            $this->mensajeExploracion = '💰 Despedite del comerciante para volver a explorar.';
+            $this->mensajeExploracion = 'Despedite del comerciante para volver a explorar.';
             $this->mostrarOpciones    = false;
             return;
         }

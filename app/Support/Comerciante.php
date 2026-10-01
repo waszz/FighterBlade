@@ -14,7 +14,10 @@ class Comerciante
 {
     const CHANCE = 10;           // % de que aparezca al terminar una exploración (si el admin no cargó otra en Personajes especiales)
     const MAX_PARTES = 6;
-    const PRECIO_POR_NIVEL = 150; // oro por parte = nivel del set × esto
+    // Precio de una parte: proporcional al nivel del set, PRECIO_REFERENCIA en el nivel NIVEL_REFERENCIA
+    // (zona 30 → partes de nivel 35 a 10.000), redondeado a la centena
+    const PRECIO_REFERENCIA = 10000;
+    const NIVEL_REFERENCIA = 35;
     const PARTES = ['equipo', 'entrenamiento', 'accesorio'];
 
     // Lo que dice al aparecer (uno al azar)
@@ -67,7 +70,7 @@ class Comerciante
                 'stats'    => self::decodificar($set->{'ajustes_manuales_' . $tipo}),
                 'requisitos' => self::decodificar($set->{'requisitos_' . $tipo}),
                 'nivel'    => (int) $set->nivel,
-                'precio'   => (int) $set->nivel * self::PRECIO_POR_NIVEL,
+                'precio'   => self::precio((int) $set->nivel),
                 'comprada' => false,
             ];
         }
@@ -120,6 +123,11 @@ class Comerciante
 
             return null;
         });
+    }
+
+    public static function precio(int $nivel): int
+    {
+        return (int) round($nivel * self::PRECIO_REFERENCIA / self::NIVEL_REFERENCIA, -2);
     }
 
     private static function decodificar($valor): array
