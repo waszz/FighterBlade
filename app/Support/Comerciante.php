@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 // enemigos que salen ahí. La oferta queda guardada en el personaje (comerciante_oferta) hasta que se despide.
 class Comerciante
 {
-    const CHANCE = 10;           // % de que aparezca al terminar una exploración
+    const CHANCE = 10;           // % de que aparezca al terminar una exploración (si el admin no cargó otra en Personajes especiales)
     const MAX_PARTES = 6;
     const PRECIO_POR_NIVEL = 150; // oro por parte = nivel del set × esto
     const PARTES = ['equipo', 'entrenamiento', 'accesorio'];
@@ -30,9 +30,17 @@ class Comerciante
         return Post::conRivales()->where('es_enemigo', Post::COMERCIANTE)->first();
     }
 
+    // % de que aparezca: el que cargó el admin en Personajes especiales (columna chance_aparicion) o CHANCE
+    public static function chance(): int
+    {
+        $post = self::post();
+        return $post ? (int) ($post->chance_aparicion ?? self::CHANCE) : 0;
+    }
+
     public static function aparece(): bool
     {
-        return random_int(1, 100) <= self::CHANCE && self::post() !== null;
+        $chance = self::chance();
+        return $chance > 0 && random_int(1, 100) <= $chance;
     }
 
     // Oferta nueva: entre 1 y MAX_PARTES partes al azar de sets del nivel de la zona + 5 (si no hay, los más cercanos)

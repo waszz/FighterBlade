@@ -16,6 +16,19 @@
 
     <form wire:submit="guardar" class="space-y-6">
         {{-- Datos --}}
+        @if ($post->es_enemigo == \App\Models\Post::COMERCIANTE)
+        {{-- Comerciante: cada cuánto aparece --}}
+        <section class="p-5 bg-amber-50 rounded-lg shadow border border-amber-300">
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">💰 Probabilidad de aparecer</h2>
+            <p class="text-sm text-gray-600 mb-3">Chance de que aparezca en vez del enemigo al terminar una exploración. 0 = no aparece nunca.</p>
+            <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input type="number" min="0" max="100" wire:model="chance" class="w-24 rounded-md border-gray-300 shadow-sm">
+                %
+            </label>
+            @error('chance') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </section>
+        @endif
+
         <section class="p-5 bg-white rounded-lg shadow border border-gray-200">
             <h2 class="text-lg font-semibold text-gray-800 mb-3">Datos</h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -35,6 +35,8 @@ class EditarEspecial extends Component
     public array $stats = [];
     public array $poderesSeleccionados = [];
     public array $archivos = [];
+    // Comerciante: % de que aparezca al terminar una exploración
+    public int $chance = 0;
 
     public function mount($post)
     {
@@ -51,6 +53,7 @@ class EditarEspecial extends Component
             $this->stats[$stat] = (int) ($stats[$stat] ?? 0);
         }
         $this->poderesSeleccionados = $this->especial->poderes->pluck('id')->map(fn ($id) => (string) $id)->all();
+        $this->chance = (int) ($this->especial->chance_aparicion ?? \App\Support\Comerciante::CHANCE);
     }
 
     protected function rules()
@@ -61,6 +64,7 @@ class EditarEspecial extends Component
             'tipo'   => 'required|in:fisico,elemental,hibrido',
             'stats.*' => 'required|integer|min:0|max:100000',
             'poderesSeleccionados' => 'array',
+            'chance' => 'required|integer|min:0|max:100',
         ];
         foreach (array_keys(self::ARCHIVOS) as $campo) {
             $reglas["archivos.$campo"] = 'nullable|file|mimes:gif,png,jpg,jpeg,webp|max:12288';
@@ -68,7 +72,7 @@ class EditarEspecial extends Component
         return $reglas;
     }
 
-    protected $validationAttributes = ['archivos.*' => 'archivo'];
+    protected $validationAttributes = ['archivos.*' => 'archivo', 'chance' => 'probabilidad'];
 
     public function quitarArchivo(string $campo)
     {
@@ -84,6 +88,9 @@ class EditarEspecial extends Component
         $post->nivel = $this->nivel;
         $post->tipo = $this->tipo;
         $post->stats = array_map('intval', $this->stats);
+        if ((int) $post->es_enemigo === Post::COMERCIANTE) {
+            $post->chance_aparicion = $this->chance;
+        }
 
         foreach (self::ARCHIVOS as $campo => [$columna]) {
             $archivo = $this->archivos[$campo] ?? null;
