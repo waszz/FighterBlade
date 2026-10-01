@@ -108,8 +108,8 @@ class MisionesSeeder extends SetsSeeder
 
     // Premio: oro = nivel del rival × ORO_POR_NIVEL; diamantes suben parejo de DIAMANTES_PRIMERA a DIAMANTES_ULTIMA
     const ORO_POR_NIVEL = 50;
-    const DIAMANTES_PRIMERA = 8;
-    const DIAMANTES_ULTIMA = 85;
+    const DIAMANTES_PRIMERA = 20;
+    const DIAMANTES_ULTIMA = 200;
 
     // Diamantes de la misión i (0 = primera) repartidos en línea recta hasta la última
     public static function diamantes(int $i, int $total): int
