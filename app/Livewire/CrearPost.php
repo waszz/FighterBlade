@@ -516,6 +516,21 @@ foreach ($this->poderesSeleccionadosDetalles as $poder) {
         return $desglose;
     }
 
+    // Stats que se guardan en el set: base + lo que suman sus 3 partes, SIN los poderes. Los poderes que suben stats
+    // (Súper Resistencia, Energizado...) los aplica la pelea; si se guardaban ya aplicados, contaban dos veces
+    // (y la Anulación de poder no los podía sacar). En pantalla se siguen mostrando con los poderes
+    private function statsSinPoderes(): array
+    {
+        $stats = [];
+        foreach ($this->statsBase as $stat => $valorBase) {
+            $stats[$stat] = (int) $valorBase
+                + (int) ($this->ajustesManualesEquipo[$stat] ?? 0)
+                + (int) ($this->ajustesManualesEntrenamiento[$stat] ?? 0)
+                + (int) ($this->ajustesManualesAccesorio[$stat] ?? 0);
+        }
+        return $stats;
+    }
+
     public function crearPost()
     {
 
@@ -590,7 +605,7 @@ if ($this->accesorio_imagen) {
     'imagen1' => $imagenes['imagen1'],
     'imagen2' => $imagenes['imagen2'],
     'imagen3' => $imagenes['imagen3'],
-    'stats' => $this->stats,
+    'stats' => $this->statsSinPoderes(),
     'stats_equipo' => $this->statsEquipo,
     'stats_entrenamiento' => $this->statsEntrenamiento,
     'stats_accesorio' => $this->statsAccesorio,

@@ -140,6 +140,21 @@ class EditarPost extends Component
         $this->calcularPuntosYStats();
     }
 
+    // Stats que se guardan en el set: base + lo que suman sus 3 partes, SIN los poderes. Los poderes que suben stats
+    // (Súper Resistencia, Energizado...) los aplica la pelea; si se guardaban ya aplicados, contaban dos veces
+    // (y la Anulación de poder no los podía sacar). En pantalla se siguen mostrando con los poderes
+    private function statsSinPoderes(): array
+    {
+        $stats = [];
+        foreach ($this->statsBase as $stat => $valorBase) {
+            $stats[$stat] = (int) $valorBase
+                + (int) ($this->ajustesManualesEquipo[$stat] ?? 0)
+                + (int) ($this->ajustesManualesEntrenamiento[$stat] ?? 0)
+                + (int) ($this->ajustesManualesAccesorio[$stat] ?? 0);
+        }
+        return $stats;
+    }
+
     public function puntosTotales()
     {
         return $this->nivel * 5;
@@ -429,7 +444,7 @@ public function decrementarStat($stat, $tipo, $cantidad = 1)
 
         $this->calcularPuntosYStats(); // solo si no estás llamándolo antes
 
-        $post->stats = array_map(fn($d) => $d['total'], $this->statsDesglose);
+        $post->stats = $this->statsSinPoderes();
 
 
         $post->save();
