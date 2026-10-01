@@ -1,8 +1,9 @@
 {{-- Sin scroll propio: usa el del área principal del juego (si no, quedaban dos barras de scroll) --}}
 <div id="contenedor-explorar" class="flex flex-col w-full text-white">
-  {{-- Avisa a la interfaz si hay una pelea en pantalla (enemigo o resultado): en el celular se esconden los botones de los
-       costados y la barra de abajo. Al salir de la ciudad vuelve a avisar que no --}}
-  @php $enPelea = (bool) ($enemigo || ! empty($resultadosRondas)); @endphp
+  {{-- Avisa a la interfaz si se está mostrando el resultado de una pelea (las rondas): en el celular se esconden los
+       botones de los costados y la barra de abajo, que tapaban el texto. Con el enemigo esperando (Atacar / Huir) se ven.
+       Al salir de la ciudad vuelve a avisar que no --}}
+  @php $enPelea = ! empty($resultadosRondas); @endphp
   <div wire:key="modo-pelea-{{ $enPelea ? 1 : 0 }}" class="hidden"
        x-data="{ init() { setTimeout(() => window.dispatchEvent(new CustomEvent('modo-pelea', { detail: { activo: @js($enPelea) } })), 0) },
                  destroy() { window.dispatchEvent(new CustomEvent('modo-pelea', { detail: { activo: false } })) } }"></div>
