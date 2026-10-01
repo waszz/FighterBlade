@@ -1,5 +1,5 @@
 {{-- fixed inset-0: ocupa exactamente la ventana visible (100dvh en algunos iPhone quedaba más corto y dejaba una franja abajo) --}}
-<div class="fixed inset-0 overflow-hidden" x-data="{ perfil: false, chat: false }" @cerrar-chat.window="chat = false">
+<div class="fixed inset-0 overflow-hidden" x-data="{ perfil: false, chat: false, pelea: false }" @cerrar-chat.window="chat = false" @modo-pelea.window="pelea = $event.detail.activo">
     {{-- Una sola pestaña por navegador: las pestañas comparten la sesión (el servidor no las distingue), así que se avisan
          entre ellas; al abrir el juego en otra pestaña, esta queda bloqueada. "Jugar acá" la recarga y bloquea a la otra --}}
     <div wire:ignore x-data="{ otraPestana: false }"
@@ -327,7 +327,8 @@
 
             {{-- Botones redondos a los costados (solo celular); la sección abierta queda en verde --}}
             @foreach (['left-1' => $botonesMovilIzq, 'right-1' => $botonesMovilDer] as $lado => $botonesLado)
-                <div class="lg:hidden fixed {{ $lado }} top-[4.25rem] z-30 flex flex-col gap-2">
+                {{-- En una pelea (y su resultado) no se muestran: tapaban el texto de las rondas --}}
+                <div x-show="! pelea" class="lg:hidden fixed {{ $lado }} top-[4.25rem] z-30 flex flex-col gap-2">
                     @foreach ($botonesLado as $boton)
                         <button type="button" wire:click="cambiarSeccion('{{ $boton['seccion'] }}')" title="{{ $boton['nombre'] }}" aria-label="{{ $boton['nombre'] }}"
                             class="{{ $botonRedondo }} w-11 h-11 text-lg {{ $seccion === $boton['seccion'] ? 'from-green-500 to-green-800' : 'from-red-700 to-red-950' }}">
@@ -451,7 +452,7 @@
             </main>
 
             {{-- Barra inferior (solo celular): perfil · chat --}}
-            <div class="lg:hidden relative z-30 flex items-center justify-between px-3 py-1.5 border-t-2 border-black bg-gradient-to-b from-[#1c2533] to-[#0a0e14]">
+            <div x-show="! pelea" class="lg:hidden relative z-30 flex items-center justify-between px-3 py-1.5 border-t-2 border-black bg-gradient-to-b from-[#1c2533] to-[#0a0e14]">
                 <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
                     <i class="fa-solid fa-user"></i>
                 </button>
