@@ -6,17 +6,7 @@
 @endphp
 <div class="mx-auto mb-3 w-full max-w-3xl rounded-xl border-2 border-amber-500 p-3 text-left bg-gradient-to-b from-[#2a1d0a] to-[#0f0a04]
             shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),0_4px_0_#000,0_0_18px_rgba(245,158,11,0.3)]">
-    {{-- Saludo --}}
-    <div class="flex items-start gap-3 mb-3">
-        <img src="{{ asset('images/comerciante/khonshu.gif') }}" alt="" class="w-12 h-14 shrink-0 object-contain object-bottom [image-rendering:pixelated]">
-        <div class="relative flex-1 rounded-lg border-2 border-black bg-[#fdf6e3] px-3 py-2 text-black shadow-[0_3px_0_#000]">
-            <span class="absolute -left-2 top-4 w-3 h-3 rotate-45 bg-[#fdf6e3] border-l-2 border-b-2 border-black"></span>
-            <p class="text-xs font-extrabold text-amber-700 uppercase tracking-wide">El Comerciante Khonshu</p>
-            <p class="text-sm italic">“{{ $oferta['saludo'] ?? '' }}”</p>
-            <p class="mt-1 text-[11px] text-gray-600">Partes de los sets de esta zona. {{ $quedan ? 'Me quedan ' . $quedan . '.' : '¡Me dejaste sin nada!' }}</p>
-        </div>
-    </div>
-
+    {{-- Lo que dice va en el globo de arriba, en la ciudad --}}
     {{-- Partes (como en el Mercado) --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
         @foreach ($oferta['partes'] ?? [] as $i => $parte)

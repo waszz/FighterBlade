@@ -252,7 +252,11 @@
             style="{{ $gifComerciante ? \App\Models\Post::estiloGif($gifComerciante) : '' }}" class="block max-w-none [filter:drop-shadow(0_0_8px_rgba(250,204,21,0.45))]" />
         </div>
         {{-- Lo que dice, en un globo arriba de él --}}
-        <div class="absolute top-2 right-2 sm:right-[5%] z-20 max-w-[62%] sm:max-w-[48%] rounded-lg border-2 border-black bg-[#fdf6e3] px-2.5 py-1.5 text-left text-black shadow-[0_3px_0_#000]">
+        <div class="absolute top-3 right-2 sm:right-[5%] z-20 max-w-[62%] sm:max-w-[48%] rounded-lg border-2 border-black bg-[#fdf6e3] pl-9 pr-2.5 py-1.5 text-left text-black shadow-[0_3px_0_#000]">
+          {{-- Su cara en un círculo, en la esquina del globo --}}
+          <span class="absolute -top-3 -left-3 w-11 h-11 rounded-full overflow-hidden border-2 border-amber-500 bg-gradient-to-b from-[#3b2a10] to-[#120c04] shadow-[0_2px_0_#000]">
+            <img src="{{ asset('images/comerciante/khonshu.gif') }}" alt="" class="absolute left-1/2 -top-2.5 -translate-x-1/2 w-[160%] max-w-none [image-rendering:pixelated]">
+          </span>
           <p class="text-[10px] font-extrabold uppercase tracking-wide text-amber-700">El Comerciante Khonshu</p>
           <p class="text-xs sm:text-sm italic leading-snug">“{{ $personaje->comerciante_oferta['saludo'] ?? '' }}”</p>
           <span class="absolute -bottom-2 right-10 w-3 h-3 rotate-45 bg-[#fdf6e3] border-r-2 border-b-2 border-black"></span>
