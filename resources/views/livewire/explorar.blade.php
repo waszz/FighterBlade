@@ -246,7 +246,12 @@
         </div>
         @elseif ($personaje->comerciante_oferta)
         {{-- 💰 El Comerciante Khonshu, donde va el enemigo --}}
-        @php $gifComerciante = \App\Support\Comerciante::post()?->gif; @endphp
+        @php
+          $postComerciante = \App\Support\Comerciante::post();
+          $gifComerciante = $postComerciante?->gif;
+          // Foto del círculo: la que se carga en Personajes especiales → Editar → Foto (si todavía es el gif, se recorta la cara)
+          $fotoComerciante = $postComerciante?->imagen && ! str_ends_with(strtolower($postComerciante->imagen), '.gif') ? $postComerciante->imagen : null;
+        @endphp
         <div class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1]">
           <img src="{{ $gifComerciante ? asset('storage/' . $gifComerciante) : asset('images/comerciante/khonshu.gif') }}" alt="El Comerciante Khonshu"
             style="{{ $gifComerciante ? \App\Models\Post::estiloGif($gifComerciante) : '' }}" class="block max-w-none [filter:drop-shadow(0_0_8px_rgba(250,204,21,0.45))]" />
@@ -255,7 +260,11 @@
         <div class="absolute top-3 right-2 sm:right-[5%] z-20 max-w-[62%] sm:max-w-[48%] rounded-lg border-2 border-black bg-[#fdf6e3] pl-9 pr-2.5 py-1.5 text-left text-black shadow-[0_3px_0_#000]">
           {{-- Su cara en un círculo, en la esquina del globo --}}
           <span class="absolute -top-3 -left-3 w-11 h-11 rounded-full overflow-hidden border-2 border-amber-500 bg-gradient-to-b from-[#3b2a10] to-[#120c04] shadow-[0_2px_0_#000]">
-            <img src="{{ asset('images/comerciante/khonshu.gif') }}" alt="" class="absolute left-1/2 -top-2.5 -translate-x-1/2 w-[160%] max-w-none [image-rendering:pixelated]">
+            @if ($fotoComerciante)
+              <img src="{{ asset('storage/' . $fotoComerciante) }}" alt="" class="absolute inset-0 w-full h-full object-cover">
+            @else
+              <img src="{{ asset('images/comerciante/khonshu.gif') }}" alt="" class="absolute left-1/2 -top-2.5 -translate-x-1/2 w-[160%] max-w-none [image-rendering:pixelated]">
+            @endif
           </span>
           <p class="text-[10px] font-extrabold uppercase tracking-wide text-amber-700">El Comerciante Khonshu</p>
           <p class="text-xs sm:text-sm italic leading-snug">“{{ $personaje->comerciante_oferta['saludo'] ?? '' }}”</p>
