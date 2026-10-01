@@ -4,7 +4,9 @@
     <div class="mt-2 mb-6 flex flex-wrap items-baseline gap-x-3">
         <h1 class="text-2xl font-bold text-gray-800">Editar {{ $post->titulo }}</h1>
         <span class="text-sm font-semibold text-indigo-700">
-            @if ($post->es_enemigo == \App\Models\Post::ENEMIGO_ESPECIAL)
+            @if ($post->es_enemigo == \App\Models\Post::COMERCIANTE)
+                💰 Comerciante: no pelea, aparece a veces al terminar una exploración y vende partes
+            @elseif ($post->es_enemigo == \App\Models\Post::ENEMIGO_ESPECIAL)
                 ⭐ Enemigo de bienvenida
             @elseif ($mision)
                 📜 Misión {{ $mision->orden }} · premio {{ number_format($mision->recompensa_oro, 0, ',', '.') }} oro + <span class="num-esmeralda">{{ $mision->recompensa_diamantes }}</span> <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]">

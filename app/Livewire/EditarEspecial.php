@@ -41,7 +41,7 @@ class EditarEspecial extends Component
         abort_unless(auth()->user()?->isAdmin(), 403);
 
         $this->especial = Post::conRivales()->with('poderes')->findOrFail($post);
-        abort_unless(in_array((int) $this->especial->es_enemigo, [Post::ENEMIGO_ESPECIAL, Post::RIVAL_MISION], true), 404);
+        abort_unless(in_array((int) $this->especial->es_enemigo, [Post::ENEMIGO_ESPECIAL, Post::RIVAL_MISION, Post::COMERCIANTE], true), 404);
 
         $this->titulo = $this->especial->titulo;
         $this->nivel = (int) $this->especial->nivel;

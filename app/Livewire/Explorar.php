@@ -504,6 +504,23 @@ public function colorBarraPorStat($valor)
             return;
         }
 
+        // 💰 El Comerciante Khonshu: a veces aparece él en vez del enemigo (solo en exploraciones, no con el enemigo
+        // de bienvenida). Vende partes de los sets de la zona; no hay pelea ni recuperación
+        if ($this->personaje->exploracion_duracion > 0 && $this->personaje->nivel > self::NIVEL_MAX_ENEMIGO_ESPECIAL
+            && ! $this->personaje->enemigo_actual_id && ! $this->personaje->comerciante_oferta
+            && \App\Support\Comerciante::aparece()) {
+            $this->personaje->comerciante_oferta   = \App\Support\Comerciante::generarOferta((int) ($this->ciudadActual->nivel ?? 0));
+            $this->personaje->exploracion_duracion = 0;
+            $this->personaje->minutos_originales   = null;
+            $this->personaje->fin_exploracion      = null;
+            $this->personaje->save();
+            $this->tiempoExploracion = null;
+            $this->finExploracion    = null;
+            $this->mostrarOpciones   = false;
+            $this->dispatch('statsActualizados');
+            return;
+        }
+
         $enemigo = $this->generarEnemigo(true);
 
         if ($enemigo) {
@@ -789,8 +806,36 @@ public function colorBarraPorStat($valor)
         }
     }
 
+    // 💰 Comerciante: comprar una de sus partes
+    public function comprarAlComerciante($indice)
+    {
+        $error = \App\Support\Comerciante::comprar($this->personaje->id, (int) $indice);
+        $this->personaje->refresh();
+        if ($error) {
+            $this->dispatch('error', ['message' => $error]);
+            return;
+        }
+        $this->dispatch('success', ['message' => '💰 ¡Compraste la parte! Ya está en tu inventario.']);
+        $this->dispatch('statsActualizados');
+        $this->dispatch('actualizarInventario');
+    }
+
+    // 💰 Comerciante: despedirse (la oferta se pierde) y seguir jugando
+    public function despedirComerciante()
+    {
+        $this->personaje->comerciante_oferta = null;
+        $this->personaje->save();
+        $this->mostrarOpciones = true;
+    }
+
     public function toggleExplorar()
     {
+        if ($this->personaje->comerciante_oferta) {
+            $this->mensajeExploracion = '💰 Despedite del comerciante para volver a explorar.';
+            $this->mostrarOpciones    = false;
+            return;
+        }
+
         if ($this->personaje->fresh()?->estaEntrenando()) {
             $this->mensajeExploracion = Personaje::MENSAJE_ENTRENANDO;
             $this->mostrarOpciones    = false;

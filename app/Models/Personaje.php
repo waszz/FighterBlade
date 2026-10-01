@@ -58,6 +58,7 @@ class Personaje extends Model
 protected $casts = [
     'foto_chat_post_id' => 'integer', // null = automática, 0 = imagen subida, >0 = set elegido
     'stats' => 'array',
+    'comerciante_oferta' => 'array', // lo que le está ofreciendo el comerciante (ver App\Support\Comerciante)
     'stats_base' => 'array',
     'stats_modificados' => 'array',
     'stats_guardados' => 'boolean',

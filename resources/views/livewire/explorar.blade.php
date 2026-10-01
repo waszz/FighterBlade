@@ -244,6 +244,13 @@
             alt="Enemigo {{ $enemigo->nombre ?? $enemigo->titulo }}"
             style="{{ \App\Models\Post::estiloGif($this->gifEnemigo() ?? null) }}" class="block max-w-none {{ $claseEstadoEscena['enemigo'] ?: ($enemigo instanceof \App\Models\Personaje ? $enemigo->claseAura() : '') }}" />
         </div>
+        @elseif ($personaje->comerciante_oferta)
+        {{-- 💰 El Comerciante Khonshu, donde va el enemigo --}}
+        @php $gifComerciante = \App\Support\Comerciante::post()?->gif; @endphp
+        <div class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1]">
+          <img src="{{ $gifComerciante ? asset('storage/' . $gifComerciante) : asset('images/comerciante/khonshu.gif') }}" alt="El Comerciante Khonshu"
+            style="{{ $gifComerciante ? \App\Models\Post::estiloGif($gifComerciante) : '' }}" class="block max-w-none [filter:drop-shadow(0_0_8px_rgba(250,204,21,0.45))]" />
+        </div>
         @endif
       </div> {{-- FIN overflow-hidden --}}
 
@@ -398,8 +405,13 @@
       $botonCiudad = 'flex flex-col items-center justify-center gap-0.5 w-[4.5rem] h-[3.75rem] rounded-lg text-[color:var(--c)] text-[10px] font-extrabold uppercase tracking-wide transition-colors duration-150 hover:bg-[color:var(--c)] hover:text-[#0b0f14] active:translate-y-[2px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[color:var(--c)] disabled:active:translate-y-0';
       $iconoCiudad = fn (string $archivo) => 'class="block w-7 h-7 bg-current" style="-webkit-mask: url(' . asset('images/iconos/' . $archivo) . ') center / contain no-repeat; mask: url(' . asset('images/iconos/' . $archivo) . ') center / contain no-repeat;"';
     @endphp
+    {{-- 💰 El Comerciante Khonshu: su saludo y las partes que vende (hasta despedirse no hay botones de la ciudad) --}}
+    @if (! $enemigo && ($oferta = $personaje->comerciante_oferta))
+      @include('livewire.partials.comerciante', ['oferta' => $oferta])
+    @endif
+
     {{-- Tarjeta transparente con los botones (en una pelea no hay botones, así que no se muestra) --}}
-    @if (!$enemigo)
+    @if (!$enemigo && ! $personaje->comerciante_oferta)
     <div class="inline-flex flex-wrap justify-center items-start gap-2 p-2 rounded-2xl border border-white/10 bg-black/20 backdrop-blur-[2px] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
       @if (!$mostrarOpciones && !$enemigo && !$tiempoExploracion)
       <button wire:click="toggleExplorar" class="{{ $botonCiudad }}" style="--c:#ef4444">

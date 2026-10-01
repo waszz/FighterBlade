@@ -22,6 +22,7 @@
             @php
                 $completo = $post->gifs_cargados === $totalGifs;
                 $esBienvenida = $post->es_enemigo == \App\Models\Post::ENEMIGO_ESPECIAL;
+                $esComerciante = $post->es_enemigo == \App\Models\Post::COMERCIANTE;
             @endphp
             <div wire:key="especial-{{ $post->id }}" class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex gap-4">
                 <div class="w-24 h-24 shrink-0 rounded-md bg-slate-800 flex items-end justify-center overflow-hidden">
@@ -29,8 +30,8 @@
                          class="max-h-full max-w-full object-contain" loading="lazy">
                 </div>
                 <div class="flex-1 min-w-0 flex flex-col">
-                    <p class="text-xs font-semibold {{ $esBienvenida ? 'text-emerald-700' : 'text-indigo-700' }}">
-                        {{ $esBienvenida ? '⭐ Enemigo de bienvenida' : '📜 Misión ' . $post->orden_mision }}
+                    <p class="text-xs font-semibold {{ $esBienvenida ? 'text-emerald-700' : ($esComerciante ? 'text-amber-700' : 'text-indigo-700') }}">
+                        {{ $esBienvenida ? '⭐ Enemigo de bienvenida' : ($esComerciante ? '💰 Comerciante (solo vende, aparece al explorar)' : '📜 Misión ' . $post->orden_mision) }}
                     </p>
                     <a href="{{ route('posts.show', $post->id) }}" class="text-lg font-bold text-gray-800 hover:underline truncate">{{ $post->titulo }}</a>
                     <p class="text-xs text-gray-600 flex items-center gap-2">

@@ -112,6 +112,8 @@ public function getNombreAttribute()
     const RIVAL_MISION = 3;
     // Variantes de la zona inicial (Black / normal / Gold de cada set de nivel 5): ocultas en las listas
     const VARIANTE_ZONA = 4;
+    // El Comerciante (Khonshu): no pelea, aparece a veces al terminar una exploración y vende partes (ver App\Support\Comerciante)
+    const COMERCIANTE = 5;
     const SCOPE_SIN_RIVALES = 'sinRivalesMision';
 
     // Consulta que incluye también a los rivales de misión (combate, misiones y admin)
@@ -144,7 +146,7 @@ public function getNombreAttribute()
                 return;
             }
             $query->where(fn ($q) => $q->whereNull('posts.es_enemigo')
-                ->orWhereNotIn('posts.es_enemigo', [self::ENEMIGO_ESPECIAL, self::RIVAL_MISION, self::VARIANTE_ZONA]));
+                ->orWhereNotIn('posts.es_enemigo', [self::ENEMIGO_ESPECIAL, self::RIVAL_MISION, self::VARIANTE_ZONA, self::COMERCIANTE]));
         });
 
         // Al cambiar algún gif: si tiene fondo magenta se hace transparente (antes había que correr

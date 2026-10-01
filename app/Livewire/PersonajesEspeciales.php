@@ -31,7 +31,7 @@ class PersonajesEspeciales extends Component
         $ordenMision = Mision::pluck('orden', 'post_id');
 
         $especiales = Post::conRivales()
-            ->whereIn('es_enemigo', [Post::ENEMIGO_ESPECIAL, Post::RIVAL_MISION])
+            ->whereIn('es_enemigo', [Post::ENEMIGO_ESPECIAL, Post::COMERCIANTE, Post::RIVAL_MISION])
             ->when($this->search, fn ($q) => $q->where('titulo', 'like', '%' . $this->search . '%'))
             ->get()
             ->map(function (Post $post) use ($ordenMision) {
@@ -44,8 +44,8 @@ class PersonajesEspeciales extends Component
                 'completos' => $post->gifs_cargados === count(Post::CAMPOS_GIF),
                 default     => true,
             })
-            // Primero el enemigo de bienvenida, después las misiones en orden
-            ->sortBy(fn ($post) => $post->es_enemigo == Post::ENEMIGO_ESPECIAL ? 0 : $post->orden_mision)
+            // Primero el enemigo de bienvenida, después el comerciante y las misiones en orden
+            ->sortBy(fn ($post) => match ((int) $post->es_enemigo) { Post::ENEMIGO_ESPECIAL => -2, Post::COMERCIANTE => -1, default => $post->orden_mision })
             ->values();
 
         return view('livewire.personajes-especiales', [
