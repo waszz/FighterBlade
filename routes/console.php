@@ -242,7 +242,7 @@ Artisan::command('usuarios:admin {email} {--quitar}', function () {
     $this->info("{$user->email} ahora es admin.");
 })->purpose('Hace admin a una cuenta (o la vuelve usuario normal con --quitar)');
 
-// GIF de los sets con fondo magenta (#FF00FF) sin transparencia: el magenta pasa a ser transparente.
+// GIF de los sets con fondo magenta (#FF00FF), blanco o verde (#00FF00) sin transparencia: el fondo pasa a ser transparente.
 // Solo los gif de los sets (no los fondos de las ciudades). Con --probar muestra qué cambiaría sin tocar nada.
 // Antes de cambiar un archivo deja una copia en storage/app/gifs-originales/.
 Artisan::command('gifs:transparentar {--probar}', function () {
@@ -268,4 +268,4 @@ Artisan::command('gifs:transparentar {--probar}', function () {
         $this->line("  {$ruta}: {$motivo}");
     }
     $this->info(($this->option('probar') ? 'Se cambiarían ' : 'GIF corregidos: ') . "{$cambiados} de {$rutas->count()}");
-})->purpose('Hace transparente el fondo magenta de los GIF de los sets');
+})->purpose('Hace transparente el fondo magenta, blanco o verde de los GIF de los sets');

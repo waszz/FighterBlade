@@ -3,6 +3,7 @@
 namespace App\Support;
 
 // Hace transparente el fondo magenta (#FF00FF) de los GIF de los sets (sprites que se guardaron sin transparencia).
+// También el fondo blanco o verde (#00FF00): esos solo si las 4 esquinas del primer cuadro lo tienen, y solo lo pegado al borde.
 // - Cuadro sin color transparente: se marca el magenta de su paleta como el transparente (Graphic Control Extension)
 //   y el cuadro se borra antes del siguiente, para que no queden rastros. No hace falta re-comprimir.
 // - Cuadro que ya tiene otro color transparente (o varios tonos de magenta): se descomprime (LZW), los píxeles
@@ -47,11 +48,19 @@ class GifTransparente
         return $r >= 240 && $g >= 240 && $b >= 240;
     }
 
+    // Verde de "pantalla verde" (#00FF00 o casi): otros sprites se guardaron con ese fondo
+    private static function esVerde(int $r, int $g, int $b): bool
+    {
+        return $r <= 40 && $g >= 200 && $b <= 40;
+    }
+
+    // Índices de los colores de fondo que se reconocen por las esquinas: blanco y verde
     private static function indicesBlanco(string $tabla): array
     {
         $indices = [];
         for ($i = 0, $n = intdiv(strlen($tabla), 3); $i < $n; $i++) {
-            if (self::esBlanco(ord($tabla[$i * 3]), ord($tabla[$i * 3 + 1]), ord($tabla[$i * 3 + 2]))) {
+            [$r, $g, $b] = [ord($tabla[$i * 3]), ord($tabla[$i * 3 + 1]), ord($tabla[$i * 3 + 2])];
+            if (self::esBlanco($r, $g, $b) || self::esVerde($r, $g, $b)) {
                 $indices[] = $i;
             }
         }
@@ -472,11 +481,24 @@ class GifTransparente
                                 }
                             }
                         }
+                        // Paleta llena y fondo verde: el mismo verde pasa a ser el transparente (un verde de "pantalla
+                        // verde" no suele estar dentro del dibujo; con el blanco no se hace, porque sí: ojos, brillos)
+                        $verdeEsquina = null;
+                        foreach ($blancos as $i) {
+                            if (self::esVerde(ord($tabla[$i * 3]), ord($tabla[$i * 3 + 1]), ord($tabla[$i * 3 + 2]))) {
+                                $verdeEsquina = $i;
+                                break;
+                            }
+                        }
+                        if ($transparente === null && $verdeEsquina !== null) {
+                            $transparente = $verdeEsquina;
+                        }
                         $posiciones = $transparente !== null
                             ? self::conectadosAlBorde($pixeles, $anchoCuadro, $altoCuadro, $entrelazado, array_values(array_diff($blancos, [$transparente])))
                             : [];
+                        $verdeComoTransparente = $transparente !== null && ! $yaTiene && $transparente === $verdeEsquina;
 
-                        if ($posiciones) {
+                        if ($posiciones || $verdeComoTransparente) {
                             $cambiados++;
                             if (! $yaTiene) {
                                 $completo = $anchoCuadro === $anchoLienzo && $altoCuadro === $altoLienzo;
@@ -491,11 +513,13 @@ class GifTransparente
                                     $salida .= "\x21\xF9\x04" . chr(($completo ? (2 << 2) : 0) | 0x01) . "\x00\x00" . chr($transparente) . "\x00";
                                 }
                             }
-                            foreach ($posiciones as $pos) {
-                                $pixeles[$pos] = chr($transparente);
+                            if ($posiciones) {
+                                foreach ($posiciones as $pos) {
+                                    $pixeles[$pos] = chr($transparente);
+                                }
+                                $cabecera = $finDescriptor - $p;
+                                $cuadro = substr($cuadro, 0, $cabecera) . chr($min) . self::armarSubbloques(self::lzwCodificar($min, $pixeles));
                             }
-                            $cabecera = $finDescriptor - $p;
-                            $cuadro = substr($cuadro, 0, $cabecera) . chr($min) . self::armarSubbloques(self::lzwCodificar($min, $pixeles));
                         }
                     }
                 }
