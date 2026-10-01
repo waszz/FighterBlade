@@ -44,6 +44,10 @@
     $topeRebote = \App\Livewire\Explorar::REBOTE_TOPE;
     $rebotePorResistencia = str_replace('.', ',', (string) \App\Livewire\Explorar::REBOTE_POR_RESISTENCIA);
     $minimoContraRebote = \App\Livewire\Explorar::MINIMO_CONTRA_REBOTE;
+    // Reset de stats: lo que cuesta (ver AsignarStats::costoReset...), con un ejemplo en nivel 30
+    $resetOroPorNivel = \App\Livewire\AsignarStats::costoResetOro(1);
+    $resetOroEjemplo = number_format(\App\Livewire\AsignarStats::costoResetOro(30), 0, ',', '.');
+    $resetEsmeraldasEjemplo = \App\Livewire\AsignarStats::costoResetEsmeraldas(30);
 
     // [título, ícono, [párrafos o listas]]. Un string es un párrafo; un array es una lista de puntos
     $temas = [
@@ -60,10 +64,14 @@
         ['Tu panel', 'fa-id-card', [
             'A la izquierda (en el celular, con el botón de perfil) está tu personaje:',
             ['Nivel, oro y esmeraldas. Tocando el oro abrís el Banco de Oro.', 'Si estás explorando o recuperándote, la cuenta regresiva.', 'Tus atributos y los puntos que te quedan para repartir.', 'La barra de experiencia: pasando el mouse ves cuánto te falta para subir.', 'Tu tipo de daño, tus poderes y tu joya: tocalos para leer qué hacen.'],
+            'Cómo sumar puntos a tus atributos:',
+            ['Arriba de los atributos, el globito rosa ("5 pts", por ejemplo) dice cuántos puntos te quedan para repartir.', 'Tocá el botón verde "+" a la derecha de cualquier atributo: se abre la ventana "Asignar Stats".', 'Arriba elegí de a cuánto sumar: +1, +5 o +10.', 'Tocá el "+" verde al lado del atributo que querés subir. Podés repartir entre varios.', 'Si te equivocaste, elegí -1, -5 o -10 y tocá el "-" rojo: saca los puntos que pusiste en esa ventana.', 'Cuando termines, tocá "Guardar". Una vez guardados ya no se pueden sacar con el "-": para cambiarlos hay que resetear.'],
+            'Cómo resetear tus puntos (volver a repartirlos desde cero):',
+            ["Tocá el nombre o el número de cualquier atributo del panel (no el botón \"+\"): se abre \"¿Resetear stats?\".", "Elegí cómo pagarlo: con oro ({$resetOroPorNivel} por nivel; en el nivel 30 son {$resetOroEjemplo}) o con esmeraldas (tu nivel menos 4; en el nivel 30 son {$resetEsmeraldasEjemplo}).", 'Te vuelven todos los puntos que repartiste y los podés poner de nuevo con el "+".'],
         ]],
         ['Atributos y niveles', 'fa-chart-simple', [
             'Tenés 6 atributos: Fuerza (FUE), Resistencia (RES), Ataque (ATA), Defensa (DEF), Velocidad (VEL) y Energía (ENE). Todos influyen en la pelea.',
-            ['Cada nivel te da 5 puntos para repartir con los botones "+" del panel.', 'El número blanco es tu atributo base; el amarillo, lo que te suma lo que tenés equipado.', 'Si te equivocaste, podés resetear los puntos pagando oro o esmeraldas.'],
+            ['Cada nivel te da 5 puntos para repartir con los botones "+" del panel (en "Tu panel" está el paso a paso).', 'El número blanco es tu atributo base; el amarillo, lo que te suma lo que tenés equipado.', 'Si te equivocaste, podés resetear los puntos pagando oro o esmeraldas (también en "Tu panel").'],
             'Cada victoria te da un porcentaje de la experiencia que pide tu nivel: 3% hasta el nivel 25 y 2% después (1% en los niveles 50 y 75). Las misiones y la Torre dan el doble.',
         ]],
         ['Explorar', 'fa-compass', [
