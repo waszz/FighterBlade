@@ -1,8 +1,9 @@
 {{-- Confirmación con el estilo del juego (en vez del confirm() del navegador).
      El contenido (un botón) abre el cartel; "Confirmar" llama al método de Livewire $accion del componente.
-     Uso: <x-confirmar titulo="¿Abandonar?" texto="..." accion="abandonar"><button type="button">Abandonar</button></x-confirmar> --}}
-@props(['titulo', 'texto' => null, 'accion', 'boton' => 'Confirmar', 'color' => 'from-red-500 to-red-800'])
-<span class="contents" x-data="{ abierto: false, confirmar() { this.abierto = false; this.$wire.call(@js($accion)) } }">
+     Uso: <x-confirmar titulo="¿Abandonar?" texto="..." accion="abandonar"><button type="button">Abandonar</button></x-confirmar>
+     Con :parametros="[...]" se le pasan datos al método (ej. accion="borrarEvento" :parametros="[$id]") --}}
+@props(['titulo', 'texto' => null, 'accion', 'parametros' => [], 'boton' => 'Confirmar', 'color' => 'from-red-500 to-red-800'])
+<span class="contents" x-data="{ abierto: false, confirmar() { this.abierto = false; this.$wire.call(@js($accion), ...@js(array_values($parametros))) } }">
     <span class="contents" x-on:click="abierto = true">{{ $slot }}</span>
 
     <template x-teleport="body">

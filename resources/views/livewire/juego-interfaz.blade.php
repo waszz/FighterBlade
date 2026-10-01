@@ -294,6 +294,7 @@
                     ['seccion' => 'peleas', 'nombre' => 'Mis Peleas', 'icono' => 'fa-hand-fist'],
                     ['seccion' => 'drops', 'nombre' => 'Mis Drops', 'icono' => 'fa-gem'],
                     ['seccion' => 'galeria', 'nombre' => 'Mis Personajes', 'icono' => 'fa-users'],
+                    ['seccion' => 'calendario', 'nombre' => 'Calendario', 'icono' => 'fa-calendar-days'],
                 ];
                 // En el inventario se necesita el ancho: quedan solo Extras y Ranking (la Ciudad está en la barra de arriba)
                 if ($seccion === 'inventario') {
@@ -385,6 +386,7 @@
                         ['seccion' => 'galeria', 'nombre' => 'Mis Personajes'],
                         ['seccion' => 'peleas', 'nombre' => 'Mis Peleas'],
                         ['seccion' => 'drops', 'nombre' => 'Mis Drops'],
+                        ['seccion' => 'calendario', 'nombre' => 'Calendario'],
                         // Personajes y Poderes van en la ciudad, debajo de los usuarios de la zona
                     ];
                     @endphp
@@ -440,6 +442,8 @@
                 @livewire('misiones', ['personaje' => $personaje], key('misiones-'.($reloadCounters['misiones'] ?? 0)))
                 @elseif ($seccion === 'torre')
                 @livewire('torre', ['personaje' => $personaje], key('torre-'.($reloadCounters['torre'] ?? 0)))
+                @elseif ($seccion === 'calendario')
+                @livewire('calendario', key('calendario-'.($reloadCounters['calendario'] ?? 0)))
                 @elseif ($seccion === 'mazmorra')
                 @livewire('mazmorra', ['personaje' => $personaje], key('mazmorra-'.($reloadCounters['mazmorra'] ?? 0)))
                 @elseif ($seccion === 'entrenar')
