@@ -508,10 +508,14 @@ public function colorBarraPorStat($valor)
         }
 
         // 💰 El Comerciante Khonshu: a veces aparece él en vez del enemigo (solo en exploraciones, no con el enemigo
-        // de bienvenida). Vende partes de los sets de la zona; no hay pelea ni recuperación
-        if ($this->personaje->exploracion_duracion > 0 && $this->personaje->nivel > self::NIVEL_MAX_ENEMIGO_ESPECIAL
+        // de bienvenida). Vende partes de los sets de la zona; no hay pelea ni recuperación.
+        // No sale dos veces seguidas: si apareció en la exploración anterior, en esta no (ver comerciante_reciente)
+        $esExploracionTerminada = $this->personaje->exploracion_duracion > 0;
+        if ($esExploracionTerminada && $this->personaje->nivel > self::NIVEL_MAX_ENEMIGO_ESPECIAL
             && ! $this->personaje->enemigo_actual_id && ! $this->personaje->comerciante_oferta
+            && ! $this->personaje->comerciante_reciente
             && \App\Support\Comerciante::aparece()) {
+            $this->personaje->comerciante_reciente = true;
             $this->personaje->comerciante_oferta   = \App\Support\Comerciante::generarOferta((int) ($this->ciudadActual->nivel ?? 0));
             $this->personaje->exploracion_duracion = 0;
             $this->personaje->minutos_originales   = null;
@@ -527,6 +531,10 @@ public function colorBarraPorStat($valor)
         $enemigo = $this->generarEnemigo(true);
 
         if ($enemigo) {
+            // Esta exploración terminó con un enemigo: en la próxima el comerciante ya puede volver a salir
+            if ($esExploracionTerminada) {
+                $this->personaje->comerciante_reciente = false;
+            }
             $this->personaje->enemigo_actual_id = $enemigo->id;
             $this->personaje->save();
 
