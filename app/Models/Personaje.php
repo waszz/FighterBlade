@@ -494,6 +494,13 @@ public function claseNombre(): string
     return $this->user_id !== auth()->id() && $this->estaConectado() ? 'nombre-conectado' : '';
 }
 
+// Nivel al lado del nombre: con el mismo efecto que el nombre comprado en Extras ('' si no tiene; el dorado de
+// conectado es solo para el nombre)
+public function claseNivel(): string
+{
+    return \App\Support\Cosmeticos::clase($this->efecto_nombre);
+}
+
 // Conectado: su cuenta tuvo actividad en los últimos minutos (misma regla que "Conectados" del chat)
 public function estaConectado(): bool
 {

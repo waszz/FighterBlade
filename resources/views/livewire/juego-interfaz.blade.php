@@ -1,5 +1,5 @@
 {{-- fixed inset-0: ocupa exactamente la ventana visible (100dvh en algunos iPhone quedaba más corto y dejaba una franja abajo) --}}
-<div class="fixed inset-0 overflow-hidden" x-data="{ perfil: false, chat: false, pelea: false }" @cerrar-chat.window="chat = false" @modo-pelea.window="pelea = $event.detail.activo">
+<div class="fixed inset-0 overflow-hidden" x-data="{ perfil: false, chat: false, pelea: false }" x-init="$watch('chat', () => window.dispatchEvent(new CustomEvent('chat-visto')))" @cerrar-chat.window="chat = false" @modo-pelea.window="pelea = $event.detail.activo">
     {{-- Una sola pestaña por navegador: las pestañas comparten la sesión (el servidor no las distingue), así que se avisan
          entre ellas; al abrir el juego en otra pestaña, esta queda bloqueada. "Jugar acá" la recarga y bloquea a la otra --}}
     <div wire:ignore x-data="{ otraPestana: false }"
@@ -101,7 +101,7 @@
 
             {{-- Nivel --}}
             <div class="px-4 py-0.5 rounded-full border-2 border-[#3d7fd6] bg-[#0a1628] font-mono font-bold text-sm text-sky-300 tracking-wide select-none shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
-                Nv. {{ $personaje->nivel ?? 1 }}
+                <span class="{{ $personaje->claseNivel() }}">Nv. {{ $personaje->nivel ?? 1 }}</span>
             </div>
 
             {{-- Oro y Diamante --}}
@@ -310,7 +310,7 @@
                     <i class="fa-solid fa-house"></i>
                 </button>
                 <div class="flex-1 min-w-0 text-center font-mono leading-tight">
-                    <p class="truncate text-sm font-bold"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre }}</span> <span class="text-sky-300">Nv. {{ $personaje->nivel ?? 1 }}</span></p>
+                    <p class="truncate text-sm font-bold"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre }}</span> <span class="{{ $personaje->claseNivel() ?: 'text-sky-300' }}">Nv. {{ $personaje->nivel ?? 1 }}</span></p>
                     <p class="flex items-center justify-center gap-3 text-xs font-bold">
                         <span class="flex items-center gap-1 text-yellow-400"><img src="{{ asset('images/oro.png') }}" alt="Oro" class="h-3.5">{{ number_format($personaje->oro, 0, ',', '.') }}</span>
                         <span class="flex items-center gap-1"><img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-3.5"><span class="num-esmeralda">{{ number_format($personaje->diamante, 0, ',', '.') }}</span></span>
@@ -456,8 +456,10 @@
                 <button type="button" @click="perfil = true" aria-label="Mi personaje" class="{{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
                     <i class="fa-solid fa-user"></i>
                 </button>
-                <button type="button" @click="chat = true" aria-label="Chat" class="{{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
+                <button type="button" @click="chat = true" aria-label="Chat" class="relative {{ $botonRedondo }} w-9 h-9 text-sm from-[#2f5470] to-[#0a1a26]">
                     <i class="fa-solid fa-comments"></i>
+                    {{-- Punto rojo: mensajes privados sin leer o mensajes nuevos en el chat general --}}
+                    @livewire('aviso-chat', ['personajeId' => $personaje->id], key('aviso-chat-' . $personaje->id))
                 </button>
             </div>
         </div>

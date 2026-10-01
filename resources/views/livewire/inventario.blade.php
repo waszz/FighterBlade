@@ -906,10 +906,15 @@
           </button>
 
           <div class="flex flex-col items-center text-center">
-          <p class="text-sm font-bold text-white mb-2 px-4 truncate max-w-full">{{ $objetoSeleccionado->nombre }}</p>
+          <p class="text-sm font-bold text-white mb-0.5 px-4 truncate max-w-full">{{ $objetoSeleccionado->nombre }}</p>
+          {{-- Qué es (Equipo, Entrenamiento, Accesorio, Joya...) con el color de su lugar, y la imagen con ese borde --}}
+          @php
+            [$bordeSel, $textoSel] = ['equipo' => ['border-indigo-500', 'text-indigo-300'], 'entrenamiento' => ['border-green-500', 'text-green-300'], 'accesorio' => ['border-pink-500', 'text-pink-300'], 'joya' => ['border-amber-400', 'text-amber-300'], 'cofre' => ['border-yellow-600', 'text-yellow-300']][$objetoSeleccionado->tipo] ?? ['border-gray-700', 'text-gray-300'];
+          @endphp
+          <p class="text-[11px] font-bold uppercase mb-2 {{ $textoSel }}">{{ ucfirst($objetoSeleccionado->tipo) }}</p>
 
           <img src="{{ asset('storage/posts/' . $objetoSeleccionado->imagen) }}" alt="{{ $objetoSeleccionado->nombre }}"
-            class="w-20 h-20 object-contain rounded-lg shadow-lg mb-2" />
+            class="w-20 h-20 {{ in_array($objetoSeleccionado->tipo, ['equipo', 'entrenamiento', 'accesorio'], true) ? 'object-cover' : 'object-contain' }} rounded-lg mb-2 bg-black/50 border-2 {{ $bordeSel }} shadow-[inset_0_0_0_1px_rgba(0,0,0,0.6),0_3px_0_#000]" />
 
           <div class="w-full">
 

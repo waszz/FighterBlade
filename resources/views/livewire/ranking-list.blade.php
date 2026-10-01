@@ -70,7 +70,7 @@
                 </p>
                 <p class="text-xs">
                     @if($tipo === 'Nivel')
-                    <span class="text-yellow-400 font-bold">Nivel {{ $item->nivel }}</span>
+                    <span class="{{ $item instanceof \App\Models\Personaje && $item->claseNivel() ? $item->claseNivel() : 'text-yellow-400' }} font-bold">Nivel {{ $item->nivel }}</span>
                     @elseif($tipo === 'Campeones')
                     {{-- Cuándo llegó al nivel 100 (se lee de la tabla: Livewire relee los personajes y pierde la columna extra) --}}
                     @php
@@ -177,7 +177,7 @@
             {{-- Nombre y nivel --}}
             <h2 class="text-xl font-bold text-center mb-1 truncate [text-shadow:0_2px_0_#000]"><span class="{{ $personajeSeleccionadoModal->claseNombre() }}">{{ $personajeSeleccionadoModal->nombre }}</span></h2>
             <p class="text-center mb-3">
-                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold text-yellow-300 {{ $etiqueta3d }}">Nivel {{ $nivel }}</span>
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold text-yellow-300 {{ $etiqueta3d }}"><span class="{{ $personajeSeleccionadoModal->claseNivel() }}">Nivel {{ $nivel }}</span></span>
             </p>
 
             {{-- Experiencia --}}

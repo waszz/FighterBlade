@@ -553,7 +553,7 @@
 
             {{-- Nivel y peleas PvP ganadas / perdidas --}}
             <div class="shrink-0 flex items-center gap-2 text-xs font-bold">
-              <span class="text-yellow-300">Nivel {{ $personajeRanking->nivel }}</span>
+              <span class="{{ $personajeRanking->claseNivel() ?: 'text-yellow-300' }}">Nivel {{ $personajeRanking->nivel }}</span>
               <span title="PvP: ganadas / perdidas">
                 <span class="text-green-400">{{ $personajeRanking->pvp_ganadas ?? 0 }}</span><span class="text-white">/</span><span class="text-red-400">{{ $personajeRanking->pvp_perdidas ?? 0 }}</span>
               </span>
@@ -673,7 +673,7 @@
       <h2 class="text-xl font-bold text-center mb-1 [text-shadow:0_2px_0_#000]"><span class="{{ $personajeSeleccionadoModal->claseNombre() }}">{{ $personajeSeleccionadoModal->nombre }}</span></h2>
       <p class="text-center mb-3">
         <span class="inline-block px-2 py-0.5 rounded-full border border-black text-xs font-bold text-yellow-300 bg-gradient-to-b from-[#2f5470] to-[#0a1a26] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]">
-          Nivel {{ $personajeSeleccionadoModal->nivel }}
+          <span class="{{ $personajeSeleccionadoModal->claseNivel() }}">Nivel {{ $personajeSeleccionadoModal->nivel }}</span>
         </span>
       </p>
       <x-barra-exp :personaje="$personajeSeleccionadoModal" class="mb-3" />
