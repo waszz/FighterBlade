@@ -100,7 +100,7 @@ class Mazmorra extends Component
             return;
         }
         $mazmorra->energia += MazmorraModelo::ENERGIA_COMPRA;
-        $mazmorra->compra_dia = today();
+        $mazmorra->compra_dia = MazmorraModelo::hoy();
         $mazmorra->save();
 
         $this->dispatch('success', ['message' => '⚡ +' . MazmorraModelo::ENERGIA_COMPRA . ' de energía.']);

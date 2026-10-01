@@ -49,24 +49,31 @@ class Mazmorra extends Model
     // La fila del personaje (se crea la primera vez) con la energía del día ya recargada
     public static function de(int $personajeId): self
     {
-        $mazmorra = self::firstOrCreate(['personaje_id' => $personajeId], ['energia' => self::ENERGIA_DIARIA, 'energia_dia' => today()]);
+        $mazmorra = self::firstOrCreate(['personaje_id' => $personajeId], ['energia' => self::ENERGIA_DIARIA, 'energia_dia' => self::hoy()]);
         $mazmorra->recargarEnergia();
         return $mazmorra;
+    }
+
+    // El día de la mazmorra cambia a la medianoche local del juego (la misma zona que el Mercado y la Caza).
+    // Antes era la del servidor (UTC), que acá son las 21:00
+    public static function hoy(): string
+    {
+        return now()->setTimezone(Caza::ZONA_HORARIA)->toDateString();
     }
 
     // Cada día vuelve a ENERGIA_DIARIA (si le quedaba más de lo comprado, lo conserva)
     public function recargarEnergia(): void
     {
-        if (! $this->energia_dia || $this->energia_dia->lt(today())) {
+        if ($this->energia_dia?->toDateString() !== self::hoy()) {
             $this->energia = max((int) $this->energia, self::ENERGIA_DIARIA);
-            $this->energia_dia = today();
+            $this->energia_dia = self::hoy();
             $this->save();
         }
     }
 
     public function puedeComprar(): bool
     {
-        return ! $this->compra_dia || $this->compra_dia->lt(today());
+        return $this->compra_dia?->toDateString() !== self::hoy();
     }
 
     public function enCurso(): bool
