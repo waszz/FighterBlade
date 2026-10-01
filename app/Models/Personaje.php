@@ -230,7 +230,8 @@ protected $casts = [
 
     // Stats para pelear: los base más los de las partes equipadas y la joya, y los poderes que suben stats
     // del set con el que pelea (igual que el panel de atributos, ver App\Support\PoderesStats)
-    public function statsDeCombate(): array
+    // $poderes: los que valen en la pelea (sin los anulados por el rival); si no se pasan, los del set con el que pelea
+    public function statsDeCombate($poderes = null): array
     {
         $stats = self::decodificarStats($this->stats);
         foreach (['equipo', 'entrenamiento', 'accesorio', 'joya'] as $parte) {
@@ -248,7 +249,7 @@ protected $casts = [
         if ($pocion = $this->pocionDeStat()) {
             $stats[$pocion['afecta']] = intval($stats[$pocion['afecta']] * $pocion['multiplicador']);
         }
-        return \App\Support\PoderesStats::aplicar($stats, $this->postDeCombate()?->poderes ?? collect());
+        return \App\Support\PoderesStats::aplicar($stats, $poderes ?? $this->postDeCombate()?->poderes ?? collect());
     }
 
     // La poción equipada si sube un stat (no recuperación, búsqueda, oro...): [objeto, afecta, multiplicador]

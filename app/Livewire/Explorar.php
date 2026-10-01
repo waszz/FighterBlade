@@ -1207,7 +1207,7 @@ public function colorBarraPorStat($valor)
                     }
                 }
             }
-             $tieneSiempreEnPie = collect($this->personaje->postDeCombate()?->poderes ?? [])->contains(function ($poder) {
+             $tieneSiempreEnPie = $this->poderesDelPersonajeEnPelea()->contains(function ($poder) {
         return strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE';
     });
 if ($tieneSiempreEnPie) {
@@ -1344,7 +1344,7 @@ if ($tieneSiempreEnPie) {
 
         // ⏳ Recuperación al ganar o empatar (la de derrota se calcula arriba, con la poción de recuperación)
         if ($this->resultadoFinal !== 'Derrota' && ! $this->esDuelo) {
-            $siempreEnPie = collect($this->personaje->postDeCombate()?->poderes ?? [])
+            $siempreEnPie = $this->poderesDelPersonajeEnPelea()
                 ->contains(fn ($poder) => strtoupper($poder['nombre'] ?? '') === 'SIEMPRE EN PIE');
             $this->personaje->fin_exploracion = $siempreEnPie
                 ? now()
@@ -1449,7 +1449,8 @@ if ($tieneSiempreEnPie) {
         }
     }
 
-    public function obtenerStatsCompletos()
+    // $poderes: los que valen en la pelea (sin los anulados por el rival); si no se pasan, los del set con el que pelea
+    public function obtenerStatsCompletos($poderes = null)
     {
         $statsBase = is_string($this->personaje->stats)
         ? json_decode($this->personaje->stats, true) ?: []
@@ -1493,7 +1494,7 @@ if ($tieneSiempreEnPie) {
         }
 
         // Poderes que suben stats (SUPER DEFENSA, ENERGIZADO...): los mismos puntos amarillos que muestra el panel
-        $statsCombinados = \App\Support\PoderesStats::aplicar($statsCombinados, $this->personaje->postDeCombate()?->poderes ?? collect());
+        $statsCombinados = \App\Support\PoderesStats::aplicar($statsCombinados, $poderes ?? $this->personaje->postDeCombate()?->poderes ?? collect());
 
         // dd para debug (podés comentar o borrar después)
         // dd([
@@ -1551,27 +1552,6 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
 
 
 
-protected function obtenerPoderesAnulados($combatiente)
-{
-    $poderesAnulados = [];
-
-    $poderes = $combatiente->post ? $combatiente->post->poderes : collect();
-
-    foreach ($poderes as $poder) {
-        if ($poder->nombre === 'ANULACIÓN DE PODER') {
-            $modsRaw = $poder['modificadores'] ?? '[]';
-            $mods = is_array($modsRaw) ? $modsRaw : (json_decode($modsRaw, true) ?? []);
-
-            foreach ($mods as $mod) {
-                if (($mod['tipo'] ?? '') === 'anulacion_poder') {
-                    $poderesAnulados = $mod['poderes'] ?? [];
-                }
-            }
-        }
-    }
-
-    return $poderesAnulados;
-}
 
 
     public function atacar()
@@ -1601,12 +1581,18 @@ protected function obtenerPoderesAnulados($combatiente)
 
         $res = [];
 
-        $statsPersonaje = $this->obtenerStatsCompletos();
-        // dd($statsPersonaje);
+        // ⛔ ANULACIÓN DE PODER: antes de calcular nada, a cada uno se le sacan los poderes que le anula el rival.
+        // Los stats, los buffs y todos los efectos de la pelea usan solo los que quedan
+        $poderesPersonajeBase = collect($this->personaje->postDeCombate()?->poderes ?? []);
+        $poderesEnemigoBase   = collect(($this->enemigo instanceof Personaje ? $this->gifsEnemigo()?->poderes : $this->enemigo->poderes) ?? []);
+        $poderesPersonajePelea = \App\Support\AnulacionPoder::filtrar($poderesPersonajeBase, $poderesEnemigoBase);
+        $poderesEnemigoPelea   = \App\Support\AnulacionPoder::filtrar($poderesEnemigoBase, $poderesPersonajeBase);
+
+        $statsPersonaje = $this->obtenerStatsCompletos($poderesPersonajePelea);
 
         // PvP: el rival es un jugador → sus stats base más los de sus partes equipadas
         $statsEnemigo = $this->enemigo instanceof Personaje
-            ? $this->enemigo->statsDeCombate()
+            ? $this->enemigo->statsDeCombate($poderesEnemigoPelea)
             : Personaje::decodificarStats($this->enemigo->stats);
         // dd($statsEnemigo);
 
@@ -1633,7 +1619,7 @@ protected function obtenerPoderesAnulados($combatiente)
 
         // Enemigos del juego: sus poderes que suben stats también cuentan (los jugadores ya los traen en statsDeCombate)
         if (! ($this->enemigo instanceof Personaje)) {
-            $statsEnemigo = \App\Support\PoderesStats::aplicar($statsEnemigo, $this->enemigo->poderes ?? collect());
+            $statsEnemigo = \App\Support\PoderesStats::aplicar($statsEnemigo, $poderesEnemigoPelea);
         }
 
         // 🎯 Presa de caza: stats reforzados según la rareza
@@ -1670,13 +1656,11 @@ protected function obtenerPoderesAnulados($combatiente)
             $poderesPersonaje = $this->personaje->post->poderes ?? [];
         }
 
-        // PvP: el rival pelea con el tipo de daño y los poderes de su set completo equipado (o de su set base),
-        // igual que el jugador; no con los del personaje con el que arrancó
-        if ($this->enemigo instanceof Personaje && ($postRival = $this->gifsEnemigo()) instanceof Post) {
-            $this->enemigo->setRelation('poderes', $postRival->poderes);
-        }
-        // El jugador también: sus poderes son los del set con el que pelea (la relación "poderes" es la del set base)
-        $this->personaje->setRelation('poderes', collect($poderesPersonaje));
+        // Los poderes de la pelea: los del set con el que pelea cada uno (en PvP el set completo equipado del rival),
+        // sin los que le anuló el rival
+        $poderesPersonaje = $poderesPersonajePelea;
+        $this->enemigo->setRelation('poderes', $poderesEnemigoPelea);
+        $this->personaje->setRelation('poderes', $poderesPersonaje);
         $tipoEnemigo = $this->gifsEnemigo()?->tipo ?? $this->enemigo->tipo ?? 'fisico';
 
         $calcularDanioFisico = function ($stats, $nivel) {
@@ -2023,77 +2007,7 @@ $aplicarEstadoEspecial($statsBaseEnemigo, $this->enemigo->poderes ?? [], 'SUPER 
 $aplicarEstadoEspecial($statsBaseEnemigo, $this->enemigo->poderes ?? [], 'TRANCE', $poderActivoTranceEnemigo);
 
 
-$listaPoderesAnulados = [
-    'ABSORVER SALUD',
-    'ATAQUE DESESPERADO',
-    'ATAQUE TRAICIONERO',
-    'ATURDIR',
-    'CAMUFLAJE',
-    'COMBO VELOZ',
-    'CONGELAR',
-    'CONTROL CLIMATICO',
-    'DAMAGE ABSORV',
-    'DIRECT DAMAGE',
-    'ENEMISTAD',
-    'ENERGIZADO',
-    'ENVENENAR',
-    'ESPINAS',
-    'FRENESÍ',
-    'FURIA CIEGA',
-    'GOLPES VELOCES',
-    'HEMORRAGIA',
-    'INSTINTO MEJORADO',
-    'INTIMIDAR',
-    'MÁXIMA POTENCIA',
-    'MOLE',
-    'OFENSIVO EXPERTO',
-    'PARALIZAR',
-    'PIEL DURA',
-    'PIEL IMPENETRABLE',
-    'QUEMAR',
-    'REGENERAR SUPERIOR',
-    'REGENERAR',
-    'SIEMPRE EN PIE',
-    'SUERTUDO',
-    'ROBAR VIDA',
-    'SANGRADO',
-    'SUPER ATAQUE',
-    'SUPER CARGA',
-    'SUPER DEFENSA',
-    'SUPER ENERGÍA',
-    'SUPER FUERZA',
-    'SUPER NOVA',
-    'SUPER RESISTENCIA',
-    'SUPER SENTIDOS',
-    'SUPER VELOCIDAD',
-    'TÉCNICAS CERTERAS',
-    'TELETRANSPORTARSE',
-    'TRANCE',
-    'REDUCCIÓN ELEMENTAL',
-];
-
-
-$poderesPersonajeArray = is_array($poderesPersonaje) ? $poderesPersonaje : $poderesPersonaje->toArray();
-$poderesEnemigoArray = is_array($this->enemigo->poderes) ? $this->enemigo->poderes : $this->enemigo->poderes->toArray();
-// Si personaje tiene Anulación de poder, anular poderes del enemigo
-if (in_array('ANULACIÓN DE PODER', array_column($poderesPersonajeArray, 'nombre'))) {
-    if ($poderesEnemigoArray instanceof \Illuminate\Database\Eloquent\Collection) {
-        $poderesEnemigoArray = $poderesEnemigoArray->toArray();
-    }
-    $poderesEnemigoArray = array_filter($poderesEnemigoArray, fn($p) => !in_array(strtoupper($p['nombre']), $listaPoderesAnulados));
-    // Actualizo la propiedad del enemigo con la lista filtrada para que afecte el combate
-    $this->enemigo->poderes = collect($poderesEnemigoArray);
-}
-
-// Si enemigo tiene Anulación de poder, anular poderes del personaje
-if (in_array('ANULACIÓN DE PODER', array_column($poderesEnemigoArray, 'nombre'))) {
-    if ($poderesPersonajeArray instanceof \Illuminate\Database\Eloquent\Collection) {
-        $poderesPersonajeArray = $poderesPersonajeArray->toArray();
-    }
-    $poderesPersonajeArray = array_filter($poderesPersonajeArray, fn($p) => !in_array(strtoupper($p['nombre']), $listaPoderesAnulados));
-    // Actualizo la propiedad del personaje con la lista filtrada
-    $this->personaje->poderes = collect($poderesPersonajeArray);
-}
+// (La Anulación de poder ya se aplicó al empezar la pelea: ver AnulacionPoder en atacar)
 
 
  // Frenesí y Furia Ciega tiran su chance una sola vez, al empezar la pelea (como Trance): si sale, valen en todas las
@@ -3254,16 +3168,11 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Quemado') {
     }
 }
 
-// Se vuelven a poner los poderes de cada uno (la Anulación de poder los pudo haber recortado para las rondas):
-// los del set con el que pelea, no los del set base
-unset($this->personaje->poderes);
-$this->personaje->setRelation('poderes', $this->personaje->postDeCombate()?->poderes ?? collect());
-if ($this->enemigo instanceof Personaje) {
-    unset($this->enemigo->poderes);
-    $this->enemigo->setRelation('poderes', $this->gifsEnemigo()?->poderes ?? collect());
-} else {
-    $this->enemigo->load('poderes');
-}
+// Los poderes de cada uno siguen siendo los de la pelea (los del set con el que pelea, sin los anulados por el rival):
+// lo que sigue (reducción de daño, efectos al final) tampoco puede usar un poder anulado
+unset($this->personaje->poderes, $this->enemigo->poderes);
+$this->personaje->setRelation('poderes', $poderesPersonajePelea);
+$this->enemigo->setRelation('poderes', $poderesEnemigoPelea);
 
 
 // Bloque que procesa reducción de daño:
@@ -3272,7 +3181,7 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
     $actor = $esPersonajeAbsorvedor ? $this->personaje : $this->enemigo;
 
     // Garantizamos que poderes sea colección para evitar errores
-   $poderesActor = $actor instanceof Personaje ? ($actor->postDeCombate()?->poderes ?? collect()) : collect();
+   $poderesActor = $esPersonajeAbsorvedor ? $poderesPersonajePelea : ($actor instanceof Personaje ? $poderesEnemigoPelea : collect());
 
     foreach ($poderesActor as $poder) {
         $modsRaw = $poder['modificadores'] ?? '[]';
@@ -3501,7 +3410,7 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
         }
 
         // Obtener poderes del personaje (de donde los tengas guardados)
-$poderesPersonaje = collect($this->personaje->postDeCombate()?->poderes ?? [])
+$poderesPersonaje = $this->poderesDelPersonajeEnPelea()
     ->map(fn($p) => strtoupper($p['nombre'] ?? ''));
 
 // Si el personaje tiene el poder SUERTUDO
@@ -3921,6 +3830,13 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     public function esExploracion(): bool
     {
         return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva();
+    }
+
+    // Poderes del personaje en la pelea que se acaba de jugar: sin los que le anuló el rival (atacar los deja en la relación);
+    // si no hubo pelea en este pedido, los del set con el que pelea
+    private function poderesDelPersonajeEnPelea()
+    {
+        return collect($this->personaje->relationLoaded('poderes') ? $this->personaje->poderes : ($this->personaje->postDeCombate()?->poderes ?? []));
     }
 
     // Mazmorra en la que se está peleando (su rival del paso actual es el enemigo), o null si es otro combate

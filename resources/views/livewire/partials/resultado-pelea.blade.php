@@ -173,6 +173,10 @@
     $nombreEnemigo = $enemigo->nombre ?? $enemigo->titulo ?? 'Enemigo';
     $poderesEnemigo = collect($postEnRep?->poderes ?? $poderesDeCombate($enemigo));
     $poderPrincipalEnemigo = $poderesEnemigo->first()->nombre ?? '';
+
+    // ANULACIÓN DE PODER: los poderes que cada uno no pudo usar porque el rival se los anuló (ver App\Support\AnulacionPoder)
+    $anuladosPersonaje = \App\Support\AnulacionPoder::anulados($poderesPersonaje, $poderesEnemigo);
+    $anuladosEnemigo   = \App\Support\AnulacionPoder::anulados($poderesEnemigo, $poderesPersonaje);
     @endphp
 
     {{-- Poderes debajo de cada personaje: solo en pantallas chicas (en las grandes están al costado del escenario) --}}
@@ -189,7 +193,7 @@
           {{-- Tipo de daño con el que peleó y sus poderes --}}
           <x-icono-tipo :tipo="$tipoVistaPersonaje" tam="w-10 h-10" />
           @forelse($poderesPersonaje as $poder)
-          <x-icono-poder :poder="$poder" tam="w-10 h-10" />
+          <x-icono-poder :poder="$poder" tam="w-10 h-10" class="{{ in_array($poder->nombre, $anuladosPersonaje, true) ? 'grayscale opacity-40' : '' }}" />
           @empty
           <p class="text-gray-400 italic self-center">Sin poderes</p>
           @endforelse
@@ -206,13 +210,28 @@
         <div class="flex flex-wrap justify-end gap-1.5">
           <x-icono-tipo :tipo="$tipoVistaEnemigo" tam="w-10 h-10" />
           @forelse($poderesEnemigo as $poder)
-          <x-icono-poder :poder="$poder" tam="w-10 h-10" />
+          <x-icono-poder :poder="$poder" tam="w-10 h-10" class="{{ in_array($poder->nombre, $anuladosEnemigo, true) ? 'grayscale opacity-40' : '' }}" />
           @empty
           <p class="text-gray-400 italic self-center">Sin poderes</p>
           @endforelse
         </div>
       </div>
     </div>
+
+{{-- Anulación de poder --}}
+@foreach ([[$nombrePersonajeUsuario, $nombreEnemigo, $anuladosEnemigo], [$nombreEnemigo, $nombrePersonajeUsuario, $anuladosPersonaje]] as [$quienAnula, $anulado, $poderesAnuladosVista])
+  @if ($poderesAnuladosVista)
+    <div class="flex flex-col justify-center items-center gap-1 mb-4 px-4 py-2 border border-gray-700 bg-gray-800 bg-opacity-20 rounded-lg text-center">
+      <span class="font-bold"><span class="text-yellow-400">{{ $quienAnula }}</span> <span class="text-white">anuló los poderes de</span> <span class="text-yellow-400">{{ $anulado }}</span></span>
+      <span class="text-xs text-gray-400">{{ implode(' · ', $poderesAnuladosVista) }}</span>
+    </div>
+  @endif
+@endforeach
+@php
+  // Los carteles de abajo (Enemistad, Control climático...) solo con los poderes que de verdad se usaron
+  $poderesPersonaje = $poderesPersonaje->reject(fn ($p) => in_array($p->nombre, $anuladosPersonaje, true))->values();
+  $poderesEnemigo = $poderesEnemigo->reject(fn ($p) => in_array($p->nombre, $anuladosEnemigo, true))->values();
+@endphp
 
 @if($poderesPersonaje->contains(fn($p) => strtoupper($p->nombre) === 'COMBO VELOZ'))
     <div class="flex justify-center items-center gap-2 mb-4 px-4 py-2 border border-gray-700 bg-gray-800 bg-opacity-20 rounded-lg">
