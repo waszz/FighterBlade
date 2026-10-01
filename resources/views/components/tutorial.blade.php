@@ -72,7 +72,7 @@
         ['Atributos y niveles', 'fa-chart-simple', [
             'Tenés 6 atributos: Fuerza (FUE), Resistencia (RES), Ataque (ATA), Defensa (DEF), Velocidad (VEL) y Energía (ENE). Todos influyen en la pelea.',
             ['Cada nivel te da 5 puntos para repartir con los botones "+" del panel (en "Tu panel" está el paso a paso).', 'El número blanco es tu atributo base; el amarillo, lo que te suma lo que tenés equipado.', 'Si te equivocaste, podés resetear los puntos pagando oro o esmeraldas (también en "Tu panel").'],
-            'Cada victoria te da un porcentaje de la experiencia que pide tu nivel: 3% hasta el nivel 25 y 2% después (1% en los niveles 50 y 75). Las misiones y la Torre dan el doble.',
+            'Cada victoria te da un porcentaje de la experiencia que pide tu nivel: 3% hasta el nivel 25 y 2% después (1% en los niveles 50 y 75). Las misiones y la Torre dan el doble si el rival es de tu nivel o más alto; contra rivales de menor nivel dan menos (10% menos por cada nivel que les llevás), igual que explorar una zona baja.',
         ]],
         ['Explorar', 'fa-compass', [
             'En la Ciudad elegís cuánto tiempo explorar. Al terminar te aparece un enemigo de la zona.',

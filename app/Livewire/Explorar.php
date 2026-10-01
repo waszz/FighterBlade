@@ -3350,10 +3350,13 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
             $esEnemigoEspecial => self::EXP_ENEMIGO_ESPECIAL,
             // PvP: 4% si el rival está a 5 niveles o menos, 1% si la diferencia es mayor
             $this->esPvp => self::fraccionExpPvp($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
-            // Misiones: el doble que una pelea común
-            $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP,
-            // Torre: el doble que una pelea común
-            $this->torreActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * \App\Support\RecompensasTorre::MULTIPLICADOR_EXP,
+            // Misiones y Torre: el doble que una pelea común, pero con la misma baja que la exploración si el rival es de
+            // menor nivel (10% menos por cada nivel que le llevás, mínimo 10%): un nivel 50 en una misión de nivel 17 cobra
+            // el 10%, no el 100%
+            $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP
+                * self::factorExpZona($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
+            $this->torreActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * \App\Support\RecompensasTorre::MULTIPLICADOR_EXP
+                * self::factorExpZona($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
             // Mazmorra: la de una pelea común (sin el descuento por zona)
             $this->mazmorraActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje),
             // Exploración y caza: menos exp si la zona es de menor nivel que el personaje
