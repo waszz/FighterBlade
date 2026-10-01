@@ -71,20 +71,35 @@ class RecompensasTorre
         return random_int(0, 1) === 0 ? self::cofre($nivel) : self::joya($nivel);
     }
 
-    public static function joya(int $nivel): array
+    // Rareza de las joyas (anillos): cuántos stats trae y cuántos puntos (× los de una normal)
+    const RAREZAS_JOYA = [
+        'normal'     => ['nombre' => '',            'stats' => 2, 'puntos' => 1.0],
+        'rara'       => ['nombre' => ' Rara',       'stats' => 3, 'puntos' => 1.5],
+        'legendaria' => ['nombre' => ' Legendaria', 'stats' => 4, 'puntos' => 2.2],
+    ];
+
+    public static function joya(int $nivel, string $rareza = 'normal'): array
     {
+        $datosRareza = self::RAREZAS_JOYA[$rareza] ?? self::RAREZAS_JOYA['normal'];
         $escalon = self::escalon($nivel);
         $i = min($escalon, count(self::NOMBRES_JOYA)) - 1;
-        $total = (int) round($nivel * self::PUNTOS_JOYA_POR_NIVEL);
-        [$a, $b] = array_rand(array_flip(self::STATS), 2);
-        $primero = (int) round($total * random_int(40, 60) / 100);
+        $total = (int) round($nivel * self::PUNTOS_JOYA_POR_NIVEL * $datosRareza['puntos']);
+
+        // Los puntos se reparten entre sus stats (al azar, más o menos parejo)
+        $elegidos = (array) array_rand(array_flip(self::STATS), $datosRareza['stats']);
+        shuffle($elegidos);
+        $pesos = array_map(fn () => random_int(40, 60), $elegidos);
         $stats = array_fill_keys(self::STATS, 0);
-        $stats[$a] = $primero;
-        $stats[$b] = $total - $primero;
+        $repartido = 0;
+        foreach ($elegidos as $k => $stat) {
+            $valor = $k === count($elegidos) - 1 ? $total - $repartido : (int) round($total * $pesos[$k] / array_sum($pesos));
+            $stats[$stat] = $valor;
+            $repartido += $valor;
+        }
 
         return [
             'tipo'        => 'joya',
-            'nombre'      => self::NOMBRES_JOYA[$i] . " (Nv $nivel)",
+            'nombre'      => self::NOMBRES_JOYA[$i] . $datosRareza['nombre'] . " (Nv $nivel)",
             'stats'       => $stats,
             'imagen'      => 'torre/joya' . ($i + 1) . '.png',
             'nivel'       => $nivel,
@@ -94,20 +109,37 @@ class RecompensasTorre
         ];
     }
 
-    public static function cofre(int $nivel): array
+    // Cofre. Con $dificultad (Normal, Difícil, Pesadilla) es un cofre de la Mazmorra: más chance de traer un set
+    public static function cofre(int $nivel, ?string $dificultad = null): array
     {
         $escalon = self::escalon($nivel);
+        $chanceSet = $dificultad ? (self::CHANCE_SET_COFRE_MAZMORRA[$dificultad] ?? null) : null;
 
         return [
             'tipo'        => 'cofre',
-            'nombre'      => "Cofre (Nv $nivel)",
+            'nombre'      => $dificultad ? "Cofre de Mazmorra {$dificultad} (Nv $nivel)" : "Cofre (Nv $nivel)",
             'stats'       => [],
             'imagen'      => 'torre/cofre' . min($escalon, 9) . '.png',
             'nivel'       => $nivel,
             'requisitos'  => [],
             'origen_post_id' => null,
-            'descripcion' => 'Abrilo desde el inventario pagando ' . number_format(self::costoAbrirCofre($nivel), 0, ',', '.') . ' de oro: 3 pociones de drop, de oro o de esmeraldas, o un set completo.',
+            'descripcion' => 'Abrilo desde el inventario pagando ' . number_format(self::costoAbrirCofre($nivel), 0, ',', '.') . ' de oro: '
+                . ($chanceSet ? "{$chanceSet}% de traer un set completo; si no, 3 pociones de drop, de oro o de esmeraldas." : '3 pociones de drop, de oro o de esmeraldas, o un set completo.'),
         ];
+    }
+
+    // Cofres de la Mazmorra: % de que traigan un set completo según la dificultad (un cofre común: 1 de 4)
+    const CHANCE_SET_COFRE_MAZMORRA = ['Normal' => 35, 'Difícil' => 55, 'Pesadilla' => 75];
+
+    // % de set de un cofre ya guardado (el de la Mazmorra lo dice su nombre); null = cofre común
+    public static function chanceSetCofre(Objeto $cofre): ?int
+    {
+        foreach (self::CHANCE_SET_COFRE_MAZMORRA as $dificultad => $chance) {
+            if (str_contains((string) $cofre->nombre, "Cofre de Mazmorra {$dificultad}")) {
+                return $chance;
+            }
+        }
+        return null;
     }
 
     // Oro que cuesta abrir un cofre: 100 por nivel (el de nivel 10 cuesta 1000, el de 100 cuesta 10000)
@@ -152,7 +184,13 @@ class RecompensasTorre
     {
         $nivel = (int) ($cofre->nivel ?? 20);
         $bienvenida = self::esCofreBienvenida($cofre);
-        $opcion = $bienvenida ? 'set' : ['drop', 'oro', 'diamante', 'set'][random_int(0, 3)];
+        $chanceSet = self::chanceSetCofre($cofre);
+        $opcion = match (true) {
+            $bienvenida => 'set',
+            // Cofre de la Mazmorra: su chance de set; si no, una de las 3 pociones
+            $chanceSet !== null => random_int(1, 100) <= $chanceSet ? 'set' : ['drop', 'oro', 'diamante'][random_int(0, 2)],
+            default => ['drop', 'oro', 'diamante', 'set'][random_int(0, 3)],
+        };
 
         if ($opcion === 'set') {
             if ($bienvenida) {
@@ -209,6 +247,8 @@ class RecompensasTorre
         }
 
         $cofre->delete();
+        // También queda en las notificaciones (la campanita), para ver después qué trajo
+        \App\Models\NotificacionJuego::avisar($personaje->id, '🎁', "Abriste {$cofre->nombre}: " . preg_replace('/^¡El cofre tenía /u', '', rtrim($texto, '!')));
         return $texto;
     }
 }

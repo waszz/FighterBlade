@@ -3661,6 +3661,10 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         if ($mazmorraDrop && ! $mazmorraDrop->esJefe() && rand(1, 100) <= \App\Models\Mazmorra::CHANCE_POCION) {
             $drop = \App\Models\Mazmorra::pocionAlAzar();
         }
+        // El jefe: un cofre (más chance de set cuanto más difícil) o un anillo con rareza
+        if ($mazmorraDrop && $mazmorraDrop->esJefe()) {
+            $drop = $mazmorraDrop->premioJefe((int) ($this->enemigo->nivel ?? $this->personaje->nivel));
+        }
 
         // 🌱 Variante de la zona inicial: siempre suelta su parte fija del set original (Black = equipo, normal = entrenamiento, Gold = accesorio)
         if (! $this->esPvp && ($this->enemigo->es_enemigo ?? null) == Post::VARIANTE_ZONA && $this->enemigo->variante_de_post_id) {

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 // Cada pelea cuesta ENERGIA_POR_PELEA rayitos (de ENERGIA_DIARIA por día: dos mazmorras completas). Si perdés, seguís
 // en el mismo rival y lo podés volver a intentar (gastando otra vez). Una vez por día se compran +100 rayitos con esmeraldas.
 //  - Enemigos: oro y a veces una poción (cualquiera)
-//  - Jefe: oro y esmeraldas (250 en normal, 500 en difícil, 1000 en pesadilla), y la mazmorra termina
+//  - Jefe: oro, esmeraldas (250 en normal, 500 en difícil, 1000 en pesadilla) y un cofre o un anillo, y la mazmorra termina
 // Las dificultades más altas tienen rivales más fuertes y multiplican el premio.
 class Mazmorra extends Model
 {
@@ -107,6 +107,32 @@ class Mazmorra extends Model
     {
         $porNivel = $this->esJefe() ? self::ORO_JEFE_POR_NIVEL : self::ORO_ENEMIGO_POR_NIVEL;
         return $nivelRival * $porNivel * $this->datosDificultad()['premio'];
+    }
+
+    // Anillos (joyas) del jefe: % de cada rareza según la dificultad (más difícil, más chance de legendario)
+    const RAREZA_ANILLO = [
+        'normal'    => ['normal' => 70, 'rara' => 25, 'legendaria' => 5],
+        'dificil'   => ['normal' => 45, 'rara' => 40, 'legendaria' => 15],
+        'pesadilla' => ['normal' => 20, 'rara' => 45, 'legendaria' => 35],
+    ];
+
+    // Premio extra del jefe: un cofre de la Mazmorra (su chance de set sube con la dificultad, ver RecompensasTorre)
+    // o un anillo con rareza (mitad y mitad). Mismo formato que los drops de pelea
+    public function premioJefe(int $nivel): array
+    {
+        $nivel = max(10, min(100, $nivel));
+        if (random_int(0, 1) === 0) {
+            return \App\Support\RecompensasTorre::cofre($nivel, $this->datosDificultad()['nombre']);
+        }
+        $chances = self::RAREZA_ANILLO[$this->dificultad] ?? self::RAREZA_ANILLO['normal'];
+        $tiro = random_int(1, array_sum($chances));
+        foreach ($chances as $rareza => $peso) {
+            $tiro -= $peso;
+            if ($tiro <= 0) {
+                break;
+            }
+        }
+        return \App\Support\RecompensasTorre::joya($nivel, $rareza);
     }
 
     public function esmeraldasPorVictoria(): int
