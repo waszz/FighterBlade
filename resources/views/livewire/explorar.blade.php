@@ -354,8 +354,10 @@
       {{-- "Explorando..." se muestra en el panel lateral; acá queda solo el temporizador invisible que hace aparecer al enemigo --}}
       @if($tiempoExploracion !== null && $personaje->exploracion_duracion > 0)
       <div wire:key="contador-{{ $tiempoExploracion }}-{{ $personaje->exploracion_duracion }}" class="hidden"
-        x-data="{ fin: Date.now() / 1000 + {{ (int) $tiempoExploracion }} }"
-        x-init="const t = setInterval(() => { if (Date.now() / 1000 >= fin) { clearInterval(t); $wire.onTimerTerminado(); } }, 250)"></div>
+        x-data="{ fin: Date.now() / 1000 + {{ (int) $tiempoExploracion }}, t: null,
+                  {{-- Al redibujar, este contador se reemplaza: el viejo se apaga (si no, el aviso llegaba dos veces) --}}
+                  destroy() { clearInterval(this.t) } }"
+        x-init="t = setInterval(() => { if (Date.now() / 1000 >= fin) { clearInterval(t); $wire.onTimerTerminado(); } }, 250)"></div>
       @endif
 
 

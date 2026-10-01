@@ -619,6 +619,11 @@ public function colorBarraPorStat($valor)
 
     public function onTimerTerminado()
     {
+        // Aviso repetido: la exploración ya se resolvió (apareció el enemigo o el comerciante); no se toca nada
+        if ($this->personaje->exploracion_duracion <= 0) {
+            return;
+        }
+
         // Terminó de explorar pero se sigue recuperando de un PvP: la exploración se estira (no se limpia nada)
         if ($this->personaje->exploracion_duracion > 0 && $this->personaje->fin_recuperacion && now()->lt($this->personaje->fin_recuperacion)) {
             $this->generarYGuardarEnemigo();
