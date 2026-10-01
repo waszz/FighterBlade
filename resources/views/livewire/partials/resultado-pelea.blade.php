@@ -949,6 +949,7 @@
               return { caja, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto: img.getBoundingClientRect().height };
             });
             const c = this.$el.getBoundingClientRect(), i = lados[0].getBoundingClientRect(), d = lados[1].getBoundingClientRect();
+            if (! c.width || ! c.height) return; // escena todavía oculta
             const espacio = c.width - (i.left - c.left) - (c.right - d.right) - 8;
             const total = datos[0].ancho + datos[1].ancho;
             const fAncho = total > espacio && total > 0 ? espacio / total : 1;
@@ -959,7 +960,10 @@
             datos.forEach(x => { x.caja.style.scale = f; x.caja.style.translate = (-x.vacio * f) + 'px 0'; });
           }
         }"
-        x-init="$nextTick(() => ajustar()); setTimeout(() => ajustar(), 700); $el.querySelectorAll('[data-lado] img').forEach(img => img.complete ? null : img.addEventListener('load', () => ajustar()))"
+        x-init="$nextTick(() => ajustar()); setTimeout(() => ajustar(), 700);
+                $el.querySelectorAll('[data-lado] img').forEach(img => img.complete ? null : img.addEventListener('load', () => ajustar()));
+                {{-- La escena puede aparecer después (las rondas se muestran de a poco): cuando se hace visible o cambia de tamaño se vuelve a ajustar --}}
+                new ResizeObserver(() => { if ($el.offsetWidth) ajustar() }).observe($el)"
         @resize.window.debounce.150ms="ajustar()">
 
       <div class="w-full h-full">
