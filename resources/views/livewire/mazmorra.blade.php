@@ -37,12 +37,14 @@
                 <p class="mt-1 text-[11px] text-gray-400">Cada pelea gasta {{ M::ENERGIA_POR_PELEA }}. Se recarga a {{ M::ENERGIA_DIARIA }} todos los días.</p>
             </div>
             @if ($mazmorra->puedeComprar())
-                <button type="button" wire:click="comprarEnergia" wire:loading.attr="disabled"
-                        wire:confirm="¿Comprar {{ M::ENERGIA_COMPRA }} de energía por {{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }} esmeraldas? (una vez por día)"
-                        class="{{ $boton3d }} shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-black bg-gradient-to-b from-yellow-300 to-yellow-600">
-                    ⚡ +{{ M::ENERGIA_COMPRA }} ·
-                    <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4"><span class="num-esmeralda">{{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }}</span>
-                </button>
+                <x-confirmar titulo="¿Comprar {{ M::ENERGIA_COMPRA }} de energía?" accion="comprarEnergia" boton="Comprar" color="from-emerald-500 to-emerald-800"
+                    texto="Cuesta <b class='num-esmeralda'>{{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }}</b> esmeraldas. Se puede comprar una vez por día.">
+                    <button type="button"
+                            class="{{ $boton3d }} shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-black bg-gradient-to-b from-yellow-300 to-yellow-600">
+                        ⚡ +{{ M::ENERGIA_COMPRA }} ·
+                        <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="h-4 w-4"><span class="num-esmeralda">{{ number_format(M::PRECIO_COMPRA, 0, ',', '.') }}</span>
+                    </button>
+                </x-confirmar>
             @else
                 <span class="shrink-0 text-xs font-bold text-gray-400 text-center">Ya compraste energía hoy</span>
             @endif
@@ -78,8 +80,10 @@
                 {{ $dif['icono'] }} Mazmorra <span class="text-rose-300">{{ $dif['nombre'] }}</span>
                 <span class="text-gray-400 text-sm">· rival {{ min($mazmorra->paso + 1, M::ENEMIGOS + 1) }} de {{ M::ENEMIGOS + 1 }}</span>
             </p>
-            <button type="button" wire:click="abandonar" wire:confirm="¿Abandonar la mazmorra? Vas a perder el avance (la energía gastada no vuelve)."
-                    class="{{ $boton3d }} px-2 py-1 text-xs text-white bg-gradient-to-b from-gray-600 to-gray-800">Abandonar</button>
+            <x-confirmar titulo="¿Abandonar la mazmorra?" accion="abandonar" boton="Abandonar"
+                texto="Vas a perder el avance. La energía gastada no vuelve.">
+                <button type="button" class="{{ $boton3d }} px-2 py-1 text-xs text-white bg-gradient-to-b from-gray-600 to-gray-800">Abandonar</button>
+            </x-confirmar>
         </div>
 
         {{-- El camino: los 4 enemigos y el jefe al final --}}
