@@ -937,7 +937,7 @@
             return img._bordes;
           },
           // Cada figura se corre hasta su borde de la escena (sacando el espacio vacío del gif) y, si igual se pisan
-          // en el medio, las dos se achican lo justo
+          // en el medio o alguna es más alta que el lugar que hay debajo del cartel del ganador, las dos se achican lo justo
           ajustar() {
             const lados = ['izq', 'der'].map(l => this.$el.querySelector('[data-lado=' + l + ']'));
             if (lados.some(l => ! l)) return;
@@ -946,16 +946,20 @@
               caja.style.scale = ''; caja.style.translate = '';
               const r = img.naturalWidth ? img.getBoundingClientRect().width / img.naturalWidth : 1;
               const [x0, x1] = img.naturalWidth ? this.bordes(img) : [0, 0];
-              return { caja, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width };
+              return { caja, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto: img.getBoundingClientRect().height };
             });
             const c = this.$el.getBoundingClientRect(), i = lados[0].getBoundingClientRect(), d = lados[1].getBoundingClientRect();
             const espacio = c.width - (i.left - c.left) - (c.right - d.right) - 8;
             const total = datos[0].ancho + datos[1].ancho;
-            const f = total > espacio && total > 0 ? Math.max(0.5, espacio / total) : 1;
+            const fAncho = total > espacio && total > 0 ? espacio / total : 1;
+            // Alto: lo que queda de la escena debajo del cartel con el nombre y la frase (~80 px)
+            const altoMax = Math.max(120, c.height - 80), alto = Math.max(datos[0].alto, datos[1].alto);
+            const fAlto = alto > altoMax ? altoMax / alto : 1;
+            const f = Math.max(0.4, Math.min(fAncho, fAlto));
             datos.forEach(x => { x.caja.style.scale = f; x.caja.style.translate = (-x.vacio * f) + 'px 0'; });
           }
         }"
-        x-init="$nextTick(() => ajustar()); $el.querySelectorAll('[data-lado] img').forEach(img => img.complete ? null : img.addEventListener('load', () => ajustar()))"
+        x-init="$nextTick(() => ajustar()); setTimeout(() => ajustar(), 700); $el.querySelectorAll('[data-lado] img').forEach(img => img.complete ? null : img.addEventListener('load', () => ajustar()))"
         @resize.window.debounce.150ms="ajustar()">
 
       <div class="w-full h-full">
