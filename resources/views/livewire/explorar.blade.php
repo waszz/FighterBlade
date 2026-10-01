@@ -777,7 +777,11 @@
         </span>
       </p>
 
-      <!-- Stats -->
+      <!-- Stats: los mismos con los que te pelea (refuerzo, sus poderes y tu Anulación de poder) -->
+      @php
+        $anuladosModalEnemigo = \App\Support\AnulacionPoder::anulados($this->gifsEnemigo()->poderes ?? [], $personaje->postDeCombate()?->poderes ?? []);
+      @endphp
+      <p class="text-center text-[11px] text-gray-400 -mt-1 mb-1">Stats con los que te pelea</p>
       <div class="font-mono rounded-lg border border-black p-2 space-y-1.5 mb-3 bg-gradient-to-b from-[#2a3240] to-[#10141b]
                   shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)]">
         @foreach ($enemigoModalStats as $statName => $value)
@@ -807,7 +811,7 @@
           {{-- Solo los iconos: el nombre y la descripción aparecen al pasar el mouse o al tocar --}}
           <div class="flex flex-wrap justify-center gap-2">
             @foreach ($this->gifsEnemigo()->poderes ?? [] as $poder)
-              <x-icono-poder :poder="$poder" tam="w-11 h-11" class="cursor-pointer" />
+              <x-icono-poder :poder="$poder" tam="w-11 h-11" class="cursor-pointer {{ in_array($poder->nombre, $anuladosModalEnemigo, true) ? 'grayscale opacity-40' : '' }}" />
             @endforeach
             @if ($joyaEnemigo)
               <x-icono-joya :joya="$joyaEnemigo" tam="w-11 h-11" class="cursor-pointer" />

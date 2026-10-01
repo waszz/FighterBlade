@@ -462,11 +462,14 @@ public function mostrarModalEnemigo()
         return;
     }
 
-    $stats = is_array($this->enemigo->stats)
-        ? $this->enemigo->stats
-        : (json_decode($this->enemigo->stats ?? '{}', true) ?: []);
+    // Los stats con los que te va a pelear (la misma cuenta que la pelea: refuerzo, sus poderes y tu Anulación de poder)
+    [, $poderesEnemigoPelea] = $this->poderesDePelea();
+    $stats = $this->statsEnemigoEnPelea($poderesEnemigoPelea);
 
-    $this->enemigoModalStats = $stats;
+    $this->enemigoModalStats = array_intersect_key(
+        array_merge(array_fill_keys(['fuerza', 'resistencia', 'ataque', 'defensa', 'velocidad', 'energia'], 0), $stats),
+        array_flip(['fuerza', 'resistencia', 'ataque', 'defensa', 'velocidad', 'energia'])
+    );
     $this->modalEnemigoVisible = true;
 }
 
@@ -1582,55 +1585,11 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
         $res = [];
 
         // ⛔ ANULACIÓN DE PODER: antes de calcular nada, a cada uno se le sacan los poderes que le anula el rival.
-        // Los stats, los buffs y todos los efectos de la pelea usan solo los que quedan
-        $poderesPersonajeBase = collect($this->personaje->postDeCombate()?->poderes ?? []);
-        $poderesEnemigoBase   = collect(($this->enemigo instanceof Personaje ? $this->gifsEnemigo()?->poderes : $this->enemigo->poderes) ?? []);
-        $poderesPersonajePelea = \App\Support\AnulacionPoder::filtrar($poderesPersonajeBase, $poderesEnemigoBase);
-        $poderesEnemigoPelea   = \App\Support\AnulacionPoder::filtrar($poderesEnemigoBase, $poderesPersonajeBase);
+        // Los stats, los buffs y todos los efectos de la pelea usan solo los que quedan (ver poderesDePelea)
+        [$poderesPersonajePelea, $poderesEnemigoPelea] = $this->poderesDePelea();
 
         $statsPersonaje = $this->obtenerStatsCompletos($poderesPersonajePelea);
-
-        // PvP: el rival es un jugador → sus stats base más los de sus partes equipadas
-        $statsEnemigo = $this->enemigo instanceof Personaje
-            ? $this->enemigo->statsDeCombate($poderesEnemigoPelea)
-            : Personaje::decodificarStats($this->enemigo->stats);
-        // dd($statsEnemigo);
-
-        // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel.
-        // 🧭 Exploración: también (ver EQUIPO_RIVAL_EXPLORACION)
-        $mazmorraPelea = $this->mazmorraActiva();
-        $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva() || $mazmorraPelea; // la mazmorra, como la Torre
-        $esEnemigoExploracion = $this->esExploracion() && ($this->enemigo->es_enemigo ?? null) != self::ENEMIGO_ESPECIAL;
-        if (! ($this->enemigo instanceof Personaje) && ($esRivalMisionTorre || $esEnemigoExploracion)) {
-            $factorRival = self::refuerzoRivalMisionTorre(
-                (int) ($this->enemigo->nivel ?? 1),
-                $esRivalMisionTorre ? self::EQUIPO_RIVAL_MISION_TORRE : self::EQUIPO_RIVAL_EXPLORACION
-            );
-            // 🕳️ Mazmorra: más fuerte según la dificultad (y el jefe un poco más)
-            if ($mazmorraPelea) {
-                $factorRival *= $mazmorraPelea->factorStats();
-            }
-            foreach ($statsEnemigo as $stat => $valor) {
-                if (is_numeric($valor)) {
-                    $statsEnemigo[$stat] = (int) round($valor * $factorRival);
-                }
-            }
-        }
-
-        // Enemigos del juego: sus poderes que suben stats también cuentan (los jugadores ya los traen en statsDeCombate)
-        if (! ($this->enemigo instanceof Personaje)) {
-            $statsEnemigo = \App\Support\PoderesStats::aplicar($statsEnemigo, $poderesEnemigoPelea);
-        }
-
-        // 🎯 Presa de caza: stats reforzados según la rareza
-        if ($caza = $this->cazaActiva()) {
-            $factorCaza = $caza->rarezaInfo()['stats'];
-            foreach ($statsEnemigo as $stat => $valor) {
-                if (is_numeric($valor)) {
-                    $statsEnemigo[$stat] = (int) round($valor * $factorCaza);
-                }
-            }
-        }
+        $statsEnemigo   = $this->statsEnemigoEnPelea($poderesEnemigoPelea);
 
         $nivelPersonaje = $this->personaje->nivel;
         $nivelEnemigo   = $this->enemigo->nivel ?? 1;
@@ -3830,6 +3789,68 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     public function esExploracion(): bool
     {
         return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva();
+    }
+
+    // Poderes que valen en la pelea [personaje, enemigo]: los del set con el que pelea cada uno (en PvP el set completo
+    // equipado del rival), sin los que le anula el rival con ANULACIÓN DE PODER
+    public function poderesDePelea(): array
+    {
+        $poderesPersonajeBase = collect($this->personaje->postDeCombate()?->poderes ?? []);
+        $poderesEnemigoBase   = collect(($this->enemigo instanceof Personaje ? $this->gifsEnemigo()?->poderes : $this->enemigo->poderes) ?? []);
+
+        return [
+            \App\Support\AnulacionPoder::filtrar($poderesPersonajeBase, $poderesEnemigoBase),
+            \App\Support\AnulacionPoder::filtrar($poderesEnemigoBase, $poderesPersonajeBase),
+        ];
+    }
+
+    // Stats con los que pelea el enemigo actual (los usan la pelea y el modal del enemigo, así muestran lo mismo):
+    // los del set (o del jugador en PvP), el refuerzo de exploración / misión / torre / mazmorra, sus poderes que suben
+    // stats (sin los anulados) y el refuerzo de la presa de caza
+    public function statsEnemigoEnPelea($poderesEnemigoPelea): array
+    {
+        // PvP: el rival es un jugador → sus stats base más los de sus partes equipadas
+        $statsEnemigo = $this->enemigo instanceof Personaje
+            ? $this->enemigo->statsDeCombate($poderesEnemigoPelea)
+            : Personaje::decodificarStats($this->enemigo->stats);
+
+        // 📜🗼 Misión o Torre: el rival pelea como un jugador equipado de su nivel.
+        // 🧭 Exploración: también (ver EQUIPO_RIVAL_EXPLORACION)
+        $mazmorraPelea = $this->mazmorraActiva();
+        $esRivalMisionTorre = $this->misionActiva() || $this->torreActiva() || $mazmorraPelea; // la mazmorra, como la Torre
+        $esEnemigoExploracion = $this->esExploracion() && ($this->enemigo->es_enemigo ?? null) != self::ENEMIGO_ESPECIAL;
+        if (! ($this->enemigo instanceof Personaje) && ($esRivalMisionTorre || $esEnemigoExploracion)) {
+            $factorRival = self::refuerzoRivalMisionTorre(
+                (int) ($this->enemigo->nivel ?? 1),
+                $esRivalMisionTorre ? self::EQUIPO_RIVAL_MISION_TORRE : self::EQUIPO_RIVAL_EXPLORACION
+            );
+            // 🕳️ Mazmorra: más fuerte según la dificultad (y el jefe un poco más)
+            if ($mazmorraPelea) {
+                $factorRival *= $mazmorraPelea->factorStats();
+            }
+            foreach ($statsEnemigo as $stat => $valor) {
+                if (is_numeric($valor)) {
+                    $statsEnemigo[$stat] = (int) round($valor * $factorRival);
+                }
+            }
+        }
+
+        // Enemigos del juego: sus poderes que suben stats también cuentan (los jugadores ya los traen en statsDeCombate)
+        if (! ($this->enemigo instanceof Personaje)) {
+            $statsEnemigo = \App\Support\PoderesStats::aplicar($statsEnemigo, $poderesEnemigoPelea);
+        }
+
+        // 🎯 Presa de caza: stats reforzados según la rareza
+        if ($caza = $this->cazaActiva()) {
+            $factorCaza = $caza->rarezaInfo()['stats'];
+            foreach ($statsEnemigo as $stat => $valor) {
+                if (is_numeric($valor)) {
+                    $statsEnemigo[$stat] = (int) round($valor * $factorCaza);
+                }
+            }
+        }
+
+        return $statsEnemigo;
     }
 
     // Poderes del personaje en la pelea que se acaba de jugar: sin los que le anuló el rival (atacar los deja en la relación);
