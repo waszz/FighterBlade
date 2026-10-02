@@ -111,7 +111,7 @@ class Calendario extends Component
         // Torneo: viernes y sábados a la hora de la inscripción (ver App\Models\Torneo)
         for ($d = $desde->copy(); $d->lte($hasta); $d->addDay()) {
             if (\App\Models\Torneo::esDiaDeTorneo($d)) {
-                $agregar($d->toDateString(), ['hora' => sprintf('%02d:00', \App\Models\Torneo::HORA), 'titulo' => 'Torneo', 'tipo' => 'torneo',
+                $agregar($d->toDateString(), ['hora' => sprintf('%02d:00', \App\Models\Torneo::horaDe($d)), 'titulo' => 'Torneo', 'tipo' => 'torneo',
                     'descripcion' => 'Inscripción de ' . \App\Models\Torneo::MINUTOS_INSCRIPCION . ' minutos: te toca un set al azar y todos pelean como nivel ' . \App\Models\Torneo::NIVEL . '. Premio: ' . \App\Models\Torneo::PREMIO_ESMERALDAS . ' esmeraldas y un set de tu nivel.', 'id' => null]);
             }
         }
