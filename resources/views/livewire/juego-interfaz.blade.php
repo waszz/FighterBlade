@@ -42,9 +42,7 @@
     <aside :class="perfil ? '!flex fixed inset-y-0 left-0 z-50 w-64' : ''"
         class="sidebar-pj hidden lg:flex lg:w-56 shrink-0 p-1 flex-col items-center space-y-1 [&>*]:shrink-0 min-h-0 max-h-full overflow-y-auto overflow-x-hidden text-xs select-none text-white border-x-2 border-[#3d7fd6] shadow-[inset_0_0_12px_rgba(0,0,0,0.45)]"
         style="background-image: url('{{ asset('images/-juego.jpg') }}'); background-size: cover; background-position: 77% center; background-color: #0c202e;">
-            {{-- Cerrar (solo celular) --}}
-            <button type="button" @click="perfil = false" aria-label="Cerrar"
-                class="lg:hidden self-end w-7 h-7 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white text-sm font-bold shadow-[0_2px_0_#000]">&times;</button>
+            {{-- Celular: sin botón de cerrar (se cierra tocando afuera), así el nombre queda arriba de todo --}}
 
             {{-- Nombre estilo retro --}}
             <div data-tope-gif class="relative z-20 w-full bg-gradient-to-b from-neutral-800 to-black border-2 border-black rounded px-1 py-0.5 font-mono shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]">
