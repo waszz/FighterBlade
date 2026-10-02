@@ -76,6 +76,14 @@ public function toggleChat()
 
     public function mount($personajeId)
     {
+        // El torneo avanza cuando alguien entra al juego (no hay tareas programadas): cierra la inscripción,
+        // juega las rondas vencidas y da el premio. Si algo falla, que no rompa la entrada al juego
+        try {
+            \App\Models\Torneo::actualizarHoy();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         $this->personajes = Personaje::where('user_id', Auth::id())->get();
 
         $this->personaje = $this->personajes->firstWhere('id', $personajeId);

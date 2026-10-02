@@ -180,6 +180,29 @@ class RecompensasTorre
     }
 
     // Abre un cofre: crea su contenido en el inventario, borra el cofre y devuelve un texto con lo que tocó
+    // Las 3 partes (equipo, entrenamiento y accesorio) de un set al inventario. Lo usan los cofres y el premio del Torneo
+    public static function darSetCompleto(Personaje $personaje, Post $set): void
+    {
+        foreach (['equipo', 'entrenamiento', 'accesorio'] as $tipo) {
+            $decodificar = fn ($v) => is_array($v) ? $v : (json_decode($v ?? '[]', true) ?: []);
+            Objeto::create([
+                'personaje_id'             => $personaje->id,
+                'nombre'                   => $set->{$tipo . '_nombre'} ?: (ucfirst($tipo) . ' de ' . $set->titulo),
+                'tipo'                     => $tipo,
+                'nivel'                    => $set->nivel,
+                'stats'                    => $decodificar($set->{'ajustes_manuales_' . $tipo}),
+                'imagen'                   => $set->{$tipo . '_imagen'} ?: preg_replace('#^posts/#', '', (string) $set->imagen),
+                'origen_post_id'           => $set->id,
+                'requisitos_equipo'        => $tipo === 'equipo' ? $decodificar($set->requisitos_equipo) : [],
+                'requisitos_entrenamiento' => $tipo === 'entrenamiento' ? $decodificar($set->requisitos_entrenamiento) : [],
+                'requisitos_accesorio'     => $tipo === 'accesorio' ? $decodificar($set->requisitos_accesorio) : [],
+                'pocion'                   => false,
+                'usos_restantes'           => 1,
+                'usos_totales'             => 1,
+            ]);
+        }
+    }
+
     public static function abrirCofre(Objeto $cofre, Personaje $personaje): string
     {
         $nivel = (int) ($cofre->nivel ?? 20);
@@ -207,24 +230,7 @@ class RecompensasTorre
                     ?? Post::inRandomOrder()->first();
                 $set = Post::where('nivel', $set->nivel)->inRandomOrder()->first();
             }
-            foreach (['equipo', 'entrenamiento', 'accesorio'] as $tipo) {
-                $decodificar = fn ($v) => is_array($v) ? $v : (json_decode($v ?? '[]', true) ?: []);
-                Objeto::create([
-                    'personaje_id'             => $personaje->id,
-                    'nombre'                   => $set->{$tipo . '_nombre'} ?: (ucfirst($tipo) . ' de ' . $set->titulo),
-                    'tipo'                     => $tipo,
-                    'nivel'                    => $set->nivel,
-                    'stats'                    => $decodificar($set->{'ajustes_manuales_' . $tipo}),
-                    'imagen'                   => $set->{$tipo . '_imagen'} ?: preg_replace('#^posts/#', '', (string) $set->imagen),
-                    'origen_post_id'           => $set->id,
-                    'requisitos_equipo'        => $tipo === 'equipo' ? $decodificar($set->requisitos_equipo) : [],
-                    'requisitos_entrenamiento' => $tipo === 'entrenamiento' ? $decodificar($set->requisitos_entrenamiento) : [],
-                    'requisitos_accesorio'     => $tipo === 'accesorio' ? $decodificar($set->requisitos_accesorio) : [],
-                    'pocion'                   => false,
-                    'usos_restantes'           => 1,
-                    'usos_totales'             => 1,
-                ]);
-            }
+            self::darSetCompleto($personaje, $set);
             $texto = "¡El cofre tenía el set completo de {$set->titulo} (Nv {$set->nivel})!";
         } else {
             $p = self::POCIONES_COFRE[$opcion];
