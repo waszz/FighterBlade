@@ -69,8 +69,9 @@
                 @endif
             </div>
 
-            {{-- Contenedor relativo para ciudad + personaje --}}
-            <div class="relative w-full max-w-[200px] mx-auto">
+            {{-- Contenedor relativo para ciudad + personaje: el personaje queda adentro del recuadro de la ciudad
+                 (si es más grande, se corta en el borde; no sale por arriba ni se achica) --}}
+            <div class="relative w-full max-w-[200px] h-40 mx-auto overflow-hidden rounded">
                 @php
                 $gifCiudad = $ciudadActual?->gif ?? null;
                 @endphp
@@ -96,32 +97,10 @@
                 @endphp
 
                 @if($gif)
-                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set); si es más alto que el recuadro de la
-                     ciudad se achica para entrar (los sets grandes salían por arriba y tapaban el Logout) --}}
-                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')"
-                     x-data="{
-                         // La escala queda en el estado de Alpine (no en un estilo puesto a mano): cuando Livewire redibuja el
-                         // panel la vuelve a aplicar (antes la borraba y el personaje se agrandaba y achicaba)
-                         k: 1,
-                         ajustar() {
-                             const caja = $el.parentElement, img = $refs.img;
-                             if (! caja.clientHeight || ! img.complete) return;
-                             // Los sets grandes pueden salir por arriba del recuadro de la ciudad y pasar por detrás del Logout y
-                             // del nombre (que quedan adelante); recién si la cabeza pasaría el nombre se achica desde abajo
-                             // (los pies quedan donde están). Se mide con la escala puesta (dividiendo por ella): así no parpadea
-                             const c = caja.getBoundingClientRect(), r = img.getBoundingClientRect(), base = $refs.escala.getBoundingClientRect().bottom;
-                             if (! r.height) return;
-                             const tope = $el.closest('aside')?.querySelector('[data-tope-gif]')?.getBoundingClientRect().top ?? c.top;
-                             const alto = (base - r.top) / this.k, ancho = r.width / this.k;
-                             this.k = Math.min(1, (base - tope - 2) / alto, (c.width + 40) / ancho);
-                         }
-                     }"
-                     x-init="$nextTick(() => ajustar()); $refs.img.addEventListener('load', () => ajustar());
-                             new ResizeObserver(() => ajustar()).observe($el.parentElement)">
-                    <div x-ref="escala" wire:ignore.self style="transform-origin: bottom center" :style="'transform-origin: bottom center; transform: scale(' + k + ')'">
-                        <img x-ref="img" src="{{ asset('storage/' . $gif) }}" alt="Personaje"
-                            style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
-                    </div>
+                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set) --}}
+                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')">
+                    <img src="{{ asset('storage/' . $gif) }}" alt="Personaje"
+                        style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
                 </div>
                 @endif
             </div>
