@@ -592,8 +592,8 @@
 {{-- Las pociones se muestran más abajo, dentro de la grilla de slots --}}
 
 @if ($modalEquiparPocionAbierto && $pocionSeleccionada)
-  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-2" wire:click.self="$set('modalEquiparPocionAbierto', false)">
-    <div class="flex flex-col items-center w-full max-w-[220px]">
+  <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center overflow-y-auto z-50 p-2" wire:click.self="$set('modalEquiparPocionAbierto', false)">
+    <div class="my-auto flex flex-col items-center w-full max-w-[220px]">
 
       {{-- CARD 1: info de la poción --}}
       <div class="bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] rounded-xl border-2 border-black w-full p-3 relative">
@@ -889,8 +889,9 @@
 
     {{-- Modal objeto seleccionado --}}
     @if ($objetoSeleccionado)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModal">
-      <div class="flex flex-col items-center w-full max-w-[220px] text-white">
+    {{-- overflow-y-auto + my-auto: centrado si entra; si es más alto que la pantalla (celular) se puede bajar, en vez de quedar cortado arriba --}}
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex justify-center overflow-y-auto z-50 p-3" wire:click.self="cerrarModal">
+      <div class="my-auto flex flex-col items-center w-full max-w-[220px] text-white">
 
         {{-- CARD 1: info del objeto --}}
         <div class="bg-gradient-to-b from-[#232c3a] to-[#0c0f14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000] border-2 border-black rounded-xl p-3 w-full relative">

@@ -62,6 +62,13 @@
                 @if (auth()->user()?->isAdmin())
                     <a href="{{ route('posts.index') }}" class="px-1.5 rounded bg-black/60 font-mono text-[11px] font-bold uppercase tracking-wide text-amber-300 hover:text-amber-200 underline underline-offset-2">Admin</a>
                 @endif
+                {{-- Inventario lleno: aviso (lleva al inventario). Las partes, pociones y cofres que se ganan no entran --}}
+                @if ($personaje->lugaresLibres() <= 0)
+                    <button type="button" wire:click="$set('seccion', 'inventario')" title="Inventario lleno: lo que ganes no va a entrar"
+                        class="px-1.5 rounded border border-black bg-gradient-to-b from-red-500 to-red-800 font-mono text-[11px] font-bold uppercase tracking-wide text-white animate-pulse shadow-[0_2px_0_#000]">
+                        🎒 Lleno
+                    </button>
+                @endif
             </div>
 
             {{-- Contenedor relativo para ciudad + personaje --}}
