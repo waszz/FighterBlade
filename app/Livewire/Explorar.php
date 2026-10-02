@@ -2310,6 +2310,7 @@ if ($tipoAtaque === 'defensa') {
         }
     }
 
+    $danioSinReducir = 0; // se completa abajo si el golpe entra (lo usa el rebote)
     if ($puedeDefender) {
         $bloqueoPorDefensa   = true; // bloqueó un golpe: puede contraatacar (ver más abajo)
         $danioFisicoFinal    = 0;
@@ -2320,6 +2321,14 @@ if ($tipoAtaque === 'defensa') {
         $tipoAtaque          = 'bloqueo';
 
     } else {
+        // El golpe tal cual, antes de las reducciones del que lo recibe (Piel dura, Piel impenetrable...): es lo que se
+        // devuelve si lo rebota (la Piel de Hulk no tiene que achicar su propio rebote)
+        $danioSinReducir = match ($tipoAtacante) {
+            'hibrido'   => $danios['fisico'] + $danios['elemental'],
+            'elemental' => $danios['elemental'],
+            default     => $danios['fisico'],
+        };
+
         // Aplico reducción según tipo
         if ($tipoAtacante === 'hibrido') {
             $danioFisicoFinal    = $this->aplicarReduccionDanioPorTipo($danios['fisico'], $poderesDefensor, 'fisico');
@@ -2410,7 +2419,8 @@ if ($contraataqueOcurre) {
     $chanceRebote = $resistenciaRebote > self::MINIMO_CONTRA_REBOTE ? min(self::REBOTE_TOPE, $resistenciaRebote * self::REBOTE_POR_RESISTENCIA) : 0;
     $danioRebote = 0;
     if ($danioFinal > 0 && mt_rand(1, 10000) <= $chanceRebote * 100) {
-        $danioRebote = (int) round($danioFinal * self::REBOTE_PORCENTAJE);
+        // Rebota el golpe entero, no lo que le quedaba después de su Piel dura / impenetrable
+        $danioRebote = (int) round(max($danioFinal, $danioSinReducir ?? 0) * self::REBOTE_PORCENTAJE);
         $danioFisicoFinal    = 0;
         $danioElementalFinal = 0;
         $danioFinal          = 0;
