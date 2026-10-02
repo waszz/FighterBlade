@@ -21,8 +21,8 @@ class Casino extends Component
     // Símbolos de la tragaperras: peso = probabilidad relativa, pago = multiplicador con 3 iguales
     const SIMBOLOS = [
         // 3 pociones = pociones de drop (Búsqueda) al inventario (no paga oro/diamantes)
-        // pesoTriple: aparece mucho en los rodillos, pero el triple sale como si pesara 10
-        'pocion'   => ['icono' => '🧪', 'imagen' => 'images/pocion-busqueda.png', 'peso' => 30, 'pesoTriple' => 10, 'pago' => 0],
+        // pesoTriple: aparece mucho en los rodillos, pero el triple sale como si pesara 5 (antes 10: salía demasiado)
+        'pocion'   => ['icono' => '🧪', 'imagen' => 'images/pocion-busqueda.png', 'peso' => 30, 'pesoTriple' => 5, 'pago' => 0],
         'oro'      => ['icono' => '🪙', 'imagen' => 'images/oro.png', 'peso' => 18, 'pago' => 30],
         'diamante' => ['icono' => '💚', 'imagen' => 'images/diamante.png', 'peso' => 9,  'pago' => 80],
         // 3 regalos = set aleatorio (no paga oro/diamantes). pesoTriple 7: el triple sale un poco menos que con su peso (8)
