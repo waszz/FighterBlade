@@ -47,20 +47,20 @@
                 class="lg:hidden self-end w-7 h-7 flex items-center justify-center rounded-full border-2 border-black bg-gradient-to-b from-red-600 to-red-900 text-white text-sm font-bold shadow-[0_2px_0_#000]">&times;</button>
 
             {{-- Nombre estilo retro --}}
-            <div class="w-full bg-gradient-to-b from-neutral-800 to-black border-2 border-black rounded px-1 py-0.5 font-mono shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]">
+            <div data-tope-gif class="relative z-20 w-full bg-gradient-to-b from-neutral-800 to-black border-2 border-black rounded px-1 py-0.5 font-mono shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_2px_rgba(0,0,0,0.6)]">
                 <h2 class="text-xs font-bold uppercase truncate w-full text-center text-red-500 tracking-wide"><span class="{{ $personaje->claseNombre() }}">{{ $personaje->nombre ?? 'Sin nombre' }}</span></h2>
             </div>
 
             {{-- Logout (y, para admins, el acceso a la administración: la barra de arriba no se muestra en el juego) --}}
-            <div class="relative z-10 w-full flex justify-center gap-3">
+            <div class="relative z-20 w-full flex justify-center gap-3">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="font-mono text-[11px] font-bold uppercase tracking-wide text-sky-300 hover:text-sky-200 underline underline-offset-2">
+                    <button type="submit" class="px-1.5 rounded bg-black/60 font-mono text-[11px] font-bold uppercase tracking-wide text-sky-300 hover:text-sky-200 underline underline-offset-2">
                         Logout
                     </button>
                 </form>
                 @if (auth()->user()?->isAdmin())
-                    <a href="{{ route('posts.index') }}" class="font-mono text-[11px] font-bold uppercase tracking-wide text-amber-300 hover:text-amber-200 underline underline-offset-2">Admin</a>
+                    <a href="{{ route('posts.index') }}" class="px-1.5 rounded bg-black/60 font-mono text-[11px] font-bold uppercase tracking-wide text-amber-300 hover:text-amber-200 underline underline-offset-2">Admin</a>
                 @endif
             </div>
 
@@ -101,12 +101,14 @@
                          ajustar() {
                              const caja = $el.parentElement, img = $refs.img;
                              if (! caja.clientHeight || ! img.complete) return;
-                             // Se achica desde abajo (los pies quedan donde están) hasta que la cabeza entra en el recuadro.
-                             // Se mide con la escala puesta (dividiendo por ella), sin sacarla: así no parpadea
+                             // Los sets grandes pueden salir por arriba del recuadro de la ciudad y pasar por detrás del Logout y
+                             // del nombre (que quedan adelante); recién si la cabeza pasaría el nombre se achica desde abajo
+                             // (los pies quedan donde están). Se mide con la escala puesta (dividiendo por ella): así no parpadea
                              const c = caja.getBoundingClientRect(), r = img.getBoundingClientRect(), base = $refs.escala.getBoundingClientRect().bottom;
                              if (! r.height) return;
+                             const tope = $el.closest('aside')?.querySelector('[data-tope-gif]')?.getBoundingClientRect().top ?? c.top;
                              const alto = (base - r.top) / this.k, ancho = r.width / this.k;
-                             this.k = Math.min(1, (base - c.top - 3) / alto, (c.width + 40) / ancho);
+                             this.k = Math.min(1, (base - tope - 2) / alto, (c.width + 40) / ancho);
                          }
                      }"
                      x-init="$nextTick(() => ajustar()); $refs.img.addEventListener('load', () => ajustar());
