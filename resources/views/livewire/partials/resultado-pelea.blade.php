@@ -919,7 +919,7 @@
       {{-- Escena final. Si el gif del ganador y el del perdedor son muy anchos (ej. alas o capa) y se pisan en el medio
            (pasa en el celular, con la escena angosta), se achican los dos lo justo para que cada uno quede en su lado --}}
       <div
-        class="relative rounded-xl overflow-hidden select-none w-full max-w-[650px] min-h-[240px] pt-6"
+        class="relative rounded-xl overflow-hidden select-none w-full max-w-[650px] min-h-[240px] sm:min-h-[330px] pt-6"
         x-data="{
           // Columnas con dibujo del primer cuadro del gif [primera, última] (muchos gifs tienen espacio vacío a un costado)
           bordes(img) {
@@ -930,9 +930,11 @@
               const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
               const cx = cv.getContext('2d'); cx.drawImage(img, 0, 0);
               const d = cx.getImageData(0, 0, w, h).data;
-              let x0 = w, x1 = -1;
-              for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) if (d[(y * w + x) * 4 + 3] > 20) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); break; }
+              let x0 = w, x1 = -1, y0 = h;
+              for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) if (d[(y * w + x) * 4 + 3] > 20) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); break; }
               if (x1 >= x0) img._bordes = [x0, x1];
+              // Primera fila con dibujo: el espacio vacío de arriba del gif no cuenta para el alto (ej. la victoria de Chun-Li)
+              img._arriba = y0 < h ? y0 : 0;
             } catch (e) {}
             return img._bordes;
           },
@@ -952,20 +954,22 @@
             const s = this.f || 1;
             const datos = lados.map(lado => {
               const img = lado.querySelector('img'), rect = img.getBoundingClientRect();
-              const ancho = rect.width / s, alto = rect.height / s;
-              const r = img.naturalWidth ? ancho / img.naturalWidth : 1;
               const [x0, x1] = img.naturalWidth ? this.bordes(img) : [0, 0];
+              const ancho = rect.width / s, alto = img.naturalHeight ? (img.naturalHeight - (img._arriba ?? 0)) * (rect.height / s) / img.naturalHeight : rect.height / s;
+              const r = img.naturalWidth ? ancho / img.naturalWidth : 1;
               return { lado: lado.dataset.lado, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto };
             });
             const c = this.$el.getBoundingClientRect(), i = lados[0].getBoundingClientRect(), d = lados[1].getBoundingClientRect();
             if (! c.width || ! c.height) return; // escena todavía oculta
             const espacio = c.width - (i.left - c.left) - (c.right - d.right) - 8;
             const total = datos[0].ancho + datos[1].ancho;
-            const fAncho = total > espacio && total > 0 ? espacio / total : 1;
+            const fAncho = total > 0 ? espacio / total : 1;
             // Alto: lo que queda de la escena debajo del cartel con el nombre y la frase (~80 px)
             const altoMax = Math.max(120, c.height - 80), alto = Math.max(datos[0].alto, datos[1].alto);
-            const fAlto = alto > altoMax ? altoMax / alto : 1;
-            this.f = Math.max(0.4, Math.min(fAncho, fAlto));
+            const fAlto = alto > 0 ? altoMax / alto : 1;
+            // En PC (escena ancha) se pueden agrandar hasta 1,3 si hay lugar; en el celular, como mucho tamaño normal
+            const fMax = c.width >= 600 ? 1.3 : 1;
+            this.f = Math.max(0.4, Math.min(fMax, fAncho, fAlto));
             datos.forEach(x => this.vacio[x.lado] = x.vacio);
             this.listo = true;
           }
