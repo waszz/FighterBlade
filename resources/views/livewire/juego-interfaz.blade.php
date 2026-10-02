@@ -52,7 +52,7 @@
             </div>
 
             {{-- Logout (y, para admins, el acceso a la administración: la barra de arriba no se muestra en el juego) --}}
-            <div class="w-full flex justify-center gap-3">
+            <div class="relative z-10 w-full flex justify-center gap-3">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="font-mono text-[11px] font-bold uppercase tracking-wide text-sky-300 hover:text-sky-200 underline underline-offset-2">
@@ -91,10 +91,27 @@
                 @endphp
 
                 @if($gif)
-                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set), a tamaño completo en el recuadro --}}
-                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')">
-                    <img src="{{ asset('storage/' . $gif) }}" alt="Personaje"
-                        style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
+                {{-- Misma escala que en las peleas (con el ajuste de tamaño del set); si es más alto que el recuadro de la
+                     ciudad se achica para entrar (los sets grandes salían por arriba y tapaban el Logout) --}}
+                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')"
+                     x-data="{
+                         ajustar() {
+                             const caja = $el.parentElement, img = $refs.img;
+                             if (! caja.clientHeight || ! img.complete) return;
+                             $refs.escala.style.transform = '';
+                             // Se achica desde abajo (los pies quedan donde están) hasta que la cabeza entra en el recuadro
+                             const c = caja.getBoundingClientRect(), r = img.getBoundingClientRect(), base = $refs.escala.getBoundingClientRect().bottom;
+                             if (! r.height) return;
+                             const k = Math.min(1, (base - c.top - 3) / (base - r.top), (c.width + 40) / r.width);
+                             if (k < 1) $refs.escala.style.transform = 'scale(' + k + ')';
+                         }
+                     }"
+                     x-init="$nextTick(() => ajustar()); $refs.img.addEventListener('load', () => ajustar());
+                             new ResizeObserver(() => ajustar()).observe($el.parentElement)">
+                    <div x-ref="escala" style="transform-origin: bottom center">
+                        <img x-ref="img" src="{{ asset('storage/' . $gif) }}" alt="Personaje"
+                            style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
+                    </div>
                 </div>
                 @endif
             </div>
