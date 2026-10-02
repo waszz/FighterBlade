@@ -919,7 +919,7 @@
       {{-- Escena final. Si el gif del ganador y el del perdedor son muy anchos (ej. alas o capa) y se pisan en el medio
            (pasa en el celular, con la escena angosta), se achican los dos lo justo para que cada uno quede en su lado --}}
       <div
-        class="relative rounded-xl overflow-hidden select-none w-full max-w-[650px] min-h-[240px] sm:min-h-[330px] pt-6"
+        class="relative border-y-2 sm:border-2 border-gray-900 sm:rounded-xl shadow-lg overflow-hidden select-none w-full sm:max-w-[650px] min-h-[300px] sm:min-h-[240px] pt-6"
         x-data="{
           // Columnas con dibujo del primer cuadro del gif [primera, última] (muchos gifs tienen espacio vacío a un costado)
           bordes(img) {
@@ -964,12 +964,11 @@
             const espacio = c.width - (i.left - c.left) - (c.right - d.right) - 8;
             const total = datos[0].ancho + datos[1].ancho;
             const fAncho = total > 0 ? espacio / total : 1;
-            // Alto: lo que queda de la escena debajo del cartel con el nombre y la frase (~80 px)
-            const altoMax = Math.max(120, c.height - 80), alto = Math.max(datos[0].alto, datos[1].alto);
+            // Alto: que entren en la escena (el cartel con el nombre queda adelante, pueden pasar por detrás)
+            const altoMax = Math.max(120, c.height - 8), alto = Math.max(datos[0].alto, datos[1].alto);
             const fAlto = alto > 0 ? altoMax / alto : 1;
-            // En PC (escena ancha) se pueden agrandar hasta 1,3 si hay lugar; en el celular, como mucho tamaño normal
-            const fMax = c.width >= 600 ? 1.3 : 1;
-            this.f = Math.max(0.4, Math.min(fMax, fAncho, fAlto));
+            // Mismo tamaño que en la escena de la pelea de arriba; solo se achican si se pisan o no entran de alto
+            this.f = Math.max(0.4, Math.min(1, fAncho, fAlto));
             datos.forEach(x => this.vacio[x.lado] = x.vacio);
             this.listo = true;
           }
@@ -1054,30 +1053,30 @@
         @if($totalDanioPersonaje > $totalDanioEnemigo)
 
         {{-- Victoria del personaje --}}
-        <div data-lado="izq" class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
+        <div data-lado="izq" class="absolute bottom-1 left-0 sm:left-[8%] z-10">
           <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Victoria Personaje"
             style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none {{ $claseEstado['personaje'] ?? '' }}"></div>
         </div>
-        <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
+        <div data-lado="der" class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1]">
           <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifDerrotaEnemigo) }}" alt="GIF Derrota Enemigo"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaEnemigo) }}" class="block max-w-none {{ $claseEstado['enemigo'] ?? '' }}"></div>
         </div>
         @elseif($totalDanioPersonaje < $totalDanioEnemigo) {{-- Victoria del enemigo --}} <div data-lado="izq"
-          class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
+          class="absolute bottom-1 left-0 sm:left-[8%] z-10">
           <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifDerrotaPersonaje) }}" alt="GIF Derrota Personaje"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}"></div>
       </div>
-      <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
+      <div data-lado="der" class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1]">
         <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Victoria Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}"></div>
       </div>
       @else
       {{-- Empate --}}
-      <div data-lado="izq" class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
+      <div data-lado="izq" class="absolute bottom-1 left-0 sm:left-[8%] z-10">
         <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Empate Personaje"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}"></div>
       </div>
-      <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
+      <div data-lado="der" class="absolute bottom-1 right-0 sm:right-[8%] z-10 scale-x-[-1]">
         <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Empate Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}"></div>
       </div>
