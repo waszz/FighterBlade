@@ -69,77 +69,56 @@
             <button wire:click="abrirModalConfirmarEliminarClan" class="{{ $boton3d }} from-red-600 to-red-900">Eliminar clan</button>
             @endif
         </div>
-        <h3 class="text-xl mt-4 mb-4 text-center font-bold text-yellow-300 [text-shadow:0_2px_0_#000]">Inventario del clan</h3>
-        <div wire:key="reload-{{ $reloadClan }}">
-            <div class="overflow-x-auto w-full max-w-2xl">
-                <div class="grid grid-cols-6 gap-6 min-w-[600px]">
-                    @for ($i = 0; $i < 100; $i++) @php $item=$inventario->get($i);
-                        $stats = [];
-                        $requisitos = [];
+        <h3 class="text-xl mt-4 mb-1 text-center font-bold text-yellow-300 [text-shadow:0_2px_0_#000]">Inventario del clan</h3>
+        <p class="text-xs text-gray-400 mb-3 text-center">{{ $inventario->count() }}/100 lugares{{ $esFundador ? ' · tocá un objeto para enviarlo, retirarlo o eliminarlo' : '' }}</p>
+        {{-- Mismos casilleros que el inventario del personaje: en el celular redondos de a 5 por fila, en pantallas
+             grandes cuadrados de 100 px. El borde dice qué es (Equipo índigo, Entrenamiento verde, Accesorio rosa, poción) --}}
+        <div wire:key="reload-{{ $reloadClan }}" class="w-full">
+            @php
+            $abreviaturasSlot = ['fuerza' => 'FUE', 'ataque' => 'ATA', 'velocidad' => 'VEL', 'resistencia' => 'RES', 'defensa' => 'DEF', 'energia' => 'ENE'];
+            $casilla = 'relative rounded-full sm:rounded-md border-[3px] sm:border-2 w-full aspect-square sm:w-[100px] sm:h-[100px] sm:aspect-auto flex flex-col items-center justify-center p-1 select-none';
+            @endphp
+            <div class="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
+                @foreach ($inventario->filter(fn ($item) => $item->objeto) as $item)
+                    @php
+                    $objeto = $item->objeto;
+                    $esPocion = $objeto->tipo === 'pocion';
+                    [$borde, $texto] = match ($objeto->tipo) {
+                        'equipo' => ['border-indigo-500', 'text-indigo-400'],
+                        'entrenamiento' => ['border-green-500', 'text-green-400'],
+                        'accesorio' => ['border-pink-500', 'text-pink-400'],
+                        'pocion' => ['border-pink-500 sm:border-black', 'text-pink-400'],
+                        default => ['border-black', 'text-gray-400'],
+                    };
+                    $statsItem = is_array($objeto->stats) ? $objeto->stats : (json_decode($objeto->stats ?? '[]', true) ?: []);
+                    $tooltip = collect($statsItem)->except(['multiplicador', 'afecta', 'usos_totales', 'usos_restantes'])
+                        ->filter(fn ($v) => is_numeric($v) && $v > 0)
+                        ->map(fn ($v, $s) => ($abreviaturasSlot[strtolower($s)] ?? strtoupper(substr($s, 0, 3))) . ' +' . $v)->implode(', ');
+                    @endphp
+                    <div wire:key="clan-slot-{{ $item->id }}"
+                         @if ($esFundador) wire:click="abrirModalRetirarObjeto({{ $item->id }})" @endif
+                         title="{{ $objeto->nombre }} — Nivel {{ $objeto->nivel }} — {{ ucfirst($objeto->tipo) }}{{ $tooltip ? ' — ' . $tooltip : '' }}"
+                         class="{{ $casilla }} {{ $borde }} bg-gradient-to-b from-[#34405a] to-[#10151d] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] {{ $esFundador ? 'cursor-pointer hover:brightness-125 hover:ring-2 hover:ring-indigo-400' : '' }} transition">
+                        @if ($esPocion)
+                            <img src="{{ asset('images/' . $objeto->imagen) }}" alt="{{ $objeto->nombre }}"
+                                 class="w-4/5 h-4/5 sm:w-12 sm:h-12 object-contain" />
+                        @else
+                            <img src="{{ asset('storage/posts/' . $objeto->imagen) }}" alt="{{ $objeto->nombre }}"
+                                 class="w-full h-full sm:w-12 sm:h-12 object-cover rounded-full sm:rounded" />
+                        @endif
+                        <p class="hidden sm:block text-white text-[9px] font-semibold truncate w-full text-center px-1 mt-0.5">{{ $objeto->nombre }}</p>
+                        @if ($esPocion && isset($statsItem['usos_restantes'], $statsItem['usos_totales']))
+                            <p class="absolute -bottom-1 right-0 sm:static px-1 rounded sm:px-0 bg-black/80 sm:bg-transparent text-pink-400 text-[8px] leading-none">{{ $statsItem['usos_restantes'] }}/{{ $statsItem['usos_totales'] }}</p>
+                        @else
+                            <p class="hidden sm:block {{ $texto }} text-[8px] leading-none uppercase">{{ $objeto->tipo }} · Nv {{ $objeto->nivel }}</p>
+                        @endif
+                    </div>
+                @endforeach
 
-                        if ($item) {
-                        if (is_string($item->objeto->stats)) {
-                        $stats = json_decode($item->objeto->stats, true) ?: [];
-                        } elseif (is_array($item->objeto->stats)) {
-                        $stats = $item->objeto->stats;
-                        }
-
-                        if (isset($item->objeto->requisitos)) {
-                        if (is_string($item->objeto->requisitos)) {
-                        $requisitos = json_decode($item->objeto->requisitos, true) ?: [];
-                        } elseif (is_array($item->objeto->requisitos)) {
-                        $requisitos = $item->objeto->requisitos;
-                        }
-                        }
-                        }
-                        @endphp
-
-                        <div
-                            class="bg-gray-700 rounded-xl p-3 flex flex-col justify-start items-center text-sm text-center h-[200px]">
-                            @if($item && $item->objeto)
-                            <div class="w-full flex justify-center mb-2">
-                                <img src="{{ $item->objeto->tipo === 'pocion' 
-                    ? asset('images/' . $item->objeto->imagen) 
-                    : asset('storage/posts/' . $item->objeto->imagen) }}" alt="{{ $item->objeto->nombre }}"
-                                    class="w-16 h-16 object-cover rounded-xl shadow {{ $esFundador ? 'cursor-pointer' : '' }}"
-                                    @if($esFundador) wire:click="abrirModalRetirarObjeto({{ $item->id }})" @endif />
-                            </div>
-
-                            <span class="font-semibold truncate max-w-full">{{ $item->objeto->nombre }}</span>
-                            <span class="text-yellow-400 font-bold text-sm">Nivel {{ $item->objeto->nivel }}</span>
-
-                            {{-- Stats --}}
-                            @if(count($stats) > 0)
-                            <div class="mt-1 text-green-400 space-y-0.5 text-[11px] leading-tight">
-                                @foreach($stats as $stat => $valor)
-                                @if(is_numeric($valor) && $valor > 0 && !in_array($stat, ['multiplicador', 'afecta',
-                                'usos_totales', 'usos_restantes']))
-                                <div class="uppercase truncate">{{ ucfirst($stat) }} +{{ $valor }}</div>
-                                @endif
-                                @endforeach
-
-                                @if(isset($stats['usos_restantes']) && isset($stats['usos_totales']))
-                                <div class="truncate">Usos: {{ $stats['usos_restantes'] }}/{{ $stats['usos_totales'] }}
-                                </div>
-                                @endif
-                            </div>
-                            @endif
-
-                            {{-- Requisitos --}}
-                            @if(count($requisitos) > 0)
-                            <div class="mt-1 text-red-400 text-[11px] leading-tight">
-                                <div class="font-semibold mb-1">Requisitos:</div>
-                                @foreach($requisitos as $req => $valor)
-                                <div class="truncate">{{ ucfirst($req) }}: {{ $valor }}</div>
-                                @endforeach
-                            </div>
-                            @endif
-                            @else
-                            <div class="flex items-center justify-center h-full text-gray-400">Vacío</div>
-                            @endif
-                        </div>
-                        @endfor
-                </div>
+                {{-- Espacios vacíos --}}
+                @for ($i = $inventario->filter(fn ($item) => $item->objeto)->count(); $i < 100; $i++)
+                    <div class="{{ $casilla }} border-black bg-[#0a0e14] shadow-[inset_0_3px_6px_rgba(0,0,0,0.9),inset_0_-1px_0_rgba(255,255,255,0.08)] text-gray-700 sm:text-gray-600 text-2xl sm:text-3xl">+</div>
+                @endfor
             </div>
         </div>
 
@@ -204,77 +183,57 @@
     @endif
 
     @if ($modalRetirarObjeto && $objetoSeleccionado)
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-3" wire:click.self="cerrarModalRetirarObjeto">
-        <div
-            class="bg-gray-900 rounded-xl shadow-xl p-4 max-w-sm w-full text-white relative transform transition-transform duration-300 ease-in-out animate-fade-in-scale border-2 border-yellow-400">
-            <button wire:click="cerrarModalRetirarObjeto"
-                class="absolute top-2 right-2 text-yellow-400 text-2xl font-bold hover:text-yellow-300 transition"
-                aria-label="Cerrar modal">&times;</button>
+    @php
+    $objModal = $objetoSeleccionado->objeto;
+    $statsModal = is_array($objModal->stats) ? $objModal->stats : (json_decode($objModal->stats ?? '[]', true) ?: []);
+    $usosRestantes = $statsModal['usos_restantes'] ?? null;
+    $usosTotales = $statsModal['usos_totales'] ?? null;
+    $statsVisibles = collect($statsModal)->except(['multiplicador', 'afecta', 'usos_totales', 'usos_restantes'])->filter(fn ($v) => is_numeric($v) && $v > 0);
+    $abrevModal = ['fuerza' => 'FUE', 'ataque' => 'ATA', 'velocidad' => 'VEL', 'resistencia' => 'RES', 'defensa' => 'DEF', 'energia' => 'ENE'];
+    @endphp
+    <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 px-2" wire:click.self="cerrarModalRetirarObjeto">
+        <div class="relative w-full max-w-sm p-5 rounded-xl text-white animate-fade-in-scale {{ $panel3d }}" wire:click.stop>
+            <button type="button" wire:click="cerrarModalRetirarObjeto" aria-label="Cerrar"
+                    class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md border border-black text-white font-bold
+                           bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000]
+                           hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all">&times;</button>
 
-            <h3 class="text-2xl font-extrabold mb-4 text-center tracking-wide truncate">{{
-                $objetoSeleccionado->objeto->nombre }}</h3>
+            <h3 class="text-xl font-bold mb-1 text-center text-yellow-400 truncate px-6 [text-shadow:0_2px_0_#000]">{{ $objModal->nombre }}</h3>
+            <p class="text-center text-xs uppercase text-gray-300 mb-3">{{ $objModal->tipo }} · Nivel {{ $objModal->nivel }}</p>
 
-            <img src="{{ $objetoSeleccionado->objeto->tipo === 'pocion' 
-        ? asset('images/' . $objetoSeleccionado->objeto->imagen) 
-        : asset('storage/posts/' . $objetoSeleccionado->objeto->imagen) }}"
-                alt="{{ $objetoSeleccionado->objeto->nombre }}"
-                class="w-32 h-32 object-contain mx-auto mb-4 rounded-lg shadow-lg" />
+            <div class="w-28 h-28 mx-auto mb-3 rounded-xl overflow-hidden border-2 border-black bg-black/50 shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)] flex items-center justify-center">
+                <img src="{{ $objModal->tipo === 'pocion' ? asset('images/' . $objModal->imagen) : asset('storage/posts/' . $objModal->imagen) }}"
+                     alt="{{ $objModal->nombre }}" class="{{ $objModal->tipo === 'pocion' ? 'w-4/5 h-4/5 object-contain' : 'w-full h-full object-cover' }}" />
+            </div>
 
-            @php
-            $stats = is_array($objetoSeleccionado->objeto->stats)
-            ? $objetoSeleccionado->objeto->stats
-            : json_decode($objetoSeleccionado->objeto->stats, true);
-
-            $usosRestantes = $stats['usos_restantes'] ?? null;
-            $usosTotales = $stats['usos_totales'] ?? null;
-            @endphp
-
-            @if($usosRestantes !== null && $usosTotales !== null)
-            <div class="text-center text-green-400 font-semibold text-sm mb-4">
-                Usos: {{ $usosRestantes }}/{{ $usosTotales }}
+            @if ($statsVisibles->isNotEmpty())
+            <div class="flex flex-wrap justify-center gap-1 mb-3">
+                @foreach ($statsVisibles as $stat => $valor)
+                <span class="px-2 py-0.5 rounded text-xs font-bold text-green-400 {{ $caja3d }}">{{ $abrevModal[strtolower($stat)] ?? strtoupper(substr($stat, 0, 3)) }} +{{ $valor }}</span>
+                @endforeach
             </div>
             @endif
 
-            <p class="mb-6 text-center text-gray-300 text-base leading-relaxed">
-                ¿Quieres <span class="font-semibold text-yellow-400">retirar</span> este objeto y devolverlo a tu
-                inventario personal?
-            </p>
+            @if ($usosRestantes !== null && $usosTotales !== null)
+            <p class="text-center text-pink-400 font-semibold text-sm mb-3">Usos: {{ $usosRestantes }}/{{ $usosTotales }}</p>
+            @endif
 
-            @if($esFundador)
-            <div class="mb-4">
-                <label for="miembroSeleccionado" class="block mb-1 text-sm text-gray-300">Enviar a:</label>
-                <select wire:model="miembroSeleccionadoId" class="w-full text-black p-2 rounded">
+            @if ($esFundador)
+            <label class="block mb-3 text-sm font-semibold">Enviar a
+                <select wire:model="miembroSeleccionadoId" class="mt-1 {{ $input3d }}">
                     <option value="">-- Seleccionar miembro --</option>
-                    @foreach($miembrosDelClan as $miembro)
-                    <option value="{{ $miembro->id }}">
-                        {{ $miembro->nombre }} (Nivel {{ $miembro->nivel }})
-                    </option>
+                    @foreach ($miembrosDelClan as $miembro)
+                    <option value="{{ $miembro->id }}">{{ $miembro->nombre }} (Nivel {{ $miembro->nivel }})</option>
                     @endforeach
                 </select>
-            </div>
+            </label>
             @endif
 
-            <div class="flex justify-center gap-4">
-
-                <button wire:click="enviarObjetoAUsuario"
-                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold shadow-md transition text-sm">
-                    Enviar
-                </button>
-
-                <button wire:click="retirarObjetoDelClan"
-                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold shadow-md transition text-sm">
-                    Retirar
-                </button>
-
-                <button wire:click="eliminarObjetoDelClan"
-                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold shadow-md transition text-sm">
-                    Eliminar
-                </button>
-
-                <button wire:click="cerrarModalRetirarObjeto"
-                    class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-semibold shadow-md transition text-sm">
-                    Cancelar
-                </button>
+            <div class="grid grid-cols-2 gap-2">
+                <button wire:click="enviarObjetoAUsuario" wire:loading.attr="disabled" class="{{ $boton3d }} from-emerald-500 to-emerald-800">Enviar</button>
+                <button wire:click="retirarObjetoDelClan" wire:loading.attr="disabled" class="{{ $boton3d }} from-[#2f5470] to-[#0a1a26]">Retirar a mi inventario</button>
+                <button wire:click="eliminarObjetoDelClan" wire:loading.attr="disabled" class="{{ $boton3d }} from-red-600 to-red-900">Eliminar</button>
+                <button wire:click="cerrarModalRetirarObjeto" class="{{ $boton3d }} from-gray-500 to-gray-800">Cancelar</button>
             </div>
         </div>
     </div>
