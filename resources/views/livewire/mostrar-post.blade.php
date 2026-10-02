@@ -138,8 +138,15 @@
                                         Altura {{ $aj['subir'] == 0 ? '' : ($aj['subir'] > 0 ? '+' : '') . $aj['subir'] . 'px' }}
                                     </span>
                                     <button wire:click="ajustarAnimacion('{{ $campo }}', 'subir', 1)" class="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 font-bold" title="Subir">↑</button>
+
+                                    {{-- Al costado: → adelante (hacia el rival), ← atrás --}}
+                                    <button wire:click="ajustarAnimacion('{{ $campo }}', 'costado', -1)" class="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 font-bold" title="Atrás">←</button>
+                                    <span class="text-center {{ $aj['costado'] != 0 ? 'text-amber-300 font-bold' : '' }}">
+                                        Costado {{ $aj['costado'] == 0 ? '' : ($aj['costado'] > 0 ? '+' : '') . $aj['costado'] . 'px' }}
+                                    </span>
+                                    <button wire:click="ajustarAnimacion('{{ $campo }}', 'costado', 1)" class="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 font-bold" title="Adelante (hacia el rival)">→</button>
                                 </div>
-                                @if ($aj['escala'] != 1 || $aj['subir'] != 0)
+                                @if ($aj['escala'] != 1 || $aj['subir'] != 0 || $aj['costado'] != 0)
                                     <button wire:click="ajustarAnimacion('{{ $campo }}', 'reiniciar', 0)" class="mt-0.5 text-[10px] text-gray-400 underline hover:text-white">reiniciar</button>
                                 @endif
                             @endif

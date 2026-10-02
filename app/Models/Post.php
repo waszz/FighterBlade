@@ -337,12 +337,13 @@ public function getNombreAttribute()
         return [max($porAbajo[$abajo]), max(0, $altoLienzo - 1 - $abajo)];
     }
 
-    // Ajuste manual de una animación: escala (1 = sin cambio) y px a subir (negativo = bajar)
+    // Ajuste manual de una animación: escala (1 = sin cambio), px a subir (negativo = bajar) y px al costado
+    // (positivo = hacia adelante, hacia el rival; negativo = hacia atrás)
     public function ajusteGif(string $campo): array
     {
         $ajuste = $this->gif_ajustes[$campo] ?? [];
 
-        return ['escala' => (float) ($ajuste['escala'] ?? 1), 'subir' => (int) ($ajuste['subir'] ?? 0)];
+        return ['escala' => (float) ($ajuste['escala'] ?? 1), 'subir' => (int) ($ajuste['subir'] ?? 0), 'costado' => (int) ($ajuste['costado'] ?? 0)];
     }
 
     // ¿Esta animación viene mirando a la izquierda?
@@ -377,15 +378,22 @@ public function getNombreAttribute()
 
         [$zoom, $pie, $girado, $subir] = $estilo;
         $filtro = $estilo[4] ?? null; // tinte de las variantes Black / Gold
+        // Al costado: con `translate` (se suma al volteo de cada vista). El rival está espejado, así que "adelante" es
+        // hacia el centro de los dos lados
+        $costado = (int) ($estilo[5] ?? 0);
         $css = $zoom !== null ? sprintf('zoom:calc(%.3f * var(--escala-gif, 1));margin-bottom:%dpx', $zoom * $factor, $subir - $pie) : $sinMedidas;
 
-        return ltrim($css . ($girado ? ';rotate:y 180deg' : '') . ($filtro ? ';filter:' . $filtro : ''), ';');
+        return ltrim($css . ($girado ? ';rotate:y 180deg' : '') . ($costado ? ';translate:' . $costado . 'px 0' : '') . ($filtro ? ';filter:' . $filtro : ''), ';');
     }
 
-    // [zoom, px vacíos debajo, girado, px a subir] de cada gif de todos los sets, por ruta
+    // [zoom, px vacíos debajo, girado, px a subir, filtro, px al costado] de cada gif de todos los sets, por ruta
     protected static function cargarEstilosGif(): void
     {
-        foreach (self::conRivales()->get(array_merge(['id', 'gif_medidas', 'gifs_girados', 'gif_escala', 'gif_ajustes', 'filtro_gif'], self::CAMPOS_GIF)) as $post) {
+        // Las variantes de la zona inicial usan los mismos archivos que su set original: van primero, así en los archivos
+        // compartidos manda el original (si no, la variante pisaba los ajustes de tamaño, altura y costado del set)
+        $sets = self::conRivales()->get(array_merge(['id', 'es_enemigo', 'gif_medidas', 'gifs_girados', 'gif_escala', 'gif_ajustes', 'filtro_gif'], self::CAMPOS_GIF))
+            ->sortBy(fn ($p) => (int) $p->es_enemigo === self::VARIANTE_ZONA ? 0 : 1);
+        foreach ($sets as $post) {
             $medidas = $post->gif_medidas ?? [];
             // La escala sale del gif principal, así todas las animaciones del set quedan del mismo tamaño,
             // y se multiplica por el ajuste manual del set (gif_escala, 1 = sin ajuste)
@@ -405,6 +413,7 @@ public function getNombreAttribute()
                     $post->gifGirado($campo),
                     $ajuste['subir'],
                     $post->filtro_gif,
+                    $ajuste['costado'],
                 ];
             }
         }

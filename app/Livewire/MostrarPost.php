@@ -55,7 +55,7 @@ class MostrarPost extends Component
         $this->post->forceFill(['gifs_girados' => $girados ?: null])->saveQuietly();
     }
 
-    // Ajuste manual de una sola animación: tamaño ±5% (50%-200%) o altura ±4 px (-80 a 80)
+    // Ajuste manual de una sola animación: tamaño ±5% (50%-200%), altura ±4 px (-80 a 80) o al costado ±4 px (-120 a 120)
     public function ajustarAnimacion(string $campo, string $tipo, int $direccion)
     {
         if (! auth()->user()?->isAdmin() || ! in_array($campo, Post::CAMPOS_GIF, true)) {
@@ -69,11 +69,13 @@ class MostrarPost extends Component
             $actual['escala'] = max(0.5, min(2, round($actual['escala'] + ($direccion > 0 ? 0.05 : -0.05), 2)));
         } elseif ($tipo === 'subir') {
             $actual['subir'] = max(-80, min(80, $actual['subir'] + ($direccion > 0 ? 4 : -4)));
+        } elseif ($tipo === 'costado') {
+            $actual['costado'] = max(-120, min(120, $actual['costado'] + ($direccion > 0 ? 4 : -4)));
         } elseif ($tipo === 'reiniciar') {
-            $actual = ['escala' => 1, 'subir' => 0];
+            $actual = ['escala' => 1, 'subir' => 0, 'costado' => 0];
         }
 
-        if ($actual['escala'] == 1 && $actual['subir'] == 0) {
+        if ($actual['escala'] == 1 && $actual['subir'] == 0 && $actual['costado'] == 0) {
             unset($ajustes[$campo]);
         } else {
             $ajustes[$campo] = $actual;
