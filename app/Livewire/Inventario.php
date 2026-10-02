@@ -1047,6 +1047,25 @@ class Inventario extends Component
         $this->reloadInventario++;
     }
 
+    // Admin: marcar para tirar todo lo del inventario (lo equipado y lo que está en venta no), o desmarcar todo
+    public function seleccionarTodoParaTirar()
+    {
+        if (! auth()->user()?->isAdmin()) {
+            return;
+        }
+        $pj = $this->personaje;
+        $equipados = array_filter([$pj->equipo_id, $pj->entrenamiento_id, $pj->accesorio_id, $pj->joya_id, $pj->objeto_consumible_id]);
+        $this->objetosSeleccionadosParaTirar = Objeto::where('personaje_id', $pj->id)
+            ->whereNotIn('id', $equipados)
+            ->where(fn ($q) => $q->whereNull('precio_venta')->orWhere('precio_venta', 0))
+            ->pluck('id')->map(fn ($id) => (string) $id)->all();
+    }
+
+    public function deseleccionarTodoParaTirar()
+    {
+        $this->objetosSeleccionadosParaTirar = [];
+    }
+
     public function tirarObjetosSeleccionados()
     {
         if (empty($this->objetosSeleccionadosParaTirar)) {

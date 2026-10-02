@@ -581,6 +581,20 @@
          Tirar objetos seleccionados ({{ count($objetosSeleccionadosParaTirar) }})
       </button>
 
+      {{-- Admin: marcar / desmarcar todo para tirarlo de una (lo equipado y lo que está en venta no se marca) --}}
+      @if (auth()->user()?->isAdmin())
+      <div class="-mt-2 mb-4 w-full max-w-xs grid grid-cols-2 gap-2">
+        <button type="button" wire:click="seleccionarTodoParaTirar" wire:loading.attr="disabled"
+          class="px-3 py-1 rounded border border-black bg-gradient-to-b from-[#2f5470] to-[#0a1a26] text-white text-xs font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
+          Seleccionar todo
+        </button>
+        <button type="button" wire:click="deseleccionarTodoParaTirar" wire:loading.attr="disabled"
+          class="px-3 py-1 rounded border border-black bg-gradient-to-b from-gray-500 to-gray-800 text-white text-xs font-bold shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
+          Deseleccionar
+        </button>
+      </div>
+      @endif
+
 {{-- <script>
     window.addEventListener('mensaje', event => {
      
