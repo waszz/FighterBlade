@@ -66,7 +66,7 @@
                 @if ($personaje->lugaresLibres() <= 0)
                     <button type="button" wire:click="$set('seccion', 'inventario')" title="Inventario lleno: lo que ganes no va a entrar"
                         class="px-1.5 rounded border border-black bg-gradient-to-b from-red-500 to-red-800 font-mono text-[11px] font-bold uppercase tracking-wide text-white animate-pulse shadow-[0_2px_0_#000]">
-                        🎒 Lleno
+                        <i class="fa-solid fa-triangle-exclamation"></i> Lleno
                     </button>
                 @endif
             </div>
