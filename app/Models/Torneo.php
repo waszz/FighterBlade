@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 // Torneo de los viernes y sábados (hora local del juego, la misma que el Mercado y la Caza):
-//  - A la hora de HORAS (viernes 19, sábado 16) abre la inscripción por MINUTOS_INSCRIPCION: al anotarte te toca un set al azar (nivel 5 a 100).
+//  - A la hora de HORAS (viernes 20:30, sábado 16:00) abre la inscripción por MINUTOS_INSCRIPCION: al anotarte te toca un set al azar (nivel 5 a 100).
 //  - Todos pelean como nivel NIVEL: el set se lleva a ese nivel (sus stats repartidos igual) y se suman la joya y la
 //    poción de stat que tengas equipadas; sus poderes cuentan. No se gana exp, oro ni nada en las peleas.
 //  - Al cerrar la inscripción se juegan rondas cada MINUTOS_RONDA: se arman parejas al azar entre los que siguen
@@ -27,7 +27,7 @@ class Torneo extends Model
 
     const DIAS = [Carbon::FRIDAY, Carbon::SATURDAY];
     // Hora de la inscripción de cada día (hora local)
-    const HORAS = [Carbon::FRIDAY => 19, Carbon::SATURDAY => 16];
+    const HORAS = [Carbon::FRIDAY => '20:30', Carbon::SATURDAY => '16:00'];
     const MINUTOS_INSCRIPCION = 30;
     const MINUTOS_RONDA = 5;
     const VIDAS = 2;
@@ -61,9 +61,17 @@ class Torneo extends Model
         return now()->setTimezone(self::zona());
     }
 
-    public static function horaDe(Carbon $dia): int
+    // "HH:MM" de la inscripción de ese día
+    public static function horaDe(Carbon $dia): string
     {
-        return self::HORAS[$dia->dayOfWeek] ?? 16;
+        return self::HORAS[$dia->dayOfWeek] ?? '16:00';
+    }
+
+    // El momento en que abre la inscripción ese día (hora local)
+    public static function inicioDelDia(Carbon $dia): Carbon
+    {
+        [$h, $m] = array_map('intval', explode(':', self::horaDe($dia)));
+        return $dia->copy()->setTimezone(self::zona())->setTime($h, $m);
     }
 
     public static function esDiaDeTorneo(Carbon $dia): bool
@@ -79,7 +87,7 @@ class Torneo extends Model
             if (! self::esDiaDeTorneo($d)) {
                 continue;
             }
-            $inicio = $d->copy()->setTime(self::horaDe($d), 0);
+            $inicio = self::inicioDelDia($d);
             if (! $d->isSameDay($ahora)) {
                 return $inicio;
             }
@@ -97,7 +105,7 @@ class Torneo extends Model
     public function inicio(): Carbon
     {
         $dia = Carbon::parse($this->fecha->toDateString(), self::zona());
-        return $dia->setTime(self::horaDe($dia), 0);
+        return self::inicioDelDia($dia);
     }
 
     public function finInscripcion(): Carbon
@@ -115,7 +123,7 @@ class Torneo extends Model
     public static function actualizarHoy(): ?self
     {
         $ahora = self::ahoraLocal();
-        if (! self::esDiaDeTorneo($ahora) || $ahora->hour < self::horaDe($ahora)) {
+        if (! self::esDiaDeTorneo($ahora) || $ahora->lt(self::inicioDelDia($ahora))) {
             return null;
         }
         $torneo = self::firstOrCreate(['fecha' => $ahora->toDateString()], ['estado' => 'inscripcion']);

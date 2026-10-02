@@ -16,7 +16,7 @@
     {{-- Cabecera y reglas --}}
     <div class="p-4 rounded-xl {{ $panel3d }}">
         <h2 class="text-2xl font-bold text-yellow-400 text-center [text-shadow:0_2px_0_#000]"><i class="fa-solid fa-trophy"></i> Torneo</h2>
-        <p class="text-center text-sm text-gray-300 mt-1">Viernes a las {{ \App\Models\Torneo::HORAS[\Carbon\Carbon::FRIDAY] }}:00 y sábados a las {{ \App\Models\Torneo::HORAS[\Carbon\Carbon::SATURDAY] }}:00</p>
+        <p class="text-center text-sm text-gray-300 mt-1">Viernes a las {{ \App\Models\Torneo::HORAS[\Carbon\Carbon::FRIDAY] }} y sábados a las {{ \App\Models\Torneo::HORAS[\Carbon\Carbon::SATURDAY] }}</p>
         <ul class="mt-3 text-xs text-gray-300 space-y-1 max-w-xl mx-auto list-disc pl-5">
             <li>Tenés {{ \App\Models\Torneo::MINUTOS_INSCRIPCION }} minutos para anotarte: te toca un <b class="text-white">set al azar</b> (nivel {{ \App\Models\Torneo::NIVEL_SET_MIN }} a {{ \App\Models\Torneo::NIVEL_SET_MAX }}).</li>
             <li>Todos pelean como <b class="text-white">nivel {{ \App\Models\Torneo::NIVEL }}</b> con ese set y sus poderes; cuentan tu joya y tu poción de stat equipadas.</li>
