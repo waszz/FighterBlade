@@ -2251,19 +2251,14 @@ if ($nombrePoder === 'FURIA CIEGA') {
             //  dump("Ronda $r - Stats Enemigo", $statsEnemigo);
 
 
-            $prioridadPersonaje = ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje + rand(0, 2);
-            $prioridadEnemigo   = ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo + rand(0, 2);
 
-            // Pega uno solo por ronda. Contra los enemigos del juego pega el más rápido.
-            // En PvP (y duelos) el turno se sortea con peso según velocidad + nivel: el más rápido pega más seguido,
-            // pero no todas las rondas (si no, con un punto más de velocidad ganaba siempre el mismo)
-            if ($this->esPvp) {
-                $pesoPersonaje = max(1, ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje);
-                $pesoEnemigo   = max(1, ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo);
-                $primeroEnAtacar = mt_rand(1, $pesoPersonaje + $pesoEnemigo) <= $pesoPersonaje ? 'personaje' : 'enemigo';
-            } else {
-                $primeroEnAtacar = $prioridadPersonaje >= $prioridadEnemigo ? 'personaje' : 'enemigo';
-            }
+            // Pega uno solo por ronda. El turno se sortea con peso según velocidad + nivel (PvP, duelos y también los
+            // enemigos del juego): el más rápido pega más seguido, pero no todas las rondas. Antes, contra los enemigos
+            // del juego pegaba siempre el más rápido: el más lento nunca atacaba y el rebote (que sale cuando te pegan)
+            // era todo o nada según quién era más rápido
+            $pesoPersonaje = max(1, ($statsPersonaje['velocidad'] ?? 0) + $nivelPersonaje);
+            $pesoEnemigo   = max(1, ($statsEnemigo['velocidad'] ?? 0) + $nivelEnemigo);
+            $primeroEnAtacar = mt_rand(1, $pesoPersonaje + $pesoEnemigo) <= $pesoPersonaje ? 'personaje' : 'enemigo';
             $ordenAtaques = [$primeroEnAtacar];
 
             foreach ($ordenAtaques as $atacante) {
