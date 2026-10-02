@@ -699,8 +699,38 @@ public function colorBarraPorStat($valor)
         }
     }
 
+    // Con el juego trabado o poca señal se puede apretar varias veces: cada acción que empieza una exploración o
+    // una pelea toma un candado por personaje; si ya hay otra corriendo, la repetida no hace nada
+    private function conCandado(callable $accion)
+    {
+        $candado = \Illuminate\Support\Facades\Cache::lock('accion-personaje-' . $this->personaje->id, 60);
+        if (! $candado->get()) {
+            return null;
+        }
+        try {
+            return $accion();
+        } finally {
+            $candado->release();
+        }
+    }
+
     public function explorar($minutos)
     {
+        return $this->conCandado(fn () => $this->empezarExploracion($minutos));
+    }
+
+    private function empezarExploracion($minutos)
+    {
+        // El estado de la base (no el de la pantalla, que puede estar vieja): si ya está explorando o tiene un rival
+        // esperando, no se empieza otra exploración
+        $this->personaje->refresh();
+        if ($this->personaje->exploracion_duracion > 0 || $this->personaje->enemigo_actual_id
+            || $this->personaje->enemigo_actual_personaje_id || $this->personaje->comerciante_oferta) {
+            $this->mensajeExploracion = '¡Ya estás explorando!';
+            $this->dispatch('recargar-pagina');
+            return;
+        }
+
         if ($this->personaje->fresh()?->estaEntrenando()) {
             $this->mensajeExploracion = Personaje::MENSAJE_ENTRENANDO;
             $this->mostrarOpciones    = false;
@@ -1571,6 +1601,40 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
 
 
     public function atacar()
+    {
+        return $this->conCandado(function () {
+            // La pelea ya se jugó (otro toque, otra pestaña o la página recargada con la señal mala): no se vuelve
+            // a pelear ni a cobrar; la página se recarga para mostrar el estado real
+            if (! $this->peleaSigueEnCurso()) {
+                $this->mostrarBotonesBatalla = false;
+                $this->combateActivo         = false;
+                $this->enemigo               = null;
+                session()->forget('enemigo');
+                session()->forget('combate_activo');
+                $this->dispatch('recargar-pagina');
+                return;
+            }
+            $this->pelear();
+        });
+    }
+
+    // ¿El rival de la pantalla sigue siendo el que el personaje tiene asignado en la base?
+    // (al terminar cada pelea se borra; PvE: enemigo_actual_id, PvP/duelo: enemigo_actual_personaje_id)
+    private function peleaSigueEnCurso(): bool
+    {
+        if (! $this->enemigo || ! $this->combateActivo) {
+            return false;
+        }
+        $enBase = Personaje::query()->select(['id', 'enemigo_actual_id', 'enemigo_actual_personaje_id'])->find($this->personaje->id);
+        if (! $enBase) {
+            return false;
+        }
+        return $this->enemigo instanceof Personaje
+            ? (int) $enBase->enemigo_actual_personaje_id === (int) $this->enemigo->id
+            : (int) $enBase->enemigo_actual_id === (int) $this->enemigo->id;
+    }
+
+    private function pelear()
     {
 
         $this->mostrarBotonesBatalla = false;

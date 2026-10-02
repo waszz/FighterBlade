@@ -331,7 +331,7 @@
             @endphp
 
             @foreach($minutosMostrar as $original => $modificado)
-                <button wire:click="explorar({{ $original }})"
+                <button wire:click="explorar({{ $original }})" wire:loading.attr="disabled"
                     class="text-white w-full h-8 flex flex-col items-center justify-center text-[9px] leading-none font-semibold rounded border border-black bg-gradient-to-b from-[#2f5470] to-[#0a1a26] hover:brightness-125 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100">
                     <span>Explorar</span>
                     <span class="text-sm font-bold mt-0.5">
@@ -394,11 +394,11 @@
       {{-- Botones --}}
       @if($mostrarBotonesBatalla)
       <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2">
-        <button wire:click="atacar"
+        <button wire:click="atacar" wire:loading.attr="disabled"
           class="bg-gradient-to-b from-[#2f5470] to-[#0a1a26] hover:brightness-125 text-white font-bold py-2 px-4 text-sm rounded transition-all duration-100 border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)]">
           Atacar
         </button>
-        <button wire:click="huir"
+        <button wire:click="huir" wire:loading.attr="disabled"
           class="bg-gradient-to-b from-[#2f5470] to-[#0a1a26] hover:brightness-125 text-white font-bold py-2 px-4 text-sm rounded transition-all duration-100 border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)]">
           Huir
         </button>
