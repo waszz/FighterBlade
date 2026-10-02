@@ -185,8 +185,7 @@ class Torneo extends Model
             TorneoPelea::create(['torneo_id' => $this->id, 'ronda' => $ronda, 'a_id' => $libre->id, 'b_id' => null, 'ganador_id' => $libre->id]);
         }
 
-        foreach ($vivos->chunk(2) as $pareja) {
-            [$a, $b] = $pareja->values()->all();
+        foreach ($this->armarParejas($vivos) as [$a, $b]) {
             $resultado = $this->pelear($a, $b);
             $ganador = $resultado['ganador'] === 'a' ? $a : $b;
             $perdedor = $ganador->is($a) ? $b : $a;
@@ -215,6 +214,44 @@ class Torneo extends Model
         if ($quedan->count() <= 1) {
             $this->terminar($quedan->first());
         }
+    }
+
+    // Parejas de la ronda evitando repetir rivales: se prueban varios sorteos y se queda el que menos repite
+    // (si ya peleaste con todos, puede volver a tocarte alguno, pero primero los que menos enfrentaste)
+    private function armarParejas($vivos): array
+    {
+        $veces = [];
+        foreach (TorneoPelea::where('torneo_id', $this->id)->whereNotNull('b_id')->get(['a_id', 'b_id']) as $p) {
+            $clave = min($p->a_id, $p->b_id) . '-' . max($p->a_id, $p->b_id);
+            $veces[$clave] = ($veces[$clave] ?? 0) + 1;
+        }
+        $repite = fn ($x, $y) => $veces[min($x->id, $y->id) . '-' . max($x->id, $y->id)] ?? 0;
+
+        $mejor = null;
+        $mejorCosto = PHP_INT_MAX;
+        for ($intento = 0; $intento < 30 && $mejorCosto > 0; $intento++) {
+            $libres = $vivos->shuffle()->values()->all();
+            $parejas = [];
+            $costo = 0;
+            while (count($libres) >= 2) {
+                $a = array_shift($libres);
+                // El rival que menos veces enfrentó (empates: el primero del sorteo)
+                $idx = 0;
+                foreach ($libres as $i => $c) {
+                    if ($repite($a, $c) < $repite($a, $libres[$idx])) {
+                        $idx = $i;
+                    }
+                }
+                $b = $libres[$idx];
+                array_splice($libres, $idx, 1);
+                $costo += $repite($a, $b);
+                $parejas[] = [$a, $b];
+            }
+            if ($costo < $mejorCosto) {
+                [$mejor, $mejorCosto] = [$parejas, $costo];
+            }
+        }
+        return $mejor ?? [];
     }
 
     // Los datos con los que pelea un participante: su set llevado a nivel NIVEL, más su joya y su poción de stat
