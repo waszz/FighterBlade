@@ -164,7 +164,7 @@
             <button wire:click="$set('mostrarModal', false)" class="{{ $cerrar3d }}">&times;</button>
 
             {{-- Personaje sobre su zona --}}
-            <div class="relative mx-auto mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50 shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
+            <div class="relative mx-auto mt-5 mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50 shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
                 @if ($gifZonaRanking)
                     <img src="{{ asset('storage/posts/' . $gifZonaRanking) }}" alt="Zona" class="absolute inset-0 w-full h-full object-cover object-bottom">
                 @endif

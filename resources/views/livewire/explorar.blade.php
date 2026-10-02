@@ -659,7 +659,7 @@
 
       <!-- GIF del personaje sobre la zona (ciudad) en la que está -->
       @php $gifZonaModal = $personajeSeleccionadoModal->ciudadActual?->gif; @endphp
-      <div class="relative mx-auto mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50
+      <div class="relative mx-auto mt-5 mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50
                   shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
         @if ($gifZonaModal)
           <img src="{{ asset('storage/posts/' . $gifZonaModal) }}" alt="Zona" class="absolute inset-0 w-full h-full object-cover object-bottom">

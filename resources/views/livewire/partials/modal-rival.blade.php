@@ -16,7 +16,7 @@
                      hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all">&times;</button>
 
       {{-- Gif del rival sobre su escenario --}}
-      <div class="relative mx-auto mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50
+      <div class="relative mx-auto mt-5 mb-3 h-32 w-48 flex items-end justify-center overflow-hidden rounded-lg border-2 border-black bg-black/50
                   shadow-[inset_0_4px_10px_rgba(0,0,0,0.9)]">
         @if ($escenarioModal)
           <img src="{{ asset('storage/posts/' . $escenarioModal) }}" alt="" class="absolute inset-0 w-full h-full object-cover object-bottom">
