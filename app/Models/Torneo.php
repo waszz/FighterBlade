@@ -84,7 +84,9 @@ class Torneo extends Model
                 return $inicio;
             }
             $hoy = self::whereDate('fecha', $d->toDateString())->first();
-            $terminado = $hoy && in_array($hoy->estado, ['terminado', 'cancelado'], true);
+            // Uno cancelado antes de su hora (ej. se cambió la hora del torneo) todavía se juega
+            $terminado = $hoy && ($hoy->estado === 'terminado'
+                || ($hoy->estado === 'cancelado' && $ahora->gte($inicio->copy()->addMinutes(self::MINUTOS_INSCRIPCION))));
             if (! $terminado && ($ahora->lt($inicio->copy()->addMinutes(self::MINUTOS_INSCRIPCION)) || $hoy?->estado === 'en_curso')) {
                 return $inicio;
             }
@@ -117,6 +119,10 @@ class Torneo extends Model
             return null;
         }
         $torneo = self::firstOrCreate(['fecha' => $ahora->toDateString()], ['estado' => 'inscripcion']);
+        // Se canceló antes de la hora actual del torneo (ej. se cambió la hora): vuelve a abrir la inscripción
+        if ($torneo->estado === 'cancelado' && $ahora->lt($torneo->finInscripcion())) {
+            $torneo->update(['estado' => 'inscripcion', 'ronda' => 0, 'proxima_ronda_at' => null]);
+        }
         if (in_array($torneo->estado, ['inscripcion', 'en_curso'], true)) {
             $torneo->avanzar();
         }
