@@ -199,9 +199,11 @@ class Torneo extends Model
             }
             $perdedor->save();
 
+            $peleaId = $resultado['pelea_id'] ?? null;
+            unset($resultado['rondas'], $resultado['pelea_id']); // las rondas quedan en la pelea guardada
             TorneoPelea::create([
                 'torneo_id' => $this->id, 'ronda' => $ronda, 'a_id' => $a->id, 'b_id' => $b->id,
-                'ganador_id' => $ganador->id, 'detalle' => $resultado,
+                'ganador_id' => $ganador->id, 'pelea_id' => $peleaId, 'detalle' => $resultado,
             ]);
         }
 
@@ -246,6 +248,10 @@ class Torneo extends Model
             'tipo'    => $set->tipo ?: 'fisico',
             'stats'   => PoderesStats::aplicar($stats, $poderes),
             'poderes' => collect($poderes),
+            'gifs'    => [
+                'base' => $set->gif, 'ataque' => $set->gif_ataque ?: $set->gif, 'critico' => $set->gif_critico ?: $set->gif_ataque ?: $set->gif,
+                'especial' => $set->gif_especial ?: $set->gif_ataque ?: $set->gif, 'defensa' => $set->gif_defensa ?: $set->gif,
+            ],
         ];
     }
 
@@ -258,7 +264,46 @@ class Torneo extends Model
 
         $resultado = SimuladorTorneo::pelear(self::luchador($a, $pa), self::luchador($b, $pb), self::NIVEL);
         $resultado['sets'] = ['a' => $a->post->titulo, 'b' => $b->post->titulo];
+        $resultado['pelea_id'] = $this->guardarPelea($a, $b, $pa, $pb, $resultado);
         return $resultado;
+    }
+
+    // La pelea queda como una pelea PvP normal (sin exp ni oro), así se ve con la misma pantalla de rondas que el resto
+    // (Mis Peleas → PvP de los dos, y desde la página del Torneo). El escenario es una ciudad al azar
+    private function guardarPelea(TorneoParticipante $a, TorneoParticipante $b, $pa, $pb, array $r): ?int
+    {
+        if (! $a->personaje || ! $b->personaje) {
+            return null;
+        }
+        $ciudad = Ciudad::whereNotNull('gif')->inRandomOrder()->first();
+        $vista = array_fill_keys(\App\Livewire\Explorar::VISTA_PELEA, false);
+        $vista = array_merge($vista, [
+            'recompensas' => [], 'totalDanioPersonaje' => $r['danio']['a'], 'totalDanioEnemigo' => $r['danio']['b'],
+            'danioExtraTotalPersonaje' => 0, 'danioExtraTotalEnemigo' => 0, 'danioAtaqueDesesperadoPersonaje' => 0,
+            'danioAtaqueDesesperadoEnemigo' => 0, 'absorcionTotalPersonaje' => 0, 'absorcionTotalEnemigo' => 0,
+        ]);
+        $pelea = Pelea::create([
+            'personaje_id'  => $a->personaje_id,
+            'enemigo_id'    => $b->personaje_id,
+            'resultado'     => $r['ganador'] === 'a' ? 'victoria' : 'derrota',
+            'exp_ganada'    => 0,
+            'oro_ganado'    => 0,
+            'realizada_en'  => now(),
+            'ciudad_actual' => $ciudad?->nombre,
+            'datos_combate' => [
+                'origen' => 'torneo', 'torneo_id' => $this->id, 'enemigo_es_personaje' => true,
+                'rondas' => $r['rondas'], 'vista' => $vista,
+                'nombre_personaje' => $a->personaje->nombre, 'nombre_enemigo' => $b->personaje->nombre,
+                'danio_personaje' => $r['danio']['a'], 'danio_enemigo' => $r['danio']['b'],
+                'gif_personaje' => $a->post->gif, 'gif_enemigo' => $b->post->gif,
+                'post_personaje_id' => $a->post_id, 'post_enemigo_id' => $b->post_id,
+                'tipo_personaje' => $a->post->tipo ?: 'fisico', 'tipo_enemigo' => $b->post->tipo ?: 'fisico',
+                'poderes_personaje' => collect($pa)->pluck('nombre')->all(), 'poderes_enemigo' => collect($pb)->pluck('nombre')->all(),
+                'ciudad_id' => $ciudad?->id, 'escenario_mision' => null,
+                'exp_ganada' => 0, 'oro_ganado' => 0, 'diamante' => 0, 'drop' => null, 'minutos' => null,
+            ],
+        ]);
+        return $pelea->id;
     }
 
     private function terminar(?TorneoParticipante $ganador): void

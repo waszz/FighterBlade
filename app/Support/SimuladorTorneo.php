@@ -21,14 +21,20 @@ class SimuladorTorneo
     const MINIMO_CONTRA_REBOTE = 30;
 
     /**
-     * @param array $a ['nombre', 'tipo' (fisico|elemental|hibrido), 'stats' => [...], 'poderes' => Collection]
-     * @return array ['ganador' => 'a'|'b', 'danio' => ['a' => int, 'b' => int], 'golpes' => [['quien', 'tipo', 'danio', 'texto'], ...]]
+     * @param array $a ['nombre', 'tipo' (fisico|elemental|hibrido), 'stats' => [...], 'poderes' => Collection,
+     *                  'gifs' => ['base', 'ataque', 'critico', 'especial', 'defensa']]
+     * @return array ['ganador' => 'a'|'b', 'danio' => ['a' => int, 'b' => int], 'golpes' => [...],
+     *                'rondas' => las acciones con el mismo formato que las peleas del juego ("a" = personaje, "b" = enemigo),
+     *                para verlas con la misma pantalla (App\Livewire\MisPeleas / partials.resultado-pelea)]
      */
     public static function pelear(array $a, array $b, int $nivel): array
     {
         $lados = ['a' => $a, 'b' => $b];
         $danio = ['a' => 0, 'b' => 0];
         $golpes = [];
+        $rondas = [];
+        $lado = fn ($quien) => $quien === 'a' ? 'personaje' : 'enemigo';
+        $gif = fn ($quien, $cual) => $lados[$quien]['gifs'][$cual] ?? $lados[$quien]['gifs']['base'] ?? null;
         $mult = 1 + $nivel * self::DANIO_POR_NIVEL;
 
         for ($r = 1; $r <= self::RONDAS; $r++) {
@@ -56,6 +62,7 @@ class SimuladorTorneo
             // ¿Lo bloquea? Ataque contra defensa (los dos suben 3% por nivel: a mismo nivel se comparan directo)
             $defensa = $sd['defensa'] ?? 0;
             $bloquea = ($sa['ataque'] ?? 0) <= $defensa;
+            $dados = null;
             if ($tipoAtaque === 'critico') {
                 $fuerza = $sa['fuerza'] ?? 0;
                 if ($fuerza > $defensa * 1.1) {
@@ -67,6 +74,7 @@ class SimuladorTorneo
                         [$x, $y] = [random_int(1, 6), random_int(1, 6)];
                     } while ($x === $y);
                     $bloquea = $y > $x;
+                    $dados = ['atacante' => $x, 'defensor' => $y, 'nombre_atacante' => $A['nombre'], 'nombre_defensor' => $D['nombre']];
                 }
             }
 
@@ -82,8 +90,14 @@ class SimuladorTorneo
                     $cd = (int) round((self::reducir($cf, $A['poderes'], 'fisico') + self::reducir($ce, $A['poderes'], 'elemental')) / 2);
                     $danio[$de] += $cd;
                     $golpes[] = ['quien' => $de, 'tipo' => 'contraataque', 'danio' => $cd, 'texto' => $texto . " y contraataca: $cd de daño."];
+                    $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => 0, 'gif' => $gif($de, 'defensa'),
+                        'tipo_ataque' => 'bloqueo', 'texto_tipo_danio' => "{$D['nombre']} bloquea el golpe.", 'dados' => $dados];
+                    $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => $cd, 'danio_fisico' => $cd, 'danio_elemental' => 0,
+                        'gif' => $gif($de, 'ataque'), 'tipo_ataque' => 'contraataque', 'texto_tipo_danio' => "{$D['nombre']} realiza un contraataque!"];
                 } else {
                     $golpes[] = ['quien' => $at, 'tipo' => 'bloqueo', 'danio' => 0, 'texto' => $texto . '.'];
+                    $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => 0, 'danio_fisico' => 0, 'danio_elemental' => 0,
+                        'gif' => $gif($de, 'defensa'), 'tipo_ataque' => 'bloqueo', 'texto_tipo_danio' => "{$D['nombre']} se defiende y bloquea el ataque.", 'dados' => $dados];
                 }
                 continue;
             }
@@ -99,12 +113,22 @@ class SimuladorTorneo
                 $danio[$at] += $extra;
                 $golpes[] = ['quien' => $de, 'tipo' => 'rebote', 'danio' => $sinReducir,
                     'texto' => "{$D['nombre']} resiste " . $nombreTipo . " de {$A['nombre']} y le rebota $sinReducir de daño."];
+                $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => $extra, 'danio_fisico' => 0, 'danio_elemental' => 0,
+                    'gif' => $gif($at, $tipoAtaque === 'normal' ? 'ataque' : $tipoAtaque), 'tipo_ataque' => $tipoAtaque,
+                    'texto_tipo_danio' => "{$D['nombre']} resiste el golpe y no recibe daño.", 'dados' => $dados];
+                $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => $sinReducir, 'gif' => $gif($de, 'base'), 'tipo_ataque' => 'rebote',
+                    'texto_tipo_danio' => "{$D['nombre']} resiste el golpe y le rebota $sinReducir de daño a {$A['nombre']}."];
                 continue;
             }
 
             $danio[$at] += $total + $extra;
             $golpes[] = ['quien' => $at, 'tipo' => $tipoAtaque, 'danio' => $total + $extra,
                 'texto' => "{$A['nombre']} pega " . $nombreTipo . ': ' . ($total + $extra) . ' de daño' . ($extra ? " ($extra de poderes)" : '') . '.'];
+            $fisFinal = self::reducir($fis, $D['poderes'], 'fisico');
+            $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => $total + $extra,
+                'danio_fisico' => $fisFinal, 'danio_elemental' => $total - $fisFinal,
+                'gif' => $gif($at, $tipoAtaque === 'normal' ? 'ataque' : $tipoAtaque), 'tipo_ataque' => $tipoAtaque,
+                'texto_tipo_danio' => 'Físico: ' . $fisFinal . ' / Elemental: ' . ($total - $fisFinal) . ($extra ? " (+$extra de poderes)" : ''), 'dados' => $dados];
         }
 
         $ganador = match (true) {
@@ -113,7 +137,7 @@ class SimuladorTorneo
             default                   => mt_rand(0, 1) ? 'a' : 'b', // empate exacto: se sortea
         };
 
-        return ['ganador' => $ganador, 'danio' => $danio, 'golpes' => $golpes];
+        return ['ganador' => $ganador, 'danio' => $danio, 'golpes' => $golpes, 'rondas' => $rondas];
     }
 
     // [físico, elemental] de un golpe normal según el tipo del set

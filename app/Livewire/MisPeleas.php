@@ -25,10 +25,20 @@ class MisPeleas extends Component
 
 
 
-    public function mount($personajeId, $peleaCompartidaId = null)
+    // Mostrado adentro de otra pantalla (ej. el Torneo): solo la repetición, sin el botón de volver a la lista
+    public bool $embebido = false;
+
+    public function mount($personajeId, $peleaCompartidaId = null, $embebido = false)
     {
         $this->personajeId = $personajeId;
+        $this->embebido = (bool) $embebido;
         $this->cargarPeleas();
+
+        // Las peleas del torneo las puede ver cualquiera (están en la página del Torneo)
+        if ($peleaCompartidaId && (\App\Models\Pelea::find((int) $peleaCompartidaId)?->datos_combate['origen'] ?? null) === 'torneo') {
+            $this->peleaVistaId = (int) $peleaCompartidaId;
+            return;
+        }
 
         // Pelea tocada en el chat: se muestra aunque sea de otro jugador, solo si de verdad se compartió
         // (o si es la de un duelo que pidió este personaje)

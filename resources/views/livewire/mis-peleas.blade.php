@@ -8,7 +8,11 @@
   {{-- Repetición de la pelea: la misma pantalla de rondas que la Ciudad --}}
   <div class="max-w-5xl mx-auto">
     <div class="flex items-center justify-between gap-2 mb-3">
+      @unless ($embebido)
       <button wire:click="volverALista" class="{{ $boton3d }}">← Mis peleas</button>
+      @else
+      <span></span>
+      @endunless
       <p class="text-xs text-gray-300 [text-shadow:0_1px_0_#000]">{{ $repeticion['pelea']->realizada_en?->diffForHumans() }}</p>
     </div>
     @php
@@ -58,7 +62,7 @@
     </h2>
     @if ($meAtacaronRep)
       <p class="-mt-1 mb-2 text-center text-xs font-bold text-sky-300">
-        {{ ($datosRep['origen'] ?? null) === 'duelo' ? '⚔️ Duelo' : '🛡️ Te atacó' }} {{ $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre }}
+        {{ match ($datosRep['origen'] ?? null) { 'duelo' => '⚔️ Duelo', 'torneo' => '🏆 Torneo contra', default => '🛡️ Te atacó' } }} {{ $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre }}
       </p>
     @endif
 

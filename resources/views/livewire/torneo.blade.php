@@ -54,6 +54,26 @@
         @endif
     </div>
 
+    {{-- Pelea que se está viendo: la misma pantalla que las peleas del juego (ciudad, los dos, las rondas y el final) --}}
+    @if ($abierta && $abierta->b_id)
+        <div id="pelea-torneo" class="p-3 rounded-xl {{ $panel3d }}" wire:key="panel-pelea-{{ $abierta->id }}"
+             x-data x-init="$el.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <h3 class="text-base font-bold text-sky-300">Ronda {{ $abierta->ronda }}: {{ $abierta->a?->personaje?->nombre }} vs {{ $abierta->b?->personaje?->nombre }}</h3>
+                <button type="button" wire:click="verPelea({{ $abierta->id }})" class="w-7 h-7 shrink-0 flex items-center justify-center rounded-md border border-black text-white font-bold bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_2px_0_#000] hover:brightness-125">&times;</button>
+            </div>
+            @if ($abierta->pelea_id)
+                @livewire('mis-peleas', ['personajeId' => $personajeId, 'peleaCompartidaId' => $abierta->pelea_id, 'embebido' => true], key('torneo-pelea-' . $abierta->pelea_id))
+            @else
+                <ol class="px-1 space-y-0.5 text-xs text-gray-300 list-decimal list-inside">
+                    @foreach ($abierta->detalle['golpes'] ?? [] as $golpe)
+                        <li class="{{ $golpe['quien'] === 'a' ? '' : 'text-sky-200' }}">{{ $golpe['texto'] }}</li>
+                    @endforeach
+                </ol>
+            @endif
+        </div>
+    @endif
+
     {{-- Mi set --}}
     @if ($yo && $torneo)
         <div class="p-4 rounded-xl {{ $panel3d }}">
@@ -100,7 +120,7 @@
         </div>
     @endif
 
-    {{-- Rondas (la última arriba). Tocar una pelea muestra sus golpes --}}
+    {{-- Rondas (la última arriba). "Ver" abre la pelea arriba, con la pantalla de rondas --}}
     @foreach ($rondas as $numero => $peleas)
         <div class="p-4 rounded-xl {{ $panel3d }}">
             <h3 class="text-base font-bold text-sky-300 mb-2">Ronda {{ $numero }}</h3>
@@ -113,20 +133,15 @@
                             $d = $pelea->detalle ?? [];
                             $ganoA = $pelea->ganador_id === $pelea->a_id;
                         @endphp
-                        <div class="rounded-lg {{ $caja3d }}">
+                        <div class="rounded-lg {{ $caja3d }} {{ $peleaAbiertaId === $pelea->id ? 'ring-2 ring-yellow-400' : '' }}">
                             <button type="button" wire:click="verPelea({{ $pelea->id }})" class="w-full flex items-center gap-2 p-2 text-left text-sm hover:brightness-125">
                                 <span class="flex-1 min-w-0 truncate {{ $ganoA ? 'text-emerald-300 font-bold' : 'text-gray-300' }}">{{ $pelea->a?->personaje?->nombre }} <span class="text-[11px] text-gray-400">({{ $d['sets']['a'] ?? $pelea->a?->post?->titulo }})</span></span>
                                 <span class="shrink-0 font-mono text-xs text-yellow-300">{{ number_format($d['danio']['a'] ?? 0, 0, ',', '.') }} - {{ number_format($d['danio']['b'] ?? 0, 0, ',', '.') }}</span>
                                 <span class="flex-1 min-w-0 truncate text-right {{ ! $ganoA ? 'text-emerald-300 font-bold' : 'text-gray-300' }}">{{ $pelea->b?->personaje?->nombre }} <span class="text-[11px] text-gray-400">({{ $d['sets']['b'] ?? $pelea->b?->post?->titulo }})</span></span>
-                                <i class="fa-solid {{ $peleaAbiertaId === $pelea->id ? 'fa-chevron-up' : 'fa-chevron-down' }} text-gray-400 text-xs"></i>
+                                <span class="shrink-0 px-2 py-0.5 rounded border border-black text-[11px] font-bold {{ $peleaAbiertaId === $pelea->id ? 'bg-yellow-500 text-black' : 'bg-gradient-to-b from-[#2f5470] to-[#0a1a26] text-white' }}">
+                                    <i class="fa-solid fa-play"></i> Ver
+                                </span>
                             </button>
-                            @if ($peleaAbiertaId === $pelea->id)
-                                <ol class="px-3 pb-2 space-y-0.5 text-xs text-gray-300 list-decimal list-inside">
-                                    @foreach ($d['golpes'] ?? [] as $golpe)
-                                        <li class="{{ $golpe['quien'] === 'a' ? '' : 'text-sky-200' }}">{{ $golpe['texto'] }}</li>
-                                    @endforeach
-                                </ol>
-                            @endif
                         </div>
                     @endif
                 @endforeach
