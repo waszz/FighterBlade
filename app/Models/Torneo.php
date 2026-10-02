@@ -119,9 +119,16 @@ class Torneo extends Model
             return null;
         }
         $torneo = self::firstOrCreate(['fecha' => $ahora->toDateString()], ['estado' => 'inscripcion']);
+        $abrio = $torneo->wasRecentlyCreated;
         // Se canceló antes de la hora actual del torneo (ej. se cambió la hora): vuelve a abrir la inscripción
         if ($torneo->estado === 'cancelado' && $ahora->lt($torneo->finInscripcion())) {
             $torneo->update(['estado' => 'inscripcion', 'ronda' => 0, 'proxima_ronda_at' => null]);
+            $abrio = true;
+        }
+        // Abrió la inscripción (y todavía se puede anotar): aviso a todos los personajes
+        if ($abrio && $torneo->inscripcionAbierta()) {
+            $torneo->avisarATodos('¡Abrió la inscripción del torneo! Tenés hasta las ' . $torneo->finInscripcion()->format('H:i')
+                . ' para anotarte (sección Torneo). Premio: ' . number_format(self::PREMIO_ESMERALDAS, 0, ',', '.') . ' esmeraldas y un set de tu nivel.');
         }
         if (in_array($torneo->estado, ['inscripcion', 'en_curso'], true)) {
             $torneo->avanzar();
@@ -150,6 +157,10 @@ class Torneo extends Model
                     return;
                 }
                 $this->update(['estado' => 'en_curso', 'proxima_ronda_at' => $this->finInscripcion()->utc()]);
+                foreach ($this->participantes()->pluck('personaje_id') as $id) {
+                    NotificacionJuego::avisar($id, '⚔️', '¡Arrancó el torneo! Las peleas son solas: una ronda cada ' . self::MINUTOS_RONDA
+                        . ' minutos. Mirá tus peleas en la sección Torneo.');
+                }
             }
 
             // Rondas vencidas (como mucho las que entran en el tiempo; por si nadie entró durante un rato)
@@ -159,6 +170,18 @@ class Torneo extends Model
             }
         } finally {
             $candado->release();
+        }
+    }
+
+    // Un aviso (campanita) para todos los personajes, de una sola vez
+    public function avisarATodos(string $mensaje): void
+    {
+        $ahora = now();
+        foreach (Personaje::pluck('id')->chunk(500) as $ids) {
+            NotificacionJuego::insert($ids->map(fn ($id) => [
+                'personaje_id' => $id, 'icono' => '🏆', 'mensaje' => mb_substr($mensaje, 0, 500),
+                'leida' => false, 'created_at' => $ahora, 'updated_at' => $ahora,
+            ])->all());
         }
     }
 
