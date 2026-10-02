@@ -936,17 +936,26 @@
             } catch (e) {}
             return img._bordes;
           },
+          // La escala y el corrimiento quedan en el estado de Alpine (no en estilos puestos a mano): cuando Livewire
+          // redibuja la escena los vuelve a aplicar (antes los borraba y los gifs se agrandaban y achicaban)
+          f: 1, vacio: { izq: 0, der: 0 }, listo: false,
+          estilo(el) {
+            const lado = el.closest('[data-lado]')?.dataset.lado;
+            return 'transform-origin:bottom left;scale:' + this.f + ';translate:' + (-(this.vacio[lado] || 0) * this.f) + 'px 0;opacity:' + (this.listo ? 1 : 0);
+          },
           // Cada figura se corre hasta su borde de la escena (sacando el espacio vacío del gif) y, si igual se pisan
-          // en el medio o alguna es más alta que el lugar que hay debajo del cartel del ganador, las dos se achican lo justo
+          // en el medio o alguna es más alta que el lugar que hay debajo del cartel del ganador, las dos se achican lo justo.
+          // Se mide con la escala puesta (dividiendo por ella), sin sacarla: así no parpadea
           ajustar() {
             const lados = ['izq', 'der'].map(l => this.$el.querySelector('[data-lado=' + l + ']'));
             if (lados.some(l => ! l)) return;
+            const s = this.f || 1;
             const datos = lados.map(lado => {
-              const caja = lado.querySelector('[data-escala]'), img = lado.querySelector('img');
-              caja.style.scale = ''; caja.style.translate = '';
-              const r = img.naturalWidth ? img.getBoundingClientRect().width / img.naturalWidth : 1;
+              const img = lado.querySelector('img'), rect = img.getBoundingClientRect();
+              const ancho = rect.width / s, alto = rect.height / s;
+              const r = img.naturalWidth ? ancho / img.naturalWidth : 1;
               const [x0, x1] = img.naturalWidth ? this.bordes(img) : [0, 0];
-              return { caja, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto: img.getBoundingClientRect().height };
+              return { lado: lado.dataset.lado, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto };
             });
             const c = this.$el.getBoundingClientRect(), i = lados[0].getBoundingClientRect(), d = lados[1].getBoundingClientRect();
             if (! c.width || ! c.height) return; // escena todavía oculta
@@ -956,11 +965,12 @@
             // Alto: lo que queda de la escena debajo del cartel con el nombre y la frase (~80 px)
             const altoMax = Math.max(120, c.height - 80), alto = Math.max(datos[0].alto, datos[1].alto);
             const fAlto = alto > altoMax ? altoMax / alto : 1;
-            const f = Math.max(0.4, Math.min(fAncho, fAlto));
-            datos.forEach(x => { x.caja.style.scale = f; x.caja.style.translate = (-x.vacio * f) + 'px 0'; });
+            this.f = Math.max(0.4, Math.min(fAncho, fAlto));
+            datos.forEach(x => this.vacio[x.lado] = x.vacio);
+            this.listo = true;
           }
         }"
-        x-init="$nextTick(() => ajustar()); setTimeout(() => ajustar(), 700);
+        x-init="$nextTick(() => ajustar()); setTimeout(() => ajustar(), 700); setTimeout(() => listo = true, 1500);
                 $el.querySelectorAll('[data-lado] img').forEach(img => img.complete ? null : img.addEventListener('load', () => ajustar()));
                 {{-- La escena puede aparecer después (las rondas se muestran de a poco): cuando se hace visible o cambia de tamaño se vuelve a ajustar --}}
                 new ResizeObserver(() => { if ($el.offsetWidth) ajustar() }).observe($el)"
@@ -1041,30 +1051,30 @@
 
         {{-- Victoria del personaje --}}
         <div data-lado="izq" class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
-          <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Victoria Personaje"
+          <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Victoria Personaje"
             style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none {{ $claseEstado['personaje'] ?? '' }}"></div>
         </div>
         <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
-          <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifDerrotaEnemigo) }}" alt="GIF Derrota Enemigo"
+          <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifDerrotaEnemigo) }}" alt="GIF Derrota Enemigo"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaEnemigo) }}" class="block max-w-none {{ $claseEstado['enemigo'] ?? '' }}"></div>
         </div>
         @elseif($totalDanioPersonaje < $totalDanioEnemigo) {{-- Victoria del enemigo --}} <div data-lado="izq"
           class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
-          <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifDerrotaPersonaje) }}" alt="GIF Derrota Personaje"
+          <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifDerrotaPersonaje) }}" alt="GIF Derrota Personaje"
             style="{{ \App\Models\Post::estiloGif($gifDerrotaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}"></div>
       </div>
       <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
-        <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Victoria Enemigo"
+        <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Victoria Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}"></div>
       </div>
       @else
       {{-- Empate --}}
       <div data-lado="izq" class="absolute bottom-1 left-[3%] sm:left-[8%]  z-10">
-        <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Empate Personaje"
+        <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaPersonaje) }}" alt="GIF Empate Personaje"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaPersonaje) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['personaje'] ?? '' }}"></div>
       </div>
       <div data-lado="der" class="absolute bottom-1 right-[3%] sm:right-[8%] z-10 scale-x-[-1]">
-        <div data-escala class="origin-bottom-left"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Empate Enemigo"
+        <div data-escala wire:ignore.self class="origin-bottom-left" :style="estilo($el)"><img src="{{ asset('storage/' . $gifVictoriaEnemigo) }}" alt="GIF Empate Enemigo"
           style="{{ \App\Models\Post::estiloGif($gifVictoriaEnemigo) }}" class="block max-w-none drop-shadow-md {{ $claseEstado['enemigo'] ?? '' }}"></div>
       </div>
       @endif

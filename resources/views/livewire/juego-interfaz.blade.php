@@ -95,20 +95,23 @@
                      ciudad se achica para entrar (los sets grandes salían por arriba y tapaban el Logout) --}}
                 <div class="absolute bottom-1 left-1/2 -translate-x-1/2 cursor-pointer" wire:click="$set('seccion', 'inventario')"
                      x-data="{
+                         // La escala queda en el estado de Alpine (no en un estilo puesto a mano): cuando Livewire redibuja el
+                         // panel la vuelve a aplicar (antes la borraba y el personaje se agrandaba y achicaba)
+                         k: 1,
                          ajustar() {
                              const caja = $el.parentElement, img = $refs.img;
                              if (! caja.clientHeight || ! img.complete) return;
-                             $refs.escala.style.transform = '';
-                             // Se achica desde abajo (los pies quedan donde están) hasta que la cabeza entra en el recuadro
+                             // Se achica desde abajo (los pies quedan donde están) hasta que la cabeza entra en el recuadro.
+                             // Se mide con la escala puesta (dividiendo por ella), sin sacarla: así no parpadea
                              const c = caja.getBoundingClientRect(), r = img.getBoundingClientRect(), base = $refs.escala.getBoundingClientRect().bottom;
                              if (! r.height) return;
-                             const k = Math.min(1, (base - c.top - 3) / (base - r.top), (c.width + 40) / r.width);
-                             if (k < 1) $refs.escala.style.transform = 'scale(' + k + ')';
+                             const alto = (base - r.top) / this.k, ancho = r.width / this.k;
+                             this.k = Math.min(1, (base - c.top - 3) / alto, (c.width + 40) / ancho);
                          }
                      }"
                      x-init="$nextTick(() => ajustar()); $refs.img.addEventListener('load', () => ajustar());
                              new ResizeObserver(() => ajustar()).observe($el.parentElement)">
-                    <div x-ref="escala" style="transform-origin: bottom center">
+                    <div x-ref="escala" wire:ignore.self style="transform-origin: bottom center" :style="'transform-origin: bottom center; transform: scale(' + k + ')'">
                         <img x-ref="img" src="{{ asset('storage/' . $gif) }}" alt="Personaje"
                             style="{{ \App\Models\Post::estiloGif($gif, 1) }}" class="block max-w-none {{ $personaje->claseAura() }}" />
                     </div>
