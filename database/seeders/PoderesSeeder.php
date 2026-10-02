@@ -327,11 +327,11 @@ class PoderesSeeder extends Seeder
             // ],
             [
                 'nombre'        => 'MOLE', //!!HECHO!!
-                'descripcion'   => 'Optimiza DEF y RES sumándole al menor el valor del mayor multiplicado por 0.8',
+                'descripcion'   => 'Optimiza FUE y RES sumándole al menor el valor del mayor multiplicado por 0.8',
                 'modificadores' => json_encode([
                     [
                         'tipo'   => 'optimizar_stats',
-                        'stats'  => ['defensa', 'resistencia'],
+                        'stats'  => ['fuerza', 'resistencia'],
                         'factor' => 0.8,
                     ],
                 ]),
