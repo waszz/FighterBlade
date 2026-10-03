@@ -78,6 +78,18 @@
     @if ($yo && $torneo)
         <div class="p-4 rounded-xl {{ $panel3d }}">
             <h3 class="text-lg font-bold text-yellow-300 text-center mb-3 [text-shadow:0_2px_0_#000]">Tu set del torneo</h3>
+            {{-- Tu personaje en la zona del torneo (la misma para todos), como en la Ciudad --}}
+            <div class="relative w-full max-w-[650px] mx-auto mb-3 min-h-[240px] rounded-xl overflow-hidden border-2 border-gray-900 shadow-lg select-none bg-gray-800">
+                @if ($zona?->gif)
+                    <img src="{{ asset('storage/posts/' . $zona->gif) }}" alt="{{ $zona->nombre }}" class="absolute inset-0 w-full h-full object-cover object-bottom">
+                    <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded bg-black/60 text-[11px] font-bold text-yellow-300">Zona: {{ $zona->nombre }}</span>
+                @endif
+                @if ($yo->post->gif)
+                    <div class="absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
+                        <img src="{{ asset('storage/' . $yo->post->gif) }}" alt="{{ $yo->post->titulo }}" style="{{ \App\Models\Post::estiloGif($yo->post->gif) }}" class="block max-w-none">
+                    </div>
+                @endif
+            </div>
             <div class="flex items-center gap-4">
                 <img src="{{ asset('storage/' . $yo->post->imagen) }}" alt="{{ $yo->post->titulo }}" class="w-20 h-20 rounded-lg object-cover border-2 border-black shrink-0">
                 <div class="min-w-0 flex-1">
@@ -104,11 +116,19 @@
             <h3 class="text-lg font-bold text-yellow-300 text-center mb-3 [text-shadow:0_2px_0_#000]">Participantes ({{ $participantes->count() }})</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 @foreach ($participantes as $p)
+                    @php
+                        // El set de los demás es secreto hasta que pelean (o termina el torneo)
+                        $setVisible = $p->personaje_id == $personajeId || ($p->victorias + $p->derrotas) > 0 || $mostrar?->estado === 'terminado';
+                    @endphp
                     <div class="flex items-center gap-2 p-2 rounded-lg {{ $caja3d }} {{ $p->vidas === 0 ? 'opacity-50' : '' }} {{ $p->personaje_id == $personajeId ? 'ring-2 ring-yellow-400' : '' }}">
-                        <img src="{{ asset('storage/' . $p->post->imagen) }}" alt="" class="w-10 h-10 rounded object-cover border border-black shrink-0">
+                        @if ($setVisible)
+                            <img src="{{ asset('storage/' . $p->post->imagen) }}" alt="" class="w-10 h-10 rounded object-cover border border-black shrink-0">
+                        @else
+                            <div class="w-10 h-10 rounded border border-black shrink-0 flex items-center justify-center bg-black/60 text-xl font-extrabold text-gray-500">?</div>
+                        @endif
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-bold truncate"><span class="{{ $p->personaje?->claseNombre() }}">{{ $p->personaje?->nombre }}</span></p>
-                            <p class="text-[11px] text-gray-400 truncate">{{ $p->post->titulo }} (Nv {{ $p->post->nivel }})</p>
+                            <p class="text-[11px] text-gray-400 truncate">{{ $setVisible ? $p->post->titulo . ' (Nv ' . $p->post->nivel . ')' : 'Set secreto hasta que pelee' }}</p>
                         </div>
                         <div class="text-xs shrink-0 text-right">
                             <div>{!! $corazones($p->vidas) !!}</div>

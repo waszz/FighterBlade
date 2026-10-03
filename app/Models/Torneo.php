@@ -46,6 +46,24 @@ class Torneo extends Model
         return $this->hasMany(TorneoPelea::class);
     }
 
+    public function ciudad()
+    {
+        return $this->belongsTo(Ciudad::class);
+    }
+
+    // La zona del torneo (la misma para todos): se elige al azar la primera vez que se necesita
+    public function zonaDelTorneo(): ?Ciudad
+    {
+        if (! $this->ciudad_id || ! $this->ciudad) {
+            $ciudad = Ciudad::whereNotNull('gif')->where('gif', '!=', '')->inRandomOrder()->first();
+            if ($ciudad) {
+                $this->update(['ciudad_id' => $ciudad->id]);
+                $this->setRelation('ciudad', $ciudad);
+            }
+        }
+        return $this->ciudad;
+    }
+
     public function ganador()
     {
         return $this->belongsTo(Personaje::class, 'ganador_id');
@@ -343,7 +361,7 @@ class Torneo extends Model
         if (! $a->personaje || ! $b->personaje) {
             return null;
         }
-        $ciudad = Ciudad::whereNotNull('gif')->inRandomOrder()->first();
+        $ciudad = $this->zonaDelTorneo(); // la misma zona para todas las peleas del torneo
         $vista = array_fill_keys(\App\Livewire\Explorar::VISTA_PELEA, false);
         $vista = array_merge($vista, [
             'recompensas' => [], 'totalDanioPersonaje' => $r['danio']['a'], 'totalDanioEnemigo' => $r['danio']['b'],
