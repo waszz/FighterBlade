@@ -27,6 +27,13 @@ class MisPeleas extends Component
 
     // Mostrado adentro de otra pantalla (ej. el Torneo): solo la repetición, sin el botón de volver a la lista
     public bool $embebido = false;
+    // Embebido (Torneo): primero se ve la escena con los dos y las rondas aparecen al tocar "Ver rounds", como al apretar Atacar
+    public bool $rondasVisibles = false;
+
+    public function mostrarRondas()
+    {
+        $this->rondasVisibles = true;
+    }
 
     public function mount($personajeId, $peleaCompartidaId = null, $embebido = false)
     {

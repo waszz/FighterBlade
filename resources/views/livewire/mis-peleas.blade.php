@@ -57,8 +57,11 @@
       <span class="text-yellow-300">{{ $datosRep['nombre_personaje'] ?? $repeticion['personaje']->nombre }}</span>
       <span class="text-gray-300 mx-1">vs</span>
       <span class="text-yellow-300">{{ $nombreEnRep }}</span>
+      {{-- En el Torneo el resultado no se adelanta: aparece recién con las rondas --}}
+      @if (! $embebido || $rondasVisibles)
       <span class="ml-2 inline-block align-middle px-2 py-0.5 rounded-full border border-black text-xs font-extrabold uppercase shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),0_2px_0_#000]
                    {{ $colorRep }}">{{ ucfirst($resultadoRep) }}{{ $meAtacaronRep ? ' para vos' : '' }}</span>
+      @endif
     </h2>
     @if ($meAtacaronRep)
       <p class="-mt-1 mb-2 text-center text-xs font-bold text-sky-300">
@@ -116,7 +119,15 @@
     </aside>
     </div>{{-- fin fila escenario + poderes --}}
 
-    @if ($repeticion['conRondas'])
+    @if ($repeticion['conRondas'] && $embebido && ! $rondasVisibles)
+    {{-- Torneo: la pelea ya se jugó sola; se ve como en la Ciudad antes de atacar y las rondas salen al tocar el botón --}}
+    <div class="flex justify-center mb-4">
+      <button wire:click="mostrarRondas" wire:loading.attr="disabled"
+        class="px-6 py-2 rounded-lg border border-black text-white text-base font-bold bg-gradient-to-b from-red-500 to-red-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all duration-100">
+        <i class="fa-solid fa-hand-fist"></i> Ver rounds
+      </button>
+    </div>
+    @elseif ($repeticion['conRondas'])
     {{-- Rondas, poderes y resultado: la misma pantalla que la Ciudad --}}
     {{-- A todo el ancho (como en la Ciudad): centrado con items-center se achicaba y la escena de la ciudad salía más chica --}}
     <div class="w-full">
