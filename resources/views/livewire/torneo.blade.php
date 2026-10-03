@@ -102,6 +102,15 @@
                             @endforeach
                         </div>
                     @endif
+                    {{-- Tipo de daño y poderes del set (tocalos para ver qué hacen), como en la Ciudad --}}
+                    <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                        <x-icono-tipo :tipo="$yo->post->tipo ?: 'fisico'" tam="w-9 h-9" class="cursor-pointer" />
+                        @forelse ($yo->post->poderes as $poder)
+                            <x-icono-poder :poder="$poder" tam="w-9 h-9" class="cursor-pointer" />
+                        @empty
+                            <span class="text-xs italic text-gray-400">Sin poderes</span>
+                        @endforelse
+                    </div>
                     @if ($yo->vidas === 0)
                         <p class="text-xs text-red-400 mt-1">Quedaste afuera en la ronda {{ $yo->eliminado_en_ronda }}.</p>
                     @endif
