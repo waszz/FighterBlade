@@ -347,8 +347,9 @@ class Torneo extends Model
         $vista = array_fill_keys(\App\Livewire\Explorar::VISTA_PELEA, false);
         $vista = array_merge($vista, [
             'recompensas' => [], 'totalDanioPersonaje' => $r['danio']['a'], 'totalDanioEnemigo' => $r['danio']['b'],
-            'danioExtraTotalPersonaje' => 0, 'danioExtraTotalEnemigo' => 0, 'danioAtaqueDesesperadoPersonaje' => 0,
-            'danioAtaqueDesesperadoEnemigo' => 0, 'absorcionTotalPersonaje' => 0, 'absorcionTotalEnemigo' => 0,
+            'danioExtraTotalPersonaje' => $r['extra']['a'] ?? 0, 'danioExtraTotalEnemigo' => $r['extra']['b'] ?? 0,
+            'danioAtaqueDesesperadoPersonaje' => 0, 'danioAtaqueDesesperadoEnemigo' => 0,
+            'absorcionTotalPersonaje' => $r['absorcion']['a'] ?? 0, 'absorcionTotalEnemigo' => $r['absorcion']['b'] ?? 0,
         ]);
         $pelea = Pelea::create([
             'personaje_id'  => $a->personaje_id,

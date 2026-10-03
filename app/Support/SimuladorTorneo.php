@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 // Gana el que hizo más daño en total.
 class SimuladorTorneo
 {
-    const RONDAS = 10;
+    const RONDAS = 5; // como las peleas del juego
     const DANIO_POR_NIVEL = 0.02;
     const FACTOR_HIBRIDO = 0.65;
     const MINIMO_CONTRA_REBOTE = 30;
@@ -31,6 +31,7 @@ class SimuladorTorneo
     {
         $lados = ['a' => $a, 'b' => $b];
         $danio = ['a' => 0, 'b' => 0];
+        $extraTot = ['a' => 0, 'b' => 0]; // daño de poderes (Quemar, Sangrado...): va aparte, como en el juego
         $golpes = [];
         $rondas = [];
         $lado = fn ($quien) => $quien === 'a' ? 'personaje' : 'enemigo';
@@ -85,17 +86,23 @@ class SimuladorTorneo
             if ($bloquea || $contra) {
                 $texto = "{$D['nombre']} bloquea " . $nombreTipo . " de {$A['nombre']}";
                 if ($contra) {
-                    // Contraataque: la mitad de un golpe normal del que bloqueó
+                    // Contraataque: la mitad de un golpe normal del que bloqueó (según su tipo) y sus poderes de daño
                     [$cf, $ce] = self::danioBase($D['tipo'], $sd, $mult);
-                    $cd = (int) round((self::reducir($cf, $A['poderes'], 'fisico') + self::reducir($ce, $A['poderes'], 'elemental')) / 2);
-                    $danio[$de] += $cd;
-                    $golpes[] = ['quien' => $de, 'tipo' => 'contraataque', 'danio' => $cd, 'texto' => $texto . " y contraataca: $cd de daño."];
+                    $cf = self::reducir((int) round($cf * 0.5), $A['poderes'], 'fisico');
+                    $ce = self::reducir((int) round($ce * 0.5), $A['poderes'], 'elemental');
+                    $extraC = self::danioDirecto($D['poderes'], $sd, $mult);
+                    $danio[$de] += $cf + $ce + $extraC;
+                    $extraTot[$de] += $extraC;
+                    $golpes[] = ['quien' => $de, 'tipo' => 'contraataque', 'danio' => $cf + $ce + $extraC, 'texto' => $texto . ' y contraataca: ' . ($cf + $ce + $extraC) . ' de daño.'];
                     $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => 0, 'gif' => $gif($de, 'defensa'),
                         'tipo_ataque' => 'bloqueo', 'texto_tipo_danio' => "{$D['nombre']} bloquea el golpe.", 'dados' => $dados];
-                    $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => $cd, 'danio_fisico' => $cd, 'danio_elemental' => 0,
+                    $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => $cf + $ce, 'danio_fisico' => $cf, 'danio_elemental' => $ce,
                         'gif' => $gif($de, 'ataque'), 'tipo_ataque' => 'contraataque', 'texto_tipo_danio' => "{$D['nombre']} realiza un contraataque!"];
                 } else {
-                    $golpes[] = ['quien' => $at, 'tipo' => 'bloqueo', 'danio' => 0, 'texto' => $texto . '.'];
+                    // Bloqueado: el golpe no entra, pero el daño de los poderes sí (como en el juego)
+                    $danio[$at] += $extra;
+                    $extraTot[$at] += $extra;
+                    $golpes[] = ['quien' => $at, 'tipo' => 'bloqueo', 'danio' => $extra, 'texto' => $texto . '.' . ($extra ? " ($extra de poderes)" : '')];
                     $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => 0, 'danio_fisico' => 0, 'danio_elemental' => 0,
                         'gif' => $gif($de, 'defensa'), 'tipo_ataque' => 'bloqueo', 'texto_tipo_danio' => "{$D['nombre']} se defiende y bloquea el ataque.", 'dados' => $dados];
                 }
@@ -111,9 +118,10 @@ class SimuladorTorneo
             if ($total > 0 && mt_rand(1, 10000) <= $chanceRebote * 100) {
                 $danio[$de] += $sinReducir;
                 $danio[$at] += $extra;
+                $extraTot[$at] += $extra;
                 $golpes[] = ['quien' => $de, 'tipo' => 'rebote', 'danio' => $sinReducir,
                     'texto' => "{$D['nombre']} resiste " . $nombreTipo . " de {$A['nombre']} y le rebota $sinReducir de daño."];
-                $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => $extra, 'danio_fisico' => 0, 'danio_elemental' => 0,
+                $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => 0, 'danio_fisico' => 0, 'danio_elemental' => 0,
                     'gif' => $gif($at, $tipoAtaque === 'normal' ? 'ataque' : $tipoAtaque), 'tipo_ataque' => $tipoAtaque,
                     'texto_tipo_danio' => "{$D['nombre']} resiste el golpe y no recibe daño.", 'dados' => $dados];
                 $rondas[] = ['ronda' => $r, 'atacante' => $lado($de), 'danio' => $sinReducir, 'gif' => $gif($de, 'base'), 'tipo_ataque' => 'rebote',
@@ -122,13 +130,36 @@ class SimuladorTorneo
             }
 
             $danio[$at] += $total + $extra;
+            $extraTot[$at] += $extra;
             $golpes[] = ['quien' => $at, 'tipo' => $tipoAtaque, 'danio' => $total + $extra,
                 'texto' => "{$A['nombre']} pega " . $nombreTipo . ': ' . ($total + $extra) . ' de daño' . ($extra ? " ($extra de poderes)" : '') . '.'];
             $fisFinal = self::reducir($fis, $D['poderes'], 'fisico');
-            $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => $total + $extra,
+            $rondas[] = ['ronda' => $r, 'atacante' => $lado($at), 'danio' => $total,
                 'danio_fisico' => $fisFinal, 'danio_elemental' => $total - $fisFinal,
                 'gif' => $gif($at, $tipoAtaque === 'normal' ? 'ataque' : $tipoAtaque), 'tipo_ataque' => $tipoAtaque,
-                'texto_tipo_danio' => 'Físico: ' . $fisFinal . ' / Elemental: ' . ($total - $fisFinal) . ($extra ? " (+$extra de poderes)" : ''), 'dados' => $dados];
+                'texto_tipo_danio' => 'Físico: ' . $fisFinal . ' / Elemental: ' . ($total - $fisFinal), 'dados' => $dados];
+        }
+
+        // Absorber salud / Robar vida (lo que hizo) y Regenerar (lo que recibió): se descuenta del daño que le hicieron,
+        // sin tocar el daño de poderes. Igual que al final de las peleas del juego
+        $hecho = $danio;
+        $absorcion = ['a' => 0, 'b' => 0];
+        foreach (['a' => 'b', 'b' => 'a'] as $yo => $otro) {
+            $regenerable = max(0, $danio[$otro] - $extraTot[$otro]);
+            if ($regenerable <= 0) {
+                continue;
+            }
+            foreach ($lados[$yo]['poderes'] as $poder) {
+                foreach (self::mods($poder) as $mod) {
+                    if (($mod['tipo'] ?? '') === 'porcentaje_regeneracion' && ($mod['stat_base'] ?? '') === 'danio_ejercido') {
+                        $absorcion[$yo] += (int) round($hecho[$yo] * ($mod['valor'] ?? 0) / 100);
+                    } elseif (($mod['tipo'] ?? '') === 'regeneracion' && ($mod['base'] ?? '') === 'danio_recibido') {
+                        $absorcion[$yo] += (int) round($regenerable * ($mod['porcentaje'] ?? 0) / 100);
+                    }
+                }
+            }
+            $absorcion[$yo] = min($regenerable, $absorcion[$yo]);
+            $danio[$otro] = $regenerable - $absorcion[$yo] + $extraTot[$otro];
         }
 
         $ganador = match (true) {
@@ -137,7 +168,7 @@ class SimuladorTorneo
             default                   => mt_rand(0, 1) ? 'a' : 'b', // empate exacto: se sortea
         };
 
-        return ['ganador' => $ganador, 'danio' => $danio, 'golpes' => $golpes, 'rondas' => $rondas];
+        return ['ganador' => $ganador, 'danio' => $danio, 'extra' => $extraTot, 'absorcion' => $absorcion, 'golpes' => $golpes, 'rondas' => $rondas];
     }
 
     // [físico, elemental] de un golpe normal según el tipo del set
