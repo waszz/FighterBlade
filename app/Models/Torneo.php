@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 // Torneo de los viernes y sábados (hora local del juego, la misma que el Mercado y la Caza):
-//  - A la hora de HORAS (viernes 20:30, sábado 16:00) abre la inscripción por MINUTOS_INSCRIPCION: al anotarte te toca un set al azar (nivel 5 a 100).
+//  - A la hora de HORAS (viernes 21:30, sábado 16:00) abre la inscripción por MINUTOS_INSCRIPCION: al anotarte te toca un set al azar (nivel 5 a 100).
 //  - Todos pelean como nivel NIVEL: el set se lleva a ese nivel (sus stats repartidos igual) y se suman la joya y la
 //    poción de stat que tengas equipadas; sus poderes cuentan. No se gana exp, oro ni nada en las peleas.
 //  - Al cerrar la inscripción se juegan rondas cada MINUTOS_RONDA: se arman parejas al azar entre los que siguen
@@ -27,7 +27,7 @@ class Torneo extends Model
 
     const DIAS = [Carbon::FRIDAY, Carbon::SATURDAY];
     // Hora de la inscripción de cada día (hora local)
-    const HORAS = [Carbon::FRIDAY => '20:30', Carbon::SATURDAY => '16:00'];
+    const HORAS = [Carbon::FRIDAY => '21:30', Carbon::SATURDAY => '16:00'];
     const MINUTOS_INSCRIPCION = 30;
     const MINUTOS_RONDA = 5;
     const VIDAS = 2;
