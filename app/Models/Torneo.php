@@ -3,9 +3,7 @@
 namespace App\Models;
 
 use App\Support\AnulacionPoder;
-use App\Support\PoderesStats;
 use App\Support\RecompensasTorre;
-use App\Support\SimuladorTorneo;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -15,7 +13,8 @@ use Illuminate\Support\Facades\Cache;
 //  - Todos pelean como nivel NIVEL: el set se lleva a ese nivel (sus stats repartidos igual) y se suman la joya y la
 //    poción de stat que tengas equipadas; sus poderes cuentan. No se gana exp, oro ni nada en las peleas.
 //  - Al cerrar la inscripción se juegan rondas cada MINUTOS_RONDA: se arman parejas al azar entre los que siguen
-//    (si son impares, uno pasa sin pelear) y las peleas se resuelven solas (App\Support\SimuladorTorneo).
+//    (si son impares, uno pasa sin pelear) y las peleas se resuelven solas con el mismo motor que
+//    el PvP (App\Livewire\Explorar::peleaDeTorneo), sin guardar exp, oro, estados ni recuperación.
 //    Cada derrota saca una vida; con 0 vidas quedás afuera. Gana el último que queda.
 //  - Premio: PREMIO_ESMERALDAS y un set completo de tu nivel (redondeado para abajo de a 5: nivel 44 → set 40).
 // No hay tareas programadas en el servidor: el torneo avanza cuando alguien entra al juego (ver actualizarHoy).
@@ -248,7 +247,7 @@ class Torneo extends Model
             $perdedor->save();
 
             $peleaId = $resultado['pelea_id'] ?? null;
-            unset($resultado['rondas'], $resultado['pelea_id']); // las rondas quedan en la pelea guardada
+            unset($resultado['rondas'], $resultado['vista'], $resultado['pelea_id']); // quedan en la pelea guardada
             TorneoPelea::create([
                 'torneo_id' => $this->id, 'ronda' => $ronda, 'a_id' => $a->id, 'b_id' => $b->id,
                 'ganador_id' => $ganador->id, 'pelea_id' => $peleaId, 'detalle' => $resultado,
@@ -303,54 +302,67 @@ class Torneo extends Model
         return $mejor ?? [];
     }
 
-    // Los datos con los que pelea un participante: su set llevado a nivel NIVEL, más su joya y su poción de stat
-    public static function luchador(TorneoParticipante $p, $poderes): array
+    // Stats del set llevados a nivel NIVEL: los puntos de ese nivel (30 + 5 por nivel) repartidos como el set, y con el
+    // set equipado (como un rival de la Torre). Sin poderes, joya ni poción: eso lo suma la pelea
+    public static function statsBase(Post $set): array
     {
-        $set = $p->post;
         $base = Personaje::decodificarStats($set->stats);
         $claves = ['fuerza', 'ataque', 'velocidad', 'resistencia', 'defensa', 'energia'];
         $total = array_sum(array_map(fn ($c) => (float) ($base[$c] ?? 0), $claves)) ?: 1;
-        // Los puntos de un nivel NIVEL (30 + 5 por nivel), repartidos como el set, y con el set equipado (como un rival de la Torre)
         $factor = (30 + 5 * self::NIVEL) / $total * \App\Livewire\Explorar::refuerzoRivalMisionTorre(self::NIVEL, 1.0);
         $stats = [];
         foreach ($claves as $c) {
             $stats[$c] = (int) round(($base[$c] ?? 0) * $factor);
         }
+        return $stats;
+    }
 
-        $pj = $p->personaje;
-        if ($pj?->joya_id && ($joya = Objeto::find($pj->joya_id))) {
-            foreach (Personaje::decodificarStats($joya->stats) as $c => $v) {
-                if (isset($stats[$c]) && is_numeric($v)) {
-                    $stats[$c] += (int) $v;
-                }
-            }
+    // El personaje como pelea en el torneo: nivel NIVEL, sin sus partes equipadas, con el set del torneo (sus poderes y
+    // sus gifs) y con su joya y su poción de stat. Es una copia en memoria: nunca se guarda
+    public static function personajeDeTorneo(TorneoParticipante $p): Personaje
+    {
+        $pj = clone $p->personaje;
+        $pj->nivel = self::NIVEL;
+        $pj->stats = self::statsBase($p->post);
+        $pj->equipo_id = null;
+        $pj->entrenamiento_id = null;
+        $pj->accesorio_id = null;
+        $pj->mision_activa_id = null;
+        $pj->torre_piso_activo = null;
+        foreach (['equipo', 'entrenamiento', 'accesorio'] as $parte) {
+            $pj->setRelation($parte, null);
         }
-        if ($pocion = $pj?->pocionDeStat()) {
-            $stats[$pocion['afecta']] = (int) round($stats[$pocion['afecta']] * $pocion['multiplicador']);
-        }
+        $pj->setRelation('post', $p->post);
+        $pj->setRelation('estadosTemporales', collect());
+        return $pj;
+    }
 
-        return [
-            'nombre'  => $pj?->nombre ?? 'Jugador',
-            'tipo'    => $set->tipo ?: 'fisico',
-            'stats'   => PoderesStats::aplicar($stats, $poderes),
-            'poderes' => collect($poderes),
-            'gifs'    => [
-                'base' => $set->gif, 'ataque' => $set->gif_ataque ?: $set->gif, 'critico' => $set->gif_critico ?: $set->gif_ataque ?: $set->gif,
-                'especial' => $set->gif_especial ?: $set->gif_ataque ?: $set->gif, 'defensa' => $set->gif_defensa ?: $set->gif,
-            ],
-        ];
+    // Lo que se muestra en "Tu set del torneo": los stats con los que pelea (set a nivel NIVEL + joya + poción + poderes)
+    public static function statsDeTorneo(TorneoParticipante $p): array
+    {
+        return self::personajeDeTorneo($p)->statsDeCombate($p->post->poderes ?? collect());
     }
 
     private function pelear(TorneoParticipante $a, TorneoParticipante $b): array
     {
+        // La misma pelea que el PvP (App\Livewire\Explorar), con los dos armados para el torneo y sin guardar nada
+        $motor = \App\Livewire\Explorar::peleaDeTorneo(self::personajeDeTorneo($a), self::personajeDeTorneo($b), $this->zonaDelTorneo());
+        $ganador = match (true) {
+            $motor['danio']['a'] > $motor['danio']['b'] => 'a',
+            $motor['danio']['b'] > $motor['danio']['a'] => 'b',
+            default                                     => mt_rand(0, 1) ? 'a' : 'b', // empate exacto: se sortea
+        };
+
         $poderesA = collect($a->post->poderes ?? []);
         $poderesB = collect($b->post->poderes ?? []);
-        // Anulación de poder, como en las peleas del juego
-        [$pa, $pb] = [AnulacionPoder::filtrar($poderesA, $poderesB), AnulacionPoder::filtrar($poderesB, $poderesA)];
-
-        $resultado = SimuladorTorneo::pelear(self::luchador($a, $pa), self::luchador($b, $pb), self::NIVEL);
-        $resultado['sets'] = ['a' => $a->post->titulo, 'b' => $b->post->titulo];
-        $resultado['pelea_id'] = $this->guardarPelea($a, $b, $pa, $pb, $resultado);
+        $resultado = [
+            'ganador' => $ganador,
+            'danio'   => $motor['danio'],
+            'sets'    => ['a' => $a->post->titulo, 'b' => $b->post->titulo],
+            'rondas'  => $motor['rondas'],
+            'vista'   => $motor['vista'],
+        ];
+        $resultado['pelea_id'] = $this->guardarPelea($a, $b, AnulacionPoder::filtrar($poderesA, $poderesB), AnulacionPoder::filtrar($poderesB, $poderesA), $resultado);
         return $resultado;
     }
 
@@ -362,13 +374,7 @@ class Torneo extends Model
             return null;
         }
         $ciudad = $this->zonaDelTorneo(); // la misma zona para todas las peleas del torneo
-        $vista = array_fill_keys(\App\Livewire\Explorar::VISTA_PELEA, false);
-        $vista = array_merge($vista, [
-            'recompensas' => [], 'totalDanioPersonaje' => $r['danio']['a'], 'totalDanioEnemigo' => $r['danio']['b'],
-            'danioExtraTotalPersonaje' => $r['extra']['a'] ?? 0, 'danioExtraTotalEnemigo' => $r['extra']['b'] ?? 0,
-            'danioAtaqueDesesperadoPersonaje' => 0, 'danioAtaqueDesesperadoEnemigo' => 0,
-            'absorcionTotalPersonaje' => $r['absorcion']['a'] ?? 0, 'absorcionTotalEnemigo' => $r['absorcion']['b'] ?? 0,
-        ]);
+        $vista = array_merge(array_fill_keys(\App\Livewire\Explorar::VISTA_PELEA, false), $r['vista'] ?? [], ['recompensas' => []]);
         $pelea = Pelea::create([
             'personaje_id'  => $a->personaje_id,
             'enemigo_id'    => $b->personaje_id,

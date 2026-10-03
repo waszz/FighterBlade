@@ -88,7 +88,7 @@ class Torneo extends Component
             'abierta'       => $abierta,
             'zona'          => $torneo ? $torneo->zonaDelTorneo() : null,
             'proximo'       => TorneoModelo::proximoInicio(),
-            'statsYo'       => $yo ? TorneoModelo::luchador($yo, $yo->post->poderes ?? collect())['stats'] : null,
+            'statsYo'       => $yo ? TorneoModelo::statsDeTorneo($yo) : null,
         ]);
     }
 }

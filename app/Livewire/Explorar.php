@@ -1945,6 +1945,8 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
         $aplicarControlClimatico($statsBaseEnemigo, $poderesPersonaje);
         $aplicarControlClimatico($statsBasePersonaje, $this->enemigo->poderes ?? []);
 
+    // Se declara una sola vez por proceso (el torneo juega varias peleas en el mismo pedido)
+    if (! function_exists(__NAMESPACE__ . '\obtenerBuffMaximaPotencia')) {
     function obtenerBuffMaximaPotencia($poderes) {
     $porcentaje = 0;
     foreach ($poderes as $poder) {
@@ -1959,6 +1961,7 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
     }
     return $porcentaje;
 }
+    }
 
 // Antes de aplicar los estados, inicializá las banderas
 $poderActivoTrancePersonaje = false;
@@ -2840,7 +2843,7 @@ foreach (['personaje', 'enemigo'] as $tipo) {
                     $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
                     // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
                         ['estado' => 'Congelado'],
                         [
                             'expira_en'       => now()->addMinutes(30),
@@ -2878,7 +2881,7 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Aturdido') 
         $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
         // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
             ['estado' => 'Aturdido'],
             [
                 'expira_en'       => now()->addMinutes(30),
@@ -2916,7 +2919,7 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Envenenado'
         $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
         // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
             ['estado' => 'Envenenado'],
             [
                 'expira_en'       => now()->addMinutes(30),
@@ -3065,7 +3068,7 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Desangrado'
         $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
         // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
             ['estado' => 'Desangrado'],
             [
                 'expira_en'       => now()->addMinutes(30),
@@ -3103,7 +3106,7 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Paralizado'
         $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
         // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
             ['estado' => 'Paralizado'],
             [
                 'expira_en'       => now()->addMinutes(30),
@@ -3174,7 +3177,7 @@ if (($mod['tipo'] ?? '') === 'estado' && ($mod['estado'] ?? '') === 'Quemado') {
         $objetivo = $esPersonaje ? $this->enemigo : $this->personaje;
 
         // Solo los personajes guardan estados (el enemigo PvE es un set y no tiene)
-                    if ($objetivo instanceof Personaje) $objetivo->estadosTemporales()->updateOrCreate(
+                    if ($objetivo instanceof Personaje && ! $this->modoTorneo) $objetivo->estadosTemporales()->updateOrCreate(
             ['estado' => 'Quemado'],
             [
                 'expira_en'       => now()->addMinutes(30),
@@ -3259,6 +3262,9 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
        
         $this->combateActivo    = false;
         $this->resultadosRondas = $res;
+        if ($this->modoTorneo) {
+            return; // Torneo: no se guarda nada (ni exp, ni oro, ni estados, ni recuperación)
+        }
         $this->determinarGanador();
         $this->mostrarRanking = false;
 
@@ -3875,6 +3881,26 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     }
 
     // Pelea de exploración: no es PvP, ni misión, ni torre, ni caza (lo que cuenta para el ranking PvE)
+    // Torneo: la pelea corre con el mismo motor que el PvP pero sin guardar nada (ver peleaDeTorneo)
+    public bool $modoTorneo = false;
+
+    // Pelea del torneo (App\Models\Torneo) entre dos personajes armados para el torneo (nivel, stats y set del torneo;
+    // no se guardan). Mismo motor que el PvP; devuelve las acciones de las rondas y los datos de la pantalla
+    public static function peleaDeTorneo(Personaje $a, Personaje $b, ?Ciudad $ciudad = null): array
+    {
+        $c = new self();
+        $c->modoTorneo     = true;
+        $c->personaje      = $a;
+        $c->enemigo        = $b;
+        $c->esPvp          = true;
+        $c->combateActivo  = true;
+        $c->ciudadActual   = $ciudad;
+        $c->pelear();
+
+        return ['rondas' => $c->resultadosRondas, 'vista' => $c->estadoVistaPelea(),
+            'danio' => ['a' => (int) $c->totalDanioPersonaje, 'b' => (int) $c->totalDanioEnemigo]];
+    }
+
     public function esExploracion(): bool
     {
         return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva();
