@@ -56,9 +56,10 @@ class Explorar extends Component
     const REBOTE_TOPE = 50;
     const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
 
-    // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (misiones y torre, set completo).
+    // Exploración: el enemigo también se refuerza, pero como si tuviera un cuarto de set (misiones y torre, set y medio).
+    // Antes 0,5: se bajó para que explorar sea un poco más fácil (los enemigos quedan un 15% más débiles)
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
-    const EQUIPO_RIVAL_EXPLORACION = 0.5;
+    const EQUIPO_RIVAL_EXPLORACION = 0.25;
 
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
     public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
