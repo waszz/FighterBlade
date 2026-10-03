@@ -56,10 +56,13 @@ class Explorar extends Component
     const REBOTE_TOPE = 50;
     const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
 
-    // Exploración: el enemigo también se refuerza, pero como si tuviera un cuarto de set (misiones y torre, set y medio).
-    // Antes 0,5: se bajó para que explorar sea un poco más fácil (los enemigos quedan un 15% más débiles)
+    // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (misiones y torre, set completo).
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
-    const EQUIPO_RIVAL_EXPLORACION = 0.25;
+    const EQUIPO_RIVAL_EXPLORACION = 0.5;
+
+    // Exploración: el jugador pelea con este extra en todos sus stats (1.05 = +5%). Solo explorando: no en misiones,
+    // torre, mazmorra, caza ni PvP
+    const BUFF_JUGADOR_EXPLORACION = 1.05;
 
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
     public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
@@ -1667,6 +1670,14 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
         [$poderesPersonajePelea, $poderesEnemigoPelea] = $this->poderesDePelea();
 
         $statsPersonaje = $this->obtenerStatsCompletos($poderesPersonajePelea);
+        // 🧭 Explorando, el jugador tiene un pequeño extra en todos sus stats (ver BUFF_JUGADOR_EXPLORACION)
+        if (! $this->modoTorneo && $this->esExploracion()) {
+            foreach ($statsPersonaje as $stat => $valor) {
+                if (is_numeric($valor)) {
+                    $statsPersonaje[$stat] = (int) round($valor * self::BUFF_JUGADOR_EXPLORACION);
+                }
+            }
+        }
         $statsEnemigo   = $this->statsEnemigoEnPelea($poderesEnemigoPelea);
 
         $nivelPersonaje = $this->personaje->nivel;
