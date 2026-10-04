@@ -62,13 +62,25 @@ class Mazmorra extends Model
     }
 
     // Cada día vuelve a ENERGIA_DIARIA (si le quedaba más de lo comprado, lo conserva)
+    // Si había gastado energía, le llega un aviso (campanita) de que está otra vez llena
     public function recargarEnergia(): void
     {
         if ($this->energia_dia?->toDateString() !== self::hoy()) {
+            $estabaGastada = (int) $this->energia < self::ENERGIA_DIARIA;
             $this->energia = max((int) $this->energia, self::ENERGIA_DIARIA);
             $this->energia_dia = self::hoy();
             $this->save();
+            if ($estabaGastada) {
+                NotificacionJuego::avisar($this->personaje_id, '⚡', 'Tu energía de la Mazmorra se recargó: ' . $this->energia . '/' . self::ENERGIA_DIARIA . '. ¡Ya podés volver a entrar!');
+            }
         }
+    }
+
+    // Al entrar al juego: si ya es otro día, recarga la energía de la Mazmorra (y avisa) sin tener que abrirla
+    public static function recargarAlEntrar(int $personajeId): void
+    {
+        self::where('personaje_id', $personajeId)->where(fn ($q) => $q->whereNull('energia_dia')->orWhere('energia_dia', '!=', self::hoy()))
+            ->first()?->recargarEnergia();
     }
 
     public function puedeComprar(): bool

@@ -83,6 +83,12 @@ public function toggleChat()
         } catch (\Throwable $e) {
             report($e);
         }
+        // Energía de la Mazmorra: se recarga a la medianoche; al entrar se recarga y llega el aviso
+        try {
+            \App\Models\Mazmorra::recargarAlEntrar((int) $personajeId);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         $this->personajes = Personaje::where('user_id', Auth::id())->get();
 
