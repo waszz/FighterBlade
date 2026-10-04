@@ -37,7 +37,7 @@
     <div class="{{ $panel3d }} rounded-xl border border-emerald-600 p-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="text-center sm:text-left">
-                <h2 class="text-2xl font-bold text-emerald-300 [text-shadow:0_2px_0_#000]">🎯 Caza</h2>
+                <h2 class="text-2xl font-bold text-emerald-300 [text-shadow:0_2px_0_#000]"><span class="inline-block w-7 h-7 bg-current align-[-0.15em]" style="-webkit-mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat; mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat;"></span> Caza</h2>
                 <p class="text-sm text-gray-300">
                     Presas de <span class="font-bold text-white">{{ $ciudad->nombre ?? 'tu ciudad' }}</span>
                     · el tablero cambia en
@@ -55,7 +55,7 @@
                         <span class="w-6 h-6 rounded-full border border-black flex items-center justify-center text-xs
                             {{ $i < $personaje->caza_cargas
                                 ? 'bg-gradient-to-b from-emerald-400 to-emerald-700 shadow-[inset_1px_1px_0_rgba(255,255,255,0.4),0_2px_0_#000]'
-                                : 'bg-gray-800 opacity-50' }}">🎯</span>
+                                : 'bg-gray-800 opacity-50' }}"><span class="inline-block w-4 h-4 bg-current" style="-webkit-mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat; mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat;"></span></span>
                     @endfor
                     <span class="ml-1 font-bold text-emerald-200">{{ $personaje->caza_cargas }}/{{ CazaModel::CARGAS_MAX }}</span>
                 </div>
@@ -150,6 +150,14 @@
         </div>
     @else
         {{-- Tablero de presas --}}
+        {{-- Cambiar las presas (solo para vos), REFRESCOS_POR_DIA veces por día --}}
+        <div class="flex items-center justify-end gap-2 mb-3">
+            <span class="text-xs text-gray-300">Refrescos de hoy: <b class="{{ $refrescosRestantes > 0 ? 'text-emerald-300' : 'text-red-400' }}">{{ $refrescosRestantes }}/{{ CazaModel::REFRESCOS_POR_DIA }}</b></span>
+            <button type="button" wire:click="refrescarTablero" wire:loading.attr="disabled" @disabled($refrescosRestantes < 1)
+                class="{{ $boton3d }} px-3 py-1.5 text-sm bg-gradient-to-b from-sky-500 to-sky-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-rotate"></i> Cambiar presas
+            </button>
+        </div>
         @if ($tablero->isEmpty())
             <p class="text-center text-gray-400 italic">No hay presas en esta ciudad.</p>
         @else
@@ -217,7 +225,7 @@
 
                     <button wire:click="rastrear" wire:loading.attr="disabled" x-bind:disabled="recup > 0 || {{ $personaje->caza_cargas < 1 ? 'true' : 'false' }}"
                         class="{{ $boton3d }} mt-4 w-full px-4 py-2 bg-gradient-to-b from-emerald-500 to-emerald-800">
-                        🎯 Rastrear ({{ $rastreoMinutos }} min) · gasta 1 carga
+                        <span class="inline-block w-5 h-5 bg-current align-[-0.15em]" style="-webkit-mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat; mask: url({{ asset('images/iconos/caza.svg') }}) center / contain no-repeat;"></span> Rastrear ({{ $rastreoMinutos }} min) · gasta 1 carga
                     </button>
                     <p class="mt-2 text-center text-[11px] text-gray-400">Si perdés, empatás o huís, la presa se escapa y la carga no se devuelve.</p>
                 </div>

@@ -72,6 +72,7 @@ protected $casts = [
     'casino_vidas_desde' => 'datetime',
     'caza_cargas' => 'integer',
     'caza_cargas_desde' => 'datetime',
+    'caza_refrescos_fecha' => 'date', // día (hora local) de los refrescos del tablero de caza (ver Caza::refrescar)
     'recarga_esmeraldas_en' => 'datetime', // última recarga diaria de esmeraldas (ver recargarEsmeraldasDiarias)
 ];
 

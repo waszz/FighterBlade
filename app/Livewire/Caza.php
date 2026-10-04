@@ -27,6 +27,25 @@ class Caza extends Component
         $this->presaId = (int) $postId;
     }
 
+    // Cambia las 3 presas del tablero (solo para este jugador), hasta Caza::REFRESCOS_POR_DIA veces por día
+    public function refrescarTablero()
+    {
+        $personaje = Personaje::find($this->personajeId);
+        if (! $personaje || $personaje->user_id !== auth()->id()) {
+            return;
+        }
+        if (CazaModel::activaDe($personaje->id)) {
+            $this->dispatch('error', ['message' => 'Terminá tu caza antes de cambiar las presas.']);
+            return;
+        }
+        if (! CazaModel::refrescar($personaje)) {
+            $this->dispatch('error', ['message' => 'Ya usaste los ' . CazaModel::REFRESCOS_POR_DIA . ' refrescos de hoy.']);
+            return;
+        }
+        $this->presaId = null;
+        $this->dispatch('success', ['message' => '¡Nuevas presas! Te quedan ' . CazaModel::refrescosRestantes($personaje) . ' refrescos hoy.']);
+    }
+
     public function rastrear()
     {
         if (! isset(CazaModel::PARTES[$this->parte])) {
@@ -44,7 +63,7 @@ class Caza extends Component
                 return ['error' => $motivo];
             }
 
-            $presa = CazaModel::tablero($personaje->ciudadActual)->first(fn ($p) => $p['post']->id === $this->presaId);
+            $presa = CazaModel::tablero($personaje->ciudadActual, $personaje)->first(fn ($p) => $p['post']->id === $this->presaId);
             if (! $presa) {
                 return ['error' => 'Esa presa ya no está en el tablero. Elegí otra.'];
             }
@@ -206,7 +225,8 @@ class Caza extends Component
         return view('livewire.caza', [
             'personaje'        => $personaje,
             'ciudad'           => $personaje->ciudadActual,
-            'tablero'          => CazaModel::tablero($personaje->ciudadActual),
+            'tablero'          => CazaModel::tablero($personaje->ciudadActual, $personaje),
+            'refrescosRestantes' => CazaModel::refrescosRestantes($personaje),
             'caza'             => $caza,
             'segundosRotacion' => $segundosRotacion,
             'recuperacion'     => $personaje->segundosRecuperacion(),

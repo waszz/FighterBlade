@@ -90,7 +90,36 @@ class Caza extends Model
     }
 
     // 3 presas de la ciudad para la rotación actual: [['post' => Post, 'rareza' => '...'], ...]
-    public static function tablero(?Ciudad $ciudad): Collection
+    // Refrescos del tablero por día (hora local): cambian las 3 presas solo para ese jugador
+    const REFRESCOS_POR_DIA = 3;
+
+    public static function refrescosRestantes(Personaje $personaje): int
+    {
+        $hoy = now()->setTimezone(self::ZONA_HORARIA)->toDateString();
+        $usados = $personaje->caza_refrescos_fecha?->toDateString() === $hoy ? (int) $personaje->caza_refrescos_usados : 0;
+        return max(0, self::REFRESCOS_POR_DIA - $usados);
+    }
+
+    // Gasta un refresco: el jugador pasa a tener su propio tablero hasta que rote. Devuelve false si no le quedan
+    public static function refrescar(Personaje $personaje): bool
+    {
+        if (self::refrescosRestantes($personaje) < 1) {
+            return false;
+        }
+        $hoy = now()->setTimezone(self::ZONA_HORARIA)->toDateString();
+        [$rotacion] = self::rotacionActual();
+        $usados = $personaje->caza_refrescos_fecha?->toDateString() === $hoy ? (int) $personaje->caza_refrescos_usados : 0;
+        $personaje->caza_refrescos_fecha = $hoy;
+        $personaje->caza_refrescos_usados = $usados + 1;
+        $personaje->caza_refresco_rotacion = $rotacion;
+        $personaje->caza_refresco_semilla = random_int(1, 2000000000);
+        $personaje->save();
+        return true;
+    }
+
+    // Presas del tablero: las mismas para todos en la ciudad hasta que rota; si el jugador lo refrescó en esta rotación,
+    // las suyas
+    public static function tablero(?Ciudad $ciudad, ?Personaje $personaje = null): Collection
     {
         [$rotacion] = self::rotacionActual();
         $nivel = max(5, (int) ($ciudad->nivel ?? 5));
@@ -108,7 +137,8 @@ class Caza extends Model
         }
 
         // Semilla por ciudad y rotación: todos ven el mismo tablero hasta que rota
-        $random = new \Random\Randomizer(new \Random\Engine\Mt19937(crc32(($ciudad->id ?? 0) . '-' . $rotacion)));
+        $semilla = $personaje && (int) $personaje->caza_refresco_rotacion === $rotacion ? (int) $personaje->caza_refresco_semilla : 0;
+        $random = new \Random\Randomizer(new \Random\Engine\Mt19937(crc32(($ciudad->id ?? 0) . '-' . $rotacion . ($semilla ? '-' . $semilla : ''))));
         $elegidos = array_slice($random->shuffleArray($sets->all()), 0, 3);
         $legendaria = $random->getInt(1, 100) <= self::CHANCE_LEGENDARIA;
 
