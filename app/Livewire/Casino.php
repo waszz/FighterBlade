@@ -23,6 +23,10 @@ class Casino extends Component
         // 3 pociones = pociones de drop (Búsqueda) al inventario (no paga oro/diamantes)
         // pesoTriple: aparece mucho en los rodillos, pero el triple sale como si pesara 5 (antes 10: salía demasiado)
         'pocion'   => ['icono' => '🧪', 'imagen' => 'images/pocion-busqueda.png', 'peso' => 30, 'pesoTriple' => 5, 'pago' => 0],
+        // 3 cofres = un cofre de nivel 5 a 100 al inventario; 3 anillos = un anillo (joya) de nivel 5 a 100 con rareza.
+        // Los dos salen con la misma chance que las pociones de drop (mismo pesoTriple)
+        'cofre'    => ['icono' => '🧰', 'imagen' => 'storage/posts/torre/cofre5.png', 'peso' => 5, 'pesoTriple' => 5, 'pago' => 0],
+        'anillo'   => ['icono' => '💍', 'imagen' => 'storage/posts/torre/joya5.png', 'peso' => 5, 'pesoTriple' => 5, 'pago' => 0],
         'oro'      => ['icono' => '🪙', 'imagen' => 'images/oro.png', 'peso' => 18, 'pago' => 30],
         'diamante' => ['icono' => '💚', 'imagen' => 'images/diamante.png', 'peso' => 9,  'pago' => 80],
         // 3 regalos = set aleatorio (no paga oro/diamantes). pesoTriple 7: el triple sale un poco menos que con su peso (8)
@@ -40,7 +44,10 @@ class Casino extends Component
     ];
 
     // Símbolos cuyo triple da un premio especial (con diamantes tienen x2 chances)
-    const ESPECIALES = ['set', 'buff', 'rapida', 'pocion', 'vida', 'caza', 'pota_esmeralda'];
+    const ESPECIALES = ['set', 'buff', 'rapida', 'pocion', 'vida', 'caza', 'pota_esmeralda', 'cofre', 'anillo'];
+
+    // Rareza del anillo del tragamonedas (como el jefe de la Mazmorra en Normal)
+    const RAREZA_ANILLO = ['normal' => 70, 'rara' => 25, 'legendaria' => 5];
 
     // Pociones de esmeraldas que da el triple de pociones verdes
     const POCIONES_ESMERALDA_PREMIO = 3;
@@ -225,7 +232,10 @@ class Casino extends Component
             $vidasGanadas = null;
             $cargasCaza = null;
             $potasEsmeralda = null;
-            if ($rodillos === ['set', 'set', 'set']) {
+            $objetoGanado = null;
+            if ($rodillos === ['cofre', 'cofre', 'cofre'] || $rodillos === ['anillo', 'anillo', 'anillo']) {
+                $objetoGanado = $this->darCofreOAnillo($personaje, $rodillos[0]);
+            } elseif ($rodillos === ['set', 'set', 'set']) {
                 $set = $this->darSetAleatorio($personaje);
             } elseif ($rodillos === ['buff', 'buff', 'buff']) {
                 $buff = $this->darBuffAleatorio($personaje);
@@ -265,6 +275,7 @@ class Casino extends Component
                 (bool) $vidasGanadas => ['clave' => 'vida',   'texto' => '+' . $vidasGanadas . ' vidas'],
                 (bool) $cargasCaza   => ['clave' => 'caza',   'texto' => '+' . $cargasCaza . ' cargas caza'],
                 (bool) $potasEsmeralda => ['clave' => 'pota_esmeralda', 'texto' => $potasEsmeralda . ' potas esmeralda'],
+                (bool) $objetoGanado => ['clave' => $rodillos[0], 'texto' => $objetoGanado['nombre']],
                 default              => null,
             };
             $tirada = CasinoTirada::create([
@@ -286,6 +297,7 @@ class Casino extends Component
                 'vidasGanadas' => $vidasGanadas,
                 'cargasCaza' => $cargasCaza,
                 'potasEsmeralda' => $potasEsmeralda,
+                'objetoGanado' => $objetoGanado,
                 'tirada'   => $tirada->paraVista(),
                 'oro'      => $personaje->oro,
                 'diamante' => $personaje->diamante,
@@ -299,6 +311,44 @@ class Casino extends Component
         }
 
         return $resultado;
+    }
+
+    // Triple de cofres: un cofre de nivel 5 a 100 (de a 5). Triple de anillos: un anillo (joya) de nivel 5 a 100 con rareza.
+    // Igual que los que da la Torre / la Mazmorra; quedan en el inventario
+    private function darCofreOAnillo(Personaje $personaje, string $clave): array
+    {
+        $nivel = random_int(1, 20) * 5;
+        if ($clave === 'cofre') {
+            $drop = \App\Support\RecompensasTorre::cofre($nivel);
+        } else {
+            $tiro = random_int(1, array_sum(self::RAREZA_ANILLO));
+            foreach (self::RAREZA_ANILLO as $rareza => $peso) {
+                $tiro -= $peso;
+                if ($tiro <= 0) {
+                    break;
+                }
+            }
+            $drop = \App\Support\RecompensasTorre::joya($nivel, $rareza);
+        }
+
+        \App\Models\Objeto::create([
+            'personaje_id'             => $personaje->id,
+            'nombre'                   => $drop['nombre'],
+            'tipo'                     => $drop['tipo'],
+            'nivel'                    => $drop['nivel'] ?? $nivel,
+            'stats'                    => $drop['stats'] ?? [],
+            'imagen'                   => $drop['imagen'],
+            'origen_post_id'           => null,
+            'requisitos_equipo'        => [],
+            'requisitos_entrenamiento' => [],
+            'requisitos_accesorio'     => [],
+            'pocion'                   => false,
+            'descripcion'              => $drop['descripcion'] ?? null,
+            'usos_restantes'           => 1,
+            'usos_totales'             => 1,
+        ]);
+
+        return ['nombre' => $drop['nombre'], 'imagen' => asset('storage/posts/' . $drop['imagen']), 'tipo' => $clave];
     }
 
     // Entrega las 3 partes (equipo, entrenamiento, accesorio) de un set al azar, igual que la compra en el Mercado
@@ -643,6 +693,8 @@ class Casino extends Component
             ['nombre' => 'Vidas extra', 'clave' => 'vida',      'valor' => $esp['vida'] * 100],
             ['nombre' => 'Cargas caza', 'clave' => 'caza',      'valor' => $esp['caza'] * 100],
             ['nombre' => 'Potas esmeralda', 'clave' => 'pota_esmeralda', 'valor' => $esp['pota_esmeralda'] * 100],
+            ['nombre' => 'Cofre', 'clave' => 'cofre',           'valor' => $esp['cofre'] * 100],
+            ['nombre' => 'Anillo', 'clave' => 'anillo',         'valor' => $esp['anillo'] * 100],
         ];
     }
 

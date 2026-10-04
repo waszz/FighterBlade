@@ -142,9 +142,13 @@
             const tripleVida = res.rodillos.every(s => s === 'vida');
             const tripleCaza = res.rodillos.every(s => s === 'caza');
             const triplePotaEsmeralda = res.rodillos.every(s => s === 'pota_esmeralda');
-            if (tripleSet || tripleBuff || tripleRapida || triplePocion || tripleVida || tripleCaza || triplePotaEsmeralda) this.ganadores = [true, true, true];
+            const tripleObjeto = res.rodillos.every(s => s === 'cofre') || res.rodillos.every(s => s === 'anillo');
+            if (tripleSet || tripleBuff || tripleRapida || triplePocion || tripleVida || tripleCaza || triplePotaEsmeralda || tripleObjeto) this.ganadores = [true, true, true];
 
-            if (triplePotaEsmeralda && res.potasEsmeralda) {
+            if (tripleObjeto && res.objetoGanado) {
+                this.mensaje = `¡GANASTE ${res.objetoGanado.nombre}!`;
+                this.tipoMensaje = 'gano';
+            } else if (triplePotaEsmeralda && res.potasEsmeralda) {
                 this.mensaje = `¡GANASTE ${res.potasEsmeralda} POCIONES DE ESMERALDAS!`;
                 this.tipoMensaje = 'gano';
             } else if (tripleCaza && res.cargasCaza) {
@@ -411,6 +415,8 @@
                 'vida'   => ['texto' => '+' . $vidasPremio . ' vidas', 'color' => 'text-pink-300'],
                 'caza'   => ['texto' => '+' . $cazaCargasPremio . ' cargas caza', 'color' => 'text-emerald-300'],
                 'pota_esmeralda' => ['texto' => \App\Livewire\Casino::POCIONES_ESMERALDA_PREMIO . ' potas esmeralda', 'color' => 'text-green-300'],
+                'cofre'  => ['texto' => 'Cofre Nv. 5–100', 'color' => 'text-amber-300'],
+                'anillo' => ['texto' => 'Anillo Nv. 5–100', 'color' => 'text-sky-300'],
             ];
         @endphp
         <div class="grid grid-cols-2 gap-1.5 text-xs">
