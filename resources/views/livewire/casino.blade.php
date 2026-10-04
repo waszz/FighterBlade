@@ -21,6 +21,7 @@
         historial: @js($historial),
         historialMax: {{ $historialMax }},
         setGanado: null,
+        objetoGanado: null,
         // Símbolo del set: en el rodillo se ve la cara de un personaje al azar
         carasSets: @js($carasSets),
         carasRodillo: [null, null, null],
@@ -146,6 +147,7 @@
             if (tripleSet || tripleBuff || tripleRapida || triplePocion || tripleVida || tripleCaza || triplePotaEsmeralda || tripleObjeto) this.ganadores = [true, true, true];
 
             if (tripleObjeto && res.objetoGanado) {
+                this.objetoGanado = res.objetoGanado;
                 this.mensaje = `¡GANASTE ${res.objetoGanado.nombre}!`;
                 this.tipoMensaje = 'gano';
             } else if (triplePotaEsmeralda && res.potasEsmeralda) {
@@ -459,6 +461,30 @@
             <p class="text-xs text-sky-300 mb-3" x-text="'Nivel ' + setGanado?.nivel"></p>
             <p class="text-[11px] text-gray-400 mb-3">Equipo, entrenamiento y accesorio agregados a tu inventario.</p>
             <button type="button" @click="setGanado = null"
+                class="w-full py-1.5 rounded-md border-2 border-green-200 bg-gradient-to-b from-green-400 to-green-700 text-black font-bold shadow-[0_3px_0_#000] active:translate-y-[3px] active:shadow-none">
+                Reclamar
+            </button>
+        </div>
+    </div>
+
+    {{-- Premio: cofre o anillo ganado (también festeja Chun-Li) --}}
+    <div x-show="objetoGanado" x-cloak x-transition.opacity
+        class="fixed inset-0 z-50 flex flex-col sm:flex-row items-center justify-center gap-1 bg-black/75 px-3" @click.self="objetoGanado = null">
+        <div class="pointer-events-none relative shrink-0 flex flex-col items-center"
+             x-show="objetoGanado" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 -translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <div class="relative mb-1 px-3 py-1.5 rounded-xl border-2 border-black bg-white text-black text-xs sm:text-sm font-extrabold text-center shadow-[0_3px_0_#000] animate-bounce">
+                ¡Felicidades!<br><span class="font-bold text-[10px] sm:text-xs text-pink-600" x-text="objetoGanado?.tipo === 'cofre' ? '¡Te ganaste un cofre!' : '¡Te ganaste un anillo!'"></span>
+                <span class="absolute left-1/2 -bottom-2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r-2 border-b-2 border-black"></span>
+            </div>
+            <img src="{{ asset('images/casino/chunli.gif') }}" alt=""
+                 class="h-36 sm:h-72 w-auto max-w-none mt-2 [filter:drop-shadow(0_6px_8px_rgba(0,0,0,0.8))]">
+        </div>
+        <div class="w-full min-w-0 max-w-xs text-center rounded-xl border-4 border-yellow-500 bg-gradient-to-b from-[#1c2533] to-[#0a0e14] p-4 shadow-[0_0_30px_rgba(234,179,8,0.6)]">
+            <h3 class="text-lg font-extrabold tracking-widest text-yellow-400 [text-shadow:0_0_8px_rgba(250,204,21,0.7)]" x-text="objetoGanado?.tipo === 'cofre' ? '¡COFRE GANADO!' : '¡ANILLO GANADO!'"></h3>
+            <img :src="objetoGanado?.imagen" alt="" class="mx-auto my-3 h-24 w-24 object-contain" />
+            <p class="text-base font-bold text-white" x-text="objetoGanado?.nombre"></p>
+            <p class="text-[11px] text-gray-400 mt-1 mb-3">Agregado a tu inventario.</p>
+            <button type="button" @click="objetoGanado = null"
                 class="w-full py-1.5 rounded-md border-2 border-green-200 bg-gradient-to-b from-green-400 to-green-700 text-black font-bold shadow-[0_3px_0_#000] active:translate-y-[3px] active:shadow-none">
                 Reclamar
             </button>
