@@ -1,6 +1,6 @@
 {{-- Campanita de notificaciones del juego + panel con Notificaciones y Transacciones (ver App\Livewire\AvisosJuego).
      wire:poll.visible: solo pregunta si hay avisos nuevos mientras el botón se ve (en PC y en el celular hay uno cada uno) --}}
-<div wire:poll.15s.visible class="relative shrink-0">
+<div wire:poll.30s.visible class="relative shrink-0">
     @php
         $boton3d = 'shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000,0_4px_6px_rgba(0,0,0,0.6)] active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100 hover:brightness-125';
         $badge = 'absolute -top-1.5 -right-1.5 min-w-[1.1rem] h-[1.1rem] px-1 flex items-center justify-center rounded-full bg-red-600 border border-black text-[10px] font-extrabold text-white';

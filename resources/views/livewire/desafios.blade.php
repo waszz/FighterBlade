@@ -1,5 +1,5 @@
-{{-- Duelos e intercambios: avisos abajo a la derecha y la ventana de intercambio. Se actualiza cada 2 s --}}
-<div wire:poll.2s>
+{{-- Duelos e intercambios: avisos abajo a la derecha y la ventana de intercambio. Se actualiza cada 10 s (antes 2 s: gastaba mucho ancho de banda) --}}
+<div wire:poll.10s>
     @php
         $panel3d = 'rounded-xl border border-black text-white bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_6px_0_#000,0_12px_24px_rgba(0,0,0,0.8)]';
         $caja3d = 'rounded-lg border border-black bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000]';

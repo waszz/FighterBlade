@@ -1,6 +1,6 @@
 {{-- Punto rojo del botón del chat (celular). El último mensaje general visto se guarda en el navegador al abrir o cerrar
      el chat (evento 'chat-visto'). El wire:key cambia con los datos: así el punto se vuelve a armar con lo nuevo --}}
-<span wire:poll.15s class="pointer-events-none absolute -top-1 -right-1">
+<span wire:poll.30s class="pointer-events-none absolute -top-1 -right-1">
     <span wire:key="aviso-chat-{{ $privados }}-{{ $ultimoGeneral }}"
           x-data="{
               ultimo: {{ $ultimoGeneral }},

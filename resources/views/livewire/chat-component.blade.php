@@ -1,4 +1,4 @@
-<div class="flex h-full w-full text-white" wire:poll.5s.visible>
+<div class="flex h-full w-full text-white" wire:poll.10s.visible>
     @php
         $boton3d = 'flex items-center justify-center gap-1.5 rounded-lg border border-black text-xs font-bold bg-gradient-to-b from-[#2a3240] to-[#10141b] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_2px_0_#000] hover:brightness-125 active:translate-y-[2px] active:shadow-none transition-all';
         // Color fijo del nombre para cada jugador (si no tiene un efecto de nombre comprado)

@@ -41,8 +41,8 @@
                 <p class="text-sm text-gray-300">
                     Presas de <span class="font-bold text-white">{{ $ciudad->nombre ?? 'tu ciudad' }}</span>
                     · el tablero cambia en
-                    <span class="font-bold text-emerald-200" x-data="{ s: {{ $segundosRotacion }} }"
-                          x-init="setInterval(() => { if (--s <= 0) $wire.$refresh() }, 1000)" x-text="fmt(s)">
+                    <span class="font-bold text-emerald-200" wire:key="rotacion-{{ $segundosRotacion }}" x-data="{ s: {{ $segundosRotacion }} }"
+                          x-init="setInterval(() => { if (s > 0 && --s === 0) $wire.$refresh() }, 1000)" x-text="fmt(s)">
                         {{ $formatoTiempo($segundosRotacion) }}
                     </span>
                     <span class="text-gray-400">(a las {{ CazaModel::horaProximaRotacion() }})</span>
@@ -62,7 +62,7 @@
                 @if ($proximaCarga !== null)
                     <p class="text-xs text-gray-400">
                         Próxima carga en
-                        <span x-data="{ s: {{ $proximaCarga }} }" x-init="setInterval(() => { if (--s <= 0) $wire.$refresh() }, 1000)"
+                        <span wire:key="carga-{{ $proximaCarga }}" x-data="{ s: {{ $proximaCarga }} }" x-init="setInterval(() => { if (s > 0 && --s === 0) $wire.$refresh() }, 1000)"
                               x-text="fmt(s)">{{ $formatoTiempo($proximaCarga) }}</span>
                     </p>
                 @endif
