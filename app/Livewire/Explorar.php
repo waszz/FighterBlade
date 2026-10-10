@@ -50,11 +50,15 @@ class Explorar extends Component
     // Híbridos: pegan físico y elemental a la vez (el ataque les cuenta en los dos), así que cada parte vale este
     // tanto. Con 0,65 un híbrido pega más o menos lo mismo que un físico o un elemental del mismo nivel (antes, 1,5 veces)
     const FACTOR_DANIO_HIBRIDO = 0.65;
-    const CONTRA_POR_DEFENSA = 0.5;
-    const CONTRA_TOPE = 50;
-    const REBOTE_POR_RESISTENCIA = 0.5;
-    const REBOTE_TOPE = 50;
-    const REBOTE_PORCENTAJE = 1.0; // rebota el golpe entero
+    // Balance (antes 0,5 % por punto hasta 50%, el rebote devolvía el golpe entero y el bloqueo lo anulaba: la DEF y la RES
+    // pesaban mucho más que el ataque)
+    const CONTRA_POR_DEFENSA = 0.3;
+    const CONTRA_TOPE = 30;
+    const REBOTE_POR_RESISTENCIA = 0.3;
+    const REBOTE_TOPE = 30;
+    const REBOTE_PORCENTAJE = 0.5; // rebota la mitad del golpe
+    // Si el ataque no supera la defensa, el golpe entra con este tanto (antes se bloqueaba entero)
+    const FACTOR_BLOQUEO_DEFENSA = 0.5;
 
     // Exploración: el enemigo también se refuerza, pero como si tuviera medio set (misiones y torre, set completo).
     // No aplica al enemigo de bienvenida (Wolverine) ni a la caza (tiene su propio multiplicador por rareza)
@@ -2385,16 +2389,9 @@ if ($tipoAtaque === 'defensa') {
     }
 
     $danioSinReducir = 0; // se completa abajo si el golpe entra (lo usa el rebote)
-    if ($puedeDefender) {
-        $bloqueoPorDefensa   = true; // bloqueó un golpe: puede contraatacar (ver más abajo)
-        $danioFisicoFinal    = 0;
-        $danioElementalFinal = 0;
-        $danioFinal          = 0;
-        $textoTipoDanio      = "$nombreDefensor se defiende y bloquea el ataque.";
-        $gif                 = $gifDefensaDefensor;
-        $tipoAtaque          = 'bloqueo';
-
-    } else {
+    // La defensa ya no anula el golpe: lo frena a la mitad (FACTOR_BLOQUEO_DEFENSA). Igual cuenta como bloqueo para el contraataque
+    $bloqueoPorDefensa = $puedeDefender;
+    {
         // El golpe tal cual, antes de las reducciones del que lo recibe (Piel dura, Piel impenetrable...): es lo que se
         // devuelve si lo rebota (la Piel de Hulk no tiene que achicar su propio rebote)
         $danioSinReducir = match ($tipoAtacante) {
@@ -2415,8 +2412,14 @@ if ($tipoAtaque === 'defensa') {
             $danioElementalFinal = 0;
         }
 
+        if ($puedeDefender) {
+            $danioFisicoFinal    = round($danioFisicoFinal * self::FACTOR_BLOQUEO_DEFENSA);
+            $danioElementalFinal = round($danioElementalFinal * self::FACTOR_BLOQUEO_DEFENSA);
+            $danioSinReducir     = round($danioSinReducir * self::FACTOR_BLOQUEO_DEFENSA);
+        }
         $danioFinal     = $danioFisicoFinal + $danioElementalFinal;
-        $textoTipoDanio = "Físico: " . round($danioFisicoFinal) . " / Elemental: " . round($danioElementalFinal);
+        $textoTipoDanio = ($puedeDefender ? "$nombreDefensor se defiende y frena la mitad del golpe. " : '')
+            . "Físico: " . round($danioFisicoFinal) . " / Elemental: " . round($danioElementalFinal);
 
         $gif = match ($tipoAtaque) {
             'critico' => $gifCriticoAtacante,
