@@ -656,6 +656,14 @@ class Inventario extends Component
             ]);
         }
 
+        // Guardar una parte de set en el clan le da prestigio según su nivel (nivel 5 → 5), una sola vez por parte
+        $prestigio = 0;
+        if (in_array($objeto->tipo, ['equipo', 'entrenamiento', 'accesorio'], true) && ! $objeto->prestigio_clan_dado) {
+            $prestigio = max(1, (int) $objeto->nivel);
+            \App\Models\Clan::whereKey($personaje->clan_id)->increment('prestigio', $prestigio);
+            $objeto->prestigio_clan_dado = true;
+        }
+
         $objeto->personaje_id = null;
         $objeto->save();
 
@@ -668,7 +676,7 @@ class Inventario extends Component
             $this->objetoSeleccionado = null;
         }
 
-        session()->flash('mensaje', '✅ ' . ucfirst($objeto->tipo) . ' guardado en el clan.');
+        session()->flash('mensaje', '✅ ' . ucfirst($objeto->tipo) . ' guardado en el clan.' . ($prestigio ? " +{$prestigio} de prestigio para el clan." : ''));
         $this->reloadInventario++;
     }
 

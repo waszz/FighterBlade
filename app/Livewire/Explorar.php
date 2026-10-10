@@ -44,6 +44,9 @@ class Explorar extends Component
     // Torre y Misiones: cada vuelta (empezar de nuevo después de terminarlas) suma este extra a los rivales (+30% por vuelta)
     const FACTOR_POR_VUELTA = 0.3;
 
+    // PvP: el clan del que gana (contra uno de otro clan) suma este prestigio
+    const PRESTIGIO_PVP_CLAN = 100;
+
     public static function factorVuelta(int $vuelta): float
     {
         return 1 + max(0, $vuelta) * self::FACTOR_POR_VUELTA;
@@ -1414,6 +1417,14 @@ if ($tieneSiempreEnPie) {
                 ? now()
                 : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal, $this->esPvp));
         }
+        // 🛡️ PvP entre jugadores de clanes distintos: el clan del ganador suma PRESTIGIO_PVP_CLAN de prestigio
+        if ($this->esPvp && ! $this->esDuelo && in_array($this->resultadoFinal, ['Victoria', 'Derrota'], true)
+            && ($rivalClan = Personaje::find($this->enemigo->id ?? null))
+            && $this->personaje->clan_id && $rivalClan->clan_id && (int) $this->personaje->clan_id !== (int) $rivalClan->clan_id) {
+            $clanGanador = $this->resultadoFinal === 'Victoria' ? $this->personaje->clan_id : $rivalClan->clan_id;
+            \App\Models\Clan::whereKey($clanGanador)->increment('prestigio', self::PRESTIGIO_PVP_CLAN);
+        }
+
         // ⚔️ Guerra de clanes: ganarle a uno de otro clan en la zona de la guerra suma prestigio a tu clan y le resta al suyo
         if ($this->esPvp && ! $this->esDuelo && in_array($this->resultadoFinal, ['Victoria', 'Derrota'], true)
             && ($rivalGuerra = Personaje::find($this->enemigo->id ?? null))
