@@ -28,6 +28,23 @@ class Torre extends Component
         }
     }
 
+    // Torre terminada: empieza otra vez desde el piso 1, con rivales más fuertes (ver Explorar::factorVuelta)
+    public function empezarDeNuevo()
+    {
+        $personaje = Personaje::find($this->personajeId);
+        if (! $personaje || $personaje->user_id !== auth()->id() || $personaje->torre_piso_activo) {
+            return;
+        }
+        if ((int) $personaje->torre_piso < TorrePiso::count()) {
+            $this->dispatch('error', ['message' => 'Primero llegá a la cima de la Torre.']);
+            return;
+        }
+        $personaje->torre_piso = 0;
+        $personaje->torre_vuelta = (int) $personaje->torre_vuelta + 1;
+        $personaje->save();
+        $this->dispatch('success', ['message' => '¡Vuelta ' . ($personaje->torre_vuelta + 1) . ' de la Torre! Los rivales son más fuertes.']);
+    }
+
     // Pelear contra el rival del piso que le toca
     public function subir()
     {
@@ -108,7 +125,8 @@ class Torre extends Component
         return view('livewire.torre', [
             'rivalModal'      => $pisoModal?->rival,
             'escenarioModal'  => $pisoModal?->escenario,
-            'statsRivalModal' => $pisoModal?->rival ? Explorar::statsRivalMisionTorre($pisoModal->rival) : [],
+            'statsRivalModal' => $pisoModal?->rival ? Explorar::statsRivalMisionTorre($pisoModal->rival, Explorar::factorVuelta((int) $personaje->torre_vuelta)) : [],
+            'vuelta'          => (int) $personaje->torre_vuelta + 1,
             'personaje'    => $personaje,
             'pisos'        => $pisos,
             'superado'     => $superado,

@@ -28,6 +28,12 @@
         </div>
         @if ($terminada)
             <p class="mt-3 text-center font-bold text-yellow-300">🏆 ¡Llegaste a la cima de la Torre!</p>
+            <div class="mt-2 text-center">
+                <button wire:click="empezarDeNuevo" wire:loading.attr="disabled"
+                    class="px-5 py-2 rounded-lg border border-black text-white font-bold bg-gradient-to-b from-purple-500 to-purple-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
+                    <i class="fa-solid fa-rotate-right"></i> Empezar de nuevo (vuelta {{ $vuelta + 1 }}, rivales +{{ (int) round(\App\Livewire\Explorar::FACTOR_POR_VUELTA * 100 * $vuelta) }}%)
+                </button>
+            </div>
         @elseif (! $puedeEntrar)
             <p class="mt-3 text-center font-bold text-amber-300">🔒 Necesitás nivel {{ $nivelMinimo }} para entrar a la Torre.</p>
         @endif

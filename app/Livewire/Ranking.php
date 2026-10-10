@@ -88,15 +88,17 @@ public function render()
             ->sinAdmins()->orderByDesc('puntaje')->orderByDesc('ganadas')->take(50)->get(),
 
         // Misiones completadas (solo los que completaron al menos una)
-        'misiones' => Personaje::joinSub(
+        // (primero la vuelta en la que van; después las completadas en esa vuelta)
+        'misiones' => Personaje::leftJoinSub(
                 DB::table('mision_personaje')->select('personaje_id', DB::raw('COUNT(*) as misiones'), DB::raw('MAX(completada_en) as ultima'))->groupBy('personaje_id'),
                 'mp', 'mp.personaje_id', '=', 'personajes.id')
             ->select('personajes.*')
-            ->sinAdmins()->orderByDesc('mp.misiones')->orderBy('mp.ultima')->take(50)->get(),
+            ->where(fn ($q) => $q->where('mp.misiones', '>', 0)->orWhere('personajes.misiones_vuelta', '>', 0))
+            ->sinAdmins()->orderByDesc('personajes.misiones_vuelta')->orderByDesc('mp.misiones')->orderBy('mp.ultima')->take(50)->get(),
 
         // Piso más alto superado de la Torre
-        'torre' => Personaje::sinAdmins()->where('torre_piso', '>', 0)
-            ->orderByDesc('torre_piso')->orderByDesc('nivel')->take(50)->get(),
+        'torre' => Personaje::sinAdmins()->where(fn ($q) => $q->where('torre_piso', '>', 0)->orWhere('torre_vuelta', '>', 0))
+            ->orderByDesc('torre_vuelta')->orderByDesc('torre_piso')->orderByDesc('nivel')->take(50)->get(),
 
         'clanes' => Clan::orderBy('prestigio', 'desc')->take(50)->get(),
 

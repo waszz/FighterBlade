@@ -19,7 +19,7 @@ class JefeSemanal extends Model
 
     const INTENTOS = 3;
     // Sobre un rival de Misión/Torre de tu nivel (set y medio equipado), el jefe tiene este extra en todos sus stats
-    const FACTOR_STATS = 1.4;
+    const FACTOR_STATS = 1.6;
     const PREMIO_ESMERALDAS = 500;
     // Rareza del anillo del premio (como el jefe de la Mazmorra en Pesadilla)
     const RAREZA_ANILLO = ['normal' => 20, 'rara' => 45, 'legendaria' => 35];

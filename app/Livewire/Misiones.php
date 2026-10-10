@@ -90,6 +90,24 @@ class Misiones extends Component
         return null;
     }
 
+    // Todas las misiones completadas: se empiezan otra vez desde la primera, con rivales más fuertes (Explorar::factorVuelta).
+    // Sus premios se vuelven a ganar
+    public function empezarDeNuevo()
+    {
+        $personaje = Personaje::find($this->personajeId);
+        if (! $personaje || $personaje->user_id !== auth()->id() || $personaje->mision_activa_id) {
+            return;
+        }
+        if (Mision::siguientePara($personaje->id)) {
+            $this->dispatch('error', ['message' => 'Primero completá todas las misiones.']);
+            return;
+        }
+        DB::table('mision_personaje')->where('personaje_id', $personaje->id)->delete();
+        $personaje->misiones_vuelta = (int) $personaje->misiones_vuelta + 1;
+        $personaje->save();
+        $this->dispatch('success', ['message' => '¡Vuelta ' . ($personaje->misiones_vuelta + 1) . ' de las Misiones! Los rivales son más fuertes.']);
+    }
+
     public function render()
     {
         $completadas = DB::table('mision_personaje')->where('personaje_id', $this->personajeId)->pluck('mision_id')->all();
@@ -99,7 +117,8 @@ class Misiones extends Component
         return view('livewire.misiones', [
             'rivalModal'      => $misionModal?->rival,
             'escenarioModal'  => $misionModal?->escenario,
-            'statsRivalModal' => $misionModal?->rival ? Explorar::statsRivalMisionTorre($misionModal->rival) : [],
+            'statsRivalModal' => $misionModal?->rival ? Explorar::statsRivalMisionTorre($misionModal->rival, Explorar::factorVuelta((int) Personaje::find($this->personajeId)?->misiones_vuelta)) : [],
+            'vuelta'          => (int) Personaje::find($this->personajeId)?->misiones_vuelta + 1,
             'recuperacion' => Personaje::find($this->personajeId)?->segundosRecuperacion() ?? 0,
             'misiones'    => Mision::with('rival.poderes')->orderBy('orden')->get(),
             'completadas' => array_flip($completadas),

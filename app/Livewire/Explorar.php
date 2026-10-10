@@ -37,8 +37,17 @@ class Explorar extends Component
     // Misiones y Torre: el rival pelea como un jugador de su nivel con equipo. Sus stats (30 + 5 por nivel, como un
     // jugador sin nada equipado) se refuerzan con lo que sumaría un set de su nivel (5 por nivel) × esta fracción.
     // 1 = set completo (rival de tu nivel = pelea pareja), 0.5 = medio set, 0 = sin refuerzo.
-    // 1.5: más difíciles (un 20-25% más de stats que con 1). También lo usa la Mazmorra, antes de su dificultad
-    const EQUIPO_RIVAL_MISION_TORRE = 1.5;
+    // 2.0 (antes 1.5): más difíciles, ~20% más de stats que antes. También lo usan la Mazmorra (antes de su dificultad)
+    // y el jefe de la semana
+    const EQUIPO_RIVAL_MISION_TORRE = 2.0;
+
+    // Torre y Misiones: cada vuelta (empezar de nuevo después de terminarlas) suma este extra a los rivales (+30% por vuelta)
+    const FACTOR_POR_VUELTA = 0.3;
+
+    public static function factorVuelta(int $vuelta): float
+    {
+        return 1 + max(0, $vuelta) * self::FACTOR_POR_VUELTA;
+    }
 
     // Contraataque (defensa) y rebote (resistencia), cuando al defensor le entra un golpe. Solo los tiene quien tiene más
     // de 30 en ese stat (como el especial con velocidad o el crítico con fuerza):
@@ -4002,6 +4011,12 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             // 🕳️ Mazmorra: más fuerte según la dificultad (y el jefe un poco más)
             if ($mazmorraPelea) {
                 $factorRival *= $mazmorraPelea->factorStats();
+            }
+            // 🗼📜 Vueltas de la Torre o de las Misiones: más fuertes en cada vuelta
+            if ($this->torreActiva()) {
+                $factorRival *= self::factorVuelta((int) $this->personaje->torre_vuelta);
+            } elseif ($this->misionActiva()) {
+                $factorRival *= self::factorVuelta((int) $this->personaje->misiones_vuelta);
             }
             foreach ($statsEnemigo as $stat => $valor) {
                 if (is_numeric($valor)) {
