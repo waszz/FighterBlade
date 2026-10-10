@@ -1,6 +1,6 @@
 /.phpunit.cache
 /node_modules
-/public/build
+# /public/build va en git: el hosting (Hostinger) no tiene Node para compilarlo
 /public/hot
 /public/storage
 /storage/*.key
