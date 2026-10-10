@@ -83,6 +83,12 @@ public function toggleChat()
         } catch (\Throwable $e) {
             report($e);
         }
+        // Guerra de clanes de los domingos: empieza y termina cuando alguien entra
+        try {
+            \App\Models\GuerraClanes::actualizar();
+        } catch (\Throwable $e) {
+            report($e);
+        }
         // Energía de la Mazmorra: se recarga a la medianoche; al entrar se recarga y llega el aviso
         try {
             \App\Models\Mazmorra::recargarAlEntrar((int) $personajeId);

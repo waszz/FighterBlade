@@ -454,6 +454,8 @@
                 @livewire('calendario', key('calendario-'.($reloadCounters['calendario'] ?? 0)))
                 @elseif ($seccion === 'torneo')
                 @livewire('torneo', ['personaje' => $personaje], key('torneo-'.($reloadCounters['torneo'] ?? 0)))
+                @elseif ($seccion === 'guerra')
+                @livewire('guerra', ['personaje' => $personaje], key('guerra-'.($reloadCounters['guerra'] ?? 0)))
                 @elseif ($seccion === 'jefe')
                 @livewire('jefe', ['personaje' => $personaje], key('jefe-'.($reloadCounters['jefe'] ?? 0)))
                 @elseif ($seccion === 'mazmorra')

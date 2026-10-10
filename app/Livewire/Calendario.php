@@ -116,6 +116,18 @@ class Calendario extends Component
             }
         }
 
+        // Jefe de la semana (lunes, medianoche) y guerra de clanes (domingos)
+        for ($d = $desde->copy(); $d->lte($hasta); $d->addDay()) {
+            if ($d->isMonday()) {
+                $agregar($d->toDateString(), ['hora' => '00:00', 'titulo' => 'Nuevo jefe de la semana', 'tipo' => 'jefe',
+                    'descripcion' => 'Aparece un jefe nuevo en una zona al azar: ' . \App\Models\JefeSemanal::INTENTOS . ' intentos para vencerlo. Premio: ' . \App\Models\JefeSemanal::PREMIO_ESMERALDAS . ' esmeraldas y un cofre o anillo.', 'id' => null]);
+            }
+            if ($d->dayOfWeek === \App\Models\GuerraClanes::DIA) {
+                $agregar($d->toDateString(), ['hora' => \App\Models\GuerraClanes::HORA_INICIO, 'titulo' => 'Guerra de clanes', 'tipo' => 'torneo',
+                    'descripcion' => 'Una hora en una zona al azar: ganarle a los de otros clanes da prestigio. El clan ganador suma el prestigio y +' . \App\Models\GuerraClanes::BUFF_PORCENTAJE . '% de exp, oro y drop por ' . \App\Models\GuerraClanes::BUFF_HORAS . ' h.', 'id' => null]);
+            }
+        }
+
         // Buffs globales: el día que empiezan (hora →), los del medio (todo el día) y el que terminan (→ hora)
         $nombresBuff = ['xp' => 'EXP', 'oro' => 'Oro', 'drop' => 'Drop'];
         $buffs = Buff::whereNull('personaje_id')->where('global', true)

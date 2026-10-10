@@ -486,6 +486,12 @@
         <span {!! $iconoCiudad('jefe.svg') !!}></span>
         Jefe
       </button>
+      {{-- Guerra de clanes (domingos) --}}
+      <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'guerra' })"
+        class="{{ $botonCiudad }}" style="--c:#f97316">
+        <i class="fa-solid fa-shield-halved block w-7 h-7 text-2xl leading-7 text-center"></i>
+        Guerra
+      </button>
       {{-- Entrenamiento con el maestro: se puede aunque te estés recuperando --}}
       <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'entrenar' })"
         class="{{ $botonCiudad }}" style="--c:#fb923c">

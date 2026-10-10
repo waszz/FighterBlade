@@ -1414,6 +1414,16 @@ if ($tieneSiempreEnPie) {
                 ? now()
                 : now()->addSeconds(self::segundosRecuperacion($this->personaje->nivel, (string) $this->resultadoFinal, $this->esPvp));
         }
+        // ⚔️ Guerra de clanes: ganarle a uno de otro clan en la zona de la guerra suma prestigio a tu clan y le resta al suyo
+        if ($this->esPvp && ! $this->esDuelo && in_array($this->resultadoFinal, ['Victoria', 'Derrota'], true)
+            && ($rivalGuerra = Personaje::find($this->enemigo->id ?? null))
+            && ($guerra = \App\Models\GuerraClanes::cuentaPelea($this->personaje, $rivalGuerra))) {
+            [$ganaGuerra, $pierdeGuerra] = $this->resultadoFinal === 'Victoria' ? [$this->personaje, $rivalGuerra] : [$rivalGuerra, $this->personaje];
+            $guerra->sumar((int) $ganaGuerra->clan_id, \App\Models\GuerraClanes::PUNTOS_VICTORIA);
+            $guerra->sumar((int) $pierdeGuerra->clan_id, -\App\Models\GuerraClanes::PUNTOS_DERROTA);
+            $this->dispatch('success', ['message' => '⚔️ Guerra de clanes: +' . \App\Models\GuerraClanes::PUNTOS_VICTORIA . ' para el clan de ' . $ganaGuerra->nombre . '.']);
+        }
+
         // PvP: el atacado también queda en recuperación, según cómo le fue a él
         if ($this->esPvp && ! $this->esDuelo) {
             $this->darRecuperacionAlRivalPvp();
@@ -3466,6 +3476,8 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
             // PvP: 4% si el rival está a 5 niveles o menos, 1% si la diferencia es mayor
             // (en la ciudad del jefe de la semana el PvP no da exp)
             $this->esPvp && \App\Models\JefeSemanal::esCiudadDelJefe($this->personaje->ciudad_id) => 0,
+            // (en la zona de la guerra de clanes tampoco: ahí se gana prestigio para el clan)
+            $this->esPvp && \App\Models\GuerraClanes::estaEnLaGuerra($this->personaje) => 0,
             $this->esPvp => self::fraccionExpPvp($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
             $this->jefeActivo() !== null => self::porcentajeExpPorNivel($nivelPersonaje),
             // Misiones y Torre: el doble que una pelea común, pero con la misma baja que la exploración si el rival es de
@@ -3880,7 +3892,8 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     private function darExpAlRivalPvp(): void
     {
         $rival = Personaje::find($this->enemigo->id ?? null);
-        if (! $rival || $rival->nivel >= 100 || \App\Models\JefeSemanal::esCiudadDelJefe($rival->ciudad_id)) {
+        if (! $rival || $rival->nivel >= 100 || \App\Models\JefeSemanal::esCiudadDelJefe($rival->ciudad_id)
+            || \App\Models\GuerraClanes::estaEnLaGuerra($rival)) {
             return;
         }
         $nivel = (int) $rival->nivel;
