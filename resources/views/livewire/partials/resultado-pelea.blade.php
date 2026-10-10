@@ -940,35 +940,37 @@
           },
           // La escala y el corrimiento quedan en el estado de Alpine (no en estilos puestos a mano): cuando Livewire
           // redibuja la escena los vuelve a aplicar (antes los borraba y los gifs se agrandaban y achicaban)
-          f: 1, vacio: { izq: 0, der: 0 }, listo: false,
+          // Escala de cada lado por separado: si un gif es enorme (ej. una victoria con un sapo gigante) se achica solo ese,
+          // el otro queda de su tamaño
+          f: { izq: 1, der: 1 }, vacio: { izq: 0, der: 0 }, listo: false,
           estilo(el) {
-            const lado = el.closest('[data-lado]')?.dataset.lado;
-            return 'transform-origin:bottom left;scale:' + this.f + ';translate:' + (-(this.vacio[lado] || 0) * this.f) + 'px 0;opacity:' + (this.listo ? 1 : 0);
+            const lado = el.closest('[data-lado]')?.dataset.lado, f = this.f[lado] ?? 1;
+            return 'transform-origin:bottom left;scale:' + f + ';translate:' + (-(this.vacio[lado] || 0) * f) + 'px 0;opacity:' + (this.listo ? 1 : 0);
           },
-          // Cada figura se corre hasta su borde de la escena (sacando el espacio vacío del gif) y, si igual se pisan
-          // en el medio o alguna es más alta que el lugar que hay debajo del cartel del ganador, las dos se achican lo justo.
-          // Se mide con la escala puesta (dividiendo por ella), sin sacarla: así no parpadea
+          // Cada figura se corre hasta su borde de la escena (sacando el espacio vacío del gif). Si no entran de alto o se
+          // pisan en el medio, se achica cada una lo justo: primero la más chica se queda con su lado y la más grande usa
+          // lo que queda. Se mide con la escala puesta (dividiendo por ella): así no parpadea
           ajustar() {
             const lados = ['izq', 'der'].map(l => this.$el.querySelector('[data-lado=' + l + ']'));
             if (lados.some(l => ! l)) return;
-            const s = this.f || 1;
             const datos = lados.map(lado => {
+              const nombre = lado.dataset.lado, s = this.f[nombre] || 1;
               const img = lado.querySelector('img'), rect = img.getBoundingClientRect();
               const [x0, x1] = img.naturalWidth ? this.bordes(img) : [0, 0];
               const ancho = rect.width / s, alto = img.naturalHeight ? (img.naturalHeight - (img._arriba ?? 0)) * (rect.height / s) / img.naturalHeight : rect.height / s;
               const r = img.naturalWidth ? ancho / img.naturalWidth : 1;
-              return { lado: lado.dataset.lado, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width, alto };
+              return { lado: nombre, vacio: x0 * r, ancho: img.naturalWidth ? (x1 - x0 + 1) * r : lado.getBoundingClientRect().width / s, alto };
             });
             const c = this.$el.getBoundingClientRect(), i = lados[0].getBoundingClientRect(), d = lados[1].getBoundingClientRect();
             if (! c.width || ! c.height) return; // escena todavía oculta
             const espacio = c.width - (i.left - c.left) - (c.right - d.right) - 8;
-            const total = datos[0].ancho + datos[1].ancho;
-            const fAncho = total > 0 ? espacio / total : 1;
-            // Alto: que entren en la escena (el cartel con el nombre queda adelante, pueden pasar por detrás)
-            const altoMax = Math.max(120, c.height - 8), alto = Math.max(datos[0].alto, datos[1].alto);
-            const fAlto = alto > 0 ? altoMax / alto : 1;
-            // Mismo tamaño que en la escena de la pelea de arriba; solo se achican si se pisan o no entran de alto
-            this.f = Math.max(0.4, Math.min(1, fAncho, fAlto));
+            const altoMax = Math.max(120, c.height - 8);
+            const porAlto = x => x.alto > 0 ? altoMax / x.alto : 1;
+            const [chico, grande] = [...datos].sort((p, q) => p.ancho - q.ancho);
+            const fChico = Math.max(0.4, Math.min(1, porAlto(chico), chico.ancho > 0 ? (espacio / 2) / chico.ancho : 1));
+            const resto = espacio - chico.ancho * fChico;
+            const fGrande = Math.max(0.3, Math.min(1, porAlto(grande), grande.ancho > 0 ? resto / grande.ancho : 1));
+            this.f = { ...this.f, [chico.lado]: fChico, [grande.lado]: fGrande };
             datos.forEach(x => this.vacio[x.lado] = x.vacio);
             this.listo = true;
           }
