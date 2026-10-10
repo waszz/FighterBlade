@@ -19,11 +19,23 @@ class Ciudad extends Model
         'gif',
         'user_id',
         'nivel',
+        'variante',
     ];
     
       protected $casts = [
         'stats' => 'array',
     ];
+
+    // Dos zonas por nivel (variante 0 y 1): los sets que se encuentran explorando se reparten entre las dos (por id,
+    // alternados), así cada zona tiene sus propios rivales y suelta sus propias partes
+    public function setsDeLaZona(\Illuminate\Support\Collection $sets): \Illuminate\Support\Collection
+    {
+        if (self::where('nivel', $this->nivel)->count() < 2) {
+            return $sets;
+        }
+        $mios = $sets->sortBy('id')->values()->filter(fn ($s, $i) => $i % 2 === (int) $this->variante % 2)->values();
+        return $mios->isNotEmpty() ? $mios : $sets;
+    }
 
     public function user()
     {

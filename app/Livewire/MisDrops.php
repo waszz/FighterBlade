@@ -29,7 +29,7 @@ class MisDrops extends Component
     public function render()
     {
         $ciudades = Ciudad::orderBy('nivel')->get()->keyBy('id');
-        $ciudadPorNivel = $ciudades->keyBy('nivel');
+        $ciudadPorNivel = $ciudades->where('variante', 0)->keyBy('nivel');
         $nivelSet = [];
         $imagenEnemigo = [];
 

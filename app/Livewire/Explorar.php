@@ -1008,11 +1008,13 @@ public function colorBarraPorStat($valor)
         $nivelMin  = $nivelBase + 5;
         $nivelMax  = $nivelBase + 9;
 
-        $post = Post::where('es_enemigo', 1)
-            ->whereBetween('nivel', [$nivelMin, $nivelMax])
-            ->with('poderes')
-            ->inRandomOrder()
-            ->first();
+        // Los sets del nivel se reparten entre las dos zonas de ese nivel (Ciudad::setsDeLaZona)
+        $candidatos = Post::where('es_enemigo', 1)->whereBetween('nivel', [$nivelMin, $nivelMax])->with('poderes')->get();
+        if ($candidatos->isEmpty()) {
+            $candidatos = Post::whereBetween('nivel', [$nivelMin, $nivelMax])->with('poderes')->get();
+        }
+        $post = $candidatos->isEmpty() ? null
+            : ($this->ciudadActual ? $this->ciudadActual->setsDeLaZona($candidatos) : $candidatos)->random();
 
         if (! $post) {
             $post = Post::where('es_enemigo', 1)
