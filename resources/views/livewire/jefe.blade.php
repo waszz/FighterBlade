@@ -26,13 +26,22 @@
         <p class="text-center text-gray-400 italic">No hay jefe esta semana.</p>
     @else
         <div class="p-4 rounded-xl {{ $panel3d }}">
-            {{-- El jefe en su zona --}}
-            <div class="relative w-full max-w-[650px] mx-auto min-h-[260px] rounded-xl overflow-hidden border-2 border-gray-900 shadow-lg select-none bg-gray-800">
+            {{-- Tu personaje frente al jefe, en su zona (alto fijo en línea: no depende del CSS compilado) --}}
+            @php $gifYo = $personaje->postDeCombate()?->gif ?? $personaje->post?->gif; @endphp
+            <div class="relative w-full max-w-[650px] mx-auto rounded-xl overflow-hidden border-2 border-gray-900 shadow-lg select-none bg-gray-800" style="height: 280px">
                 @if ($jefe->ciudad?->gif)
                     <img src="{{ asset('storage/posts/' . $jefe->ciudad->gif) }}" alt="{{ $jefe->ciudad->nombre }}" class="absolute inset-0 w-full h-full object-cover object-bottom">
                 @endif
                 <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded bg-black/60 text-[11px] font-bold text-yellow-300">Zona: {{ $jefe->ciudad->nombre }}</span>
-                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 z-10 scale-x-[-1]">
+                @if ($gifYo)
+                    <div class="absolute bottom-1 left-[6%] z-10">
+                        <img src="{{ asset('storage/' . $gifYo) }}" alt="{{ $personaje->nombre }}" style="{{ \App\Models\Post::estiloGif($gifYo) }}" class="block max-w-none {{ $personaje->claseAura() }}">
+                    </div>
+                @endif
+                <div class="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                    <span class="text-4xl font-extrabold italic tracking-wider text-white [text-shadow:2px_2px_0_#000,-1px_-1px_0_#000] inline-block -rotate-6">VS</span>
+                </div>
+                <div class="absolute bottom-1 right-[6%] z-10 scale-x-[-1]">
                     <img src="{{ asset('storage/' . $jefe->post->gif) }}" alt="{{ $jefe->post->titulo }}" style="{{ \App\Models\Post::estiloGif($jefe->post->gif) }}"
                          class="block max-w-none [filter:drop-shadow(0_0_10px_rgba(244,63,94,0.7))]">
                 </div>
