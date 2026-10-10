@@ -479,6 +479,13 @@
         <span {!! $iconoCiudad('mazmorra.svg') !!}></span>
         Mazmorra
       </button>
+      {{-- Jefe de la semana (al lado de la Mazmorra) --}}
+      <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'jefe' })" x-bind:disabled="recup > 0"
+        x-bind:title="recup > 0 ? 'Te estás recuperando' : ''"
+        class="{{ $botonCiudad }}" style="--c:#e11d48">
+        <span {!! $iconoCiudad('jefe.svg') !!}></span>
+        Jefe
+      </button>
       {{-- Entrenamiento con el maestro: se puede aunque te estés recuperando --}}
       <button type="button" x-on:click="Livewire.dispatch('cambiarSeccion', { nuevaSeccion: 'entrenar' })"
         class="{{ $botonCiudad }}" style="--c:#fb923c">

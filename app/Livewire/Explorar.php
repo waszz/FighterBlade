@@ -1365,6 +1365,7 @@ if ($tieneSiempreEnPie) {
                 (bool) $this->misionActiva() => 'mision',
                 (bool) $this->torreActiva() => 'torre',
                 (bool) $this->mazmorraActiva() => 'mazmorra',
+                (bool) $this->jefeActivo() => 'jefe',
                 (bool) $this->cazaActiva() => 'caza',
                 default => 'explorar',
             },
@@ -1447,6 +1448,16 @@ if ($tieneSiempreEnPie) {
             }
             $mazmorra->en_pelea = false;
             $mazmorra->save();
+        }
+
+        // 👑 Jefe de la semana: el intento termina; con victoria queda derrotado hasta el próximo jefe
+        if ($intentoJefe = $this->jefeActivo()) {
+            $intentoJefe->en_pelea = false;
+            if ($this->resultadoFinal === 'Victoria') {
+                $intentoJefe->derrotado = true;
+                NotificacionJuego::avisar($this->personaje->id, '👑', '¡Venciste al jefe de la semana ' . ($this->enemigo->titulo ?? '') . '!');
+            }
+            $intentoJefe->save();
         }
 
         // Finalizamos el combate y actualizamos (un duelo aceptado mientras explora no corta la exploración)
@@ -1685,7 +1696,7 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
         $statsEnemigo   = $this->statsEnemigoEnPelea($poderesEnemigoPelea);
 
         $nivelPersonaje = $this->personaje->nivel;
-        $nivelEnemigo   = $this->enemigo->nivel ?? 1;
+        $nivelEnemigo   = $this->jefeActivo() ? (int) $this->personaje->nivel : ($this->enemigo->nivel ?? 1);
 
         $tipoPersonaje    = 'fisico';
         $poderesPersonaje = [];
@@ -3439,7 +3450,10 @@ foreach (['personaje', 'enemigo'] as $tipoReducidor) {
         $porcentajeExp = match (true) {
             $esEnemigoEspecial => self::EXP_ENEMIGO_ESPECIAL,
             // PvP: 4% si el rival está a 5 niveles o menos, 1% si la diferencia es mayor
+            // (en la ciudad del jefe de la semana el PvP no da exp)
+            $this->esPvp && \App\Models\JefeSemanal::esCiudadDelJefe($this->personaje->ciudad_id) => 0,
             $this->esPvp => self::fraccionExpPvp($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
+            $this->jefeActivo() !== null => self::porcentajeExpPorNivel($nivelPersonaje),
             // Misiones y Torre: el doble que una pelea común, pero con la misma baja que la exploración si el rival es de
             // menor nivel (10% menos por cada nivel que le llevás, mínimo 10%): un nivel 50 en una misión de nivel 17 cobra
             // el 10%, no el 100%
@@ -3568,6 +3582,11 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
                 $oro *= 2; // la Poción de Oro también vale acá
             }
             $diamantesExtra += $mazmorraOro->esmeraldasPorVictoria();
+        }
+
+        // 👑 Jefe de la semana: esmeraldas
+        if ($this->jefeActivo()) {
+            $diamantesExtra += \App\Models\JefeSemanal::PREMIO_ESMERALDAS;
         }
 
         $this->personaje->oro += $oro;
@@ -3758,6 +3777,10 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         if ($mazmorraDrop && $mazmorraDrop->esJefe()) {
             $drop = $mazmorraDrop->premioJefe((int) ($this->enemigo->nivel ?? $this->personaje->nivel));
         }
+        // 👑 Jefe de la semana: siempre un cofre o un anillo
+        if ($this->jefeActivo()) {
+            $drop = \App\Models\JefeSemanal::premio((int) $this->personaje->nivel);
+        }
 
         // 🌱 Variante de la zona inicial: siempre suelta su parte fija del set original (Black = equipo, normal = entrenamiento, Gold = accesorio)
         if (! $this->esPvp && ($this->enemigo->es_enemigo ?? null) == Post::VARIANTE_ZONA && $this->enemigo->variante_de_post_id) {
@@ -3843,7 +3866,7 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
     private function darExpAlRivalPvp(): void
     {
         $rival = Personaje::find($this->enemigo->id ?? null);
-        if (! $rival || $rival->nivel >= 100) {
+        if (! $rival || $rival->nivel >= 100 || \App\Models\JefeSemanal::esCiudadDelJefe($rival->ciudad_id)) {
             return;
         }
         $nivel = (int) $rival->nivel;
@@ -3918,8 +3941,25 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
 
     public function esExploracion(): bool
     {
-        return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva();
+        return ! $this->esPvp && ! $this->misionActiva() && ! $this->torreActiva() && ! $this->cazaActiva() && ! $this->mazmorraActiva()
+            && ! $this->jefeActivo();
     }
+
+    // 👑 Pelea contra el jefe de la semana (ver App\Models\JefeSemanal): el intento marcado en pelea, con ese rival
+    public function jefeActivo(): ?\App\Models\JefeIntento
+    {
+        if ($this->esPvp || ! $this->enemigo || ! $this->personaje) {
+            return null;
+        }
+        // Se consulta una vez por pedido (la pelea lo pregunta muchas veces)
+        if ($this->cacheJefe === false) {
+            $intento = \App\Models\JefeIntento::with('jefe')->where('personaje_id', $this->personaje->id)->where('en_pelea', true)->latest('id')->first();
+            $this->cacheJefe = $intento && (int) $intento->jefe?->post_id === (int) $this->enemigo->id ? $intento : null;
+        }
+        return $this->cacheJefe;
+    }
+
+    protected $cacheJefe = false;
 
     // Poderes que valen en la pelea [personaje, enemigo]: los del set con el que pelea cada uno (en PvP el set completo
     // equipado del rival), sin los que le anula el rival con ANULACIÓN DE PODER
@@ -3963,6 +4003,11 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
                     $statsEnemigo[$stat] = (int) round($valor * $factorRival);
                 }
             }
+        }
+
+        // 👑 Jefe de la semana: stats propios según el nivel del jugador (ver JefeSemanal::statsPara)
+        if ($intentoJefe = $this->jefeActivo()) {
+            $statsEnemigo = $intentoJefe->jefe->statsPara((int) $this->personaje->nivel);
         }
 
         // Enemigos del juego: sus poderes que suben stats también cuentan (los jugadores ya los traen en statsDeCombate)
