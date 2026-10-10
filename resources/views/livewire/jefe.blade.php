@@ -65,6 +65,11 @@
 
             {{-- Intentos y acciones --}}
             <div class="mt-4 text-center">
+                @if ($enSuCiudad && $intento->ciudad_origen_id && ($intento->derrotado || $intento->restantes() < 1))
+                    <button wire:click="volver" wire:loading.attr="disabled" class="{{ $boton3d }} mb-3 from-gray-500 to-gray-800">
+                        <i class="fa-solid fa-arrow-left"></i> Volver a {{ \App\Models\Ciudad::find($intento->ciudad_origen_id)?->nombre ?? 'tu ciudad' }} (gratis)
+                    </button>
+                @endif
                 @if ($intento->derrotado)
                     <p class="text-lg font-bold text-emerald-300"><i class="fa-solid fa-crown"></i> ¡Ya lo venciste esta semana!</p>
                 @else

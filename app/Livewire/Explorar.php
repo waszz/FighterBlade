@@ -1456,6 +1456,11 @@ if ($tieneSiempreEnPie) {
             if ($this->resultadoFinal === 'Victoria') {
                 $intentoJefe->derrotado = true;
                 NotificacionJuego::avisar($this->personaje->id, '👑', '¡Venciste al jefe de la semana ' . ($this->enemigo->titulo ?? '') . '!');
+                // Vuelve a la ciudad desde la que viajó gratis
+                if ($intentoJefe->ciudad_origen_id) {
+                    $this->personaje->ciudad_id = $intentoJefe->ciudad_origen_id;
+                    $intentoJefe->ciudad_origen_id = null;
+                }
             }
             $intentoJefe->save();
         }

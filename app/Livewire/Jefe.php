@@ -43,8 +43,30 @@ class Jefe extends Component
             $this->dispatch('error', ['message' => 'Necesitás nivel ' . $jefe->ciudad->nivel . ' para viajar a ' . $jefe->ciudad->nombre . '.']);
             return;
         }
+        // Se guarda de dónde vino: al vencerlo (o con "Volver") regresa ahí
+        $jefe->intentoDe($personaje->id)->update(['ciudad_origen_id' => $personaje->ciudad_id]);
         $personaje->forceFill(['ciudad_id' => $jefe->ciudad_id, 'viajando_hasta' => null, 'viajando_a_id' => null])->save();
         $this->dispatch('success', ['message' => '¡Llegaste a ' . $jefe->ciudad->nombre . '! El jefe te espera.']);
+        $this->dispatch('statsActualizados');
+    }
+
+    // Volver gratis a la ciudad desde la que viajó
+    public function volver()
+    {
+        if (! ($personaje = $this->personaje()) || ! ($jefe = JefeSemanal::actual())) {
+            return;
+        }
+        $intento = $jefe->intentoDe($personaje->id);
+        if (! $intento->ciudad_origen_id || (int) $personaje->ciudad_id !== (int) $jefe->ciudad_id) {
+            return;
+        }
+        if ($motivo = $this->motivoBloqueo($personaje, false)) {
+            $this->dispatch('error', ['message' => $motivo]);
+            return;
+        }
+        $personaje->forceFill(['ciudad_id' => $intento->ciudad_origen_id])->save();
+        $intento->update(['ciudad_origen_id' => null]);
+        $this->dispatch('success', ['message' => 'Volviste a ' . ($personaje->fresh()->ciudadActual?->nombre ?? 'tu ciudad') . '.']);
         $this->dispatch('statsActualizados');
     }
 
