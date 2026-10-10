@@ -805,7 +805,7 @@ public function getNombreAttribute()
     }
 
     // Personajes base: los posts jugables de nivel inicial que se ofrecen al crear un personaje.
-    // Son siempre los mismos para todos: los marcados como iniciales (Batman, Spider-Man, Wolverine, Superman, Goku)
+    // Son siempre los mismos para todos: los marcados como iniciales (Goku, Wolverine, Luffy, Naruto, Spider-Man)
     public function scopePersonajesBase($query)
     {
         return $query->where('inicial', true)
