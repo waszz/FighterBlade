@@ -120,17 +120,17 @@ class CrearPost extends Component
     // Métodos para manejar previews opcionales (puedes ajustar o eliminar si no usas)
     public function updatedEquipoImagen()
     {
-        $this->equipo_imagen_preview = $this->equipo_imagen->temporaryUrl();
+        $this->equipo_imagen_preview = $this->equipo_imagen->vistaPrevia();
     }
 
     public function updatedEntrenamientoImagen()
     {
-        $this->entrenamiento_imagen_preview = $this->entrenamiento_imagen->temporaryUrl();
+        $this->entrenamiento_imagen_preview = $this->entrenamiento_imagen->vistaPrevia();
     }
 
     public function updatedAccesorioImagen()
     {
-        $this->accesorio_imagen_preview = $this->accesorio_imagen->temporaryUrl();
+        $this->accesorio_imagen_preview = $this->accesorio_imagen->vistaPrevia();
     }
 
     // ... Aquí siguen tus métodos incrementarStat, decrementarStat, updatedEquipoId, etc. (sin cambios)

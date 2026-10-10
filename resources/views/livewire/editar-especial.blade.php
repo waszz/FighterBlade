@@ -89,7 +89,7 @@
                         </p>
                         <div class="my-2 h-32 rounded bg-slate-800 flex items-end justify-center overflow-hidden">
                             @if ($nuevo)
-                                <img src="{{ $nuevo->temporaryUrl() }}" alt="" class="max-h-full max-w-full object-contain">
+                                <img src="{{ $nuevo->vistaPrevia() }}" alt="" class="max-h-full max-w-full object-contain">
                             @elseif ($actual)
                                 <img src="{{ asset('storage/' . $actual) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
                             @endif

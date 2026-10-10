@@ -34,7 +34,7 @@
             @if ($imagen)
                 <div class="mt-4">
                     <span class="block text-sm text-gray-500 mb-1">Vista previa:</span>
-                    <img src="{{ $imagen->temporaryUrl() }}" class="h-40 rounded-md object-cover">
+                    <img src="{{ $imagen->vistaPrevia() }}" class="h-40 rounded-md object-cover">
                 </div>
             @endif
         </div>
@@ -50,7 +50,7 @@
                 <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
                     @foreach ($imagenes as $imagen)
                         <div class="w-24 h-24">
-                            <img src="{{ $imagen->temporaryUrl() }}" class="h-full w-full rounded-md object-cover">
+                            <img src="{{ $imagen->vistaPrevia() }}" class="h-full w-full rounded-md object-cover">
                         </div>
                     @endforeach
                 </div>

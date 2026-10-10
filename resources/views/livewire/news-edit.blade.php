@@ -24,7 +24,7 @@
         {{-- Vista previa si se selecciona un nuevo GIF --}}
         @if ($gif)
             <p class="mt-2">Vista previa del nuevo GIF:</p>
-            <img src="{{ $gif->temporaryUrl() }}" class="w-40 h-auto mt-1 rounded shadow-md border">
+            <img src="{{ $gif->vistaPrevia() }}" class="w-40 h-auto mt-1 rounded shadow-md border">
         @elseif ($ciudad->gif)
             <p class="mt-2">GIF actual:</p>
             <img src="{{ asset('storage/posts/' . $ciudad->gif) }}" class="w-40 h-auto mt-1 rounded shadow-md border">

@@ -39,7 +39,7 @@
                 <label class="block mb-1">Imagen principal</label>
                 <input type="file" wire:model="imagen" class="w-full" accept=".jpg,.jpeg,.png" />
                 @if($imagen)
-                <img src="{{ $imagen->temporaryUrl() }}" class="mt-2 max-h-32 object-contain rounded" />
+                <img src="{{ $imagen->vistaPrevia() }}" class="mt-2 max-h-32 object-contain rounded" />
                 @endif
             </div>
             {{-- GIF Personaje --}}
@@ -47,7 +47,7 @@
                 <label class="block mb-1">GIF Personaje</label>
                 <input type="file" wire:model="gifPersonaje" class="w-full" />
                 @if($gifPersonaje)
-                <img src="{{ $gifPersonaje->temporaryUrl() }}" class="mt-2 max-h-32 object-contain rounded" />
+                <img src="{{ $gifPersonaje->vistaPrevia() }}" class="mt-2 max-h-32 object-contain rounded" />
                 @endif
             </div>
 
@@ -57,7 +57,7 @@
                 <label class="block mb-1">{{ ucfirst(str_replace('gif','GIF ',$gif)) }}</label>
                 <input type="file" wire:model="{{ $gif }}" class="w-full" />
                 @if(${"{$gif}"})
-                <img src="{{ ${$gif}->temporaryUrl() }}" class="mt-2 max-h-32 object-contain rounded" />
+                <img src="{{ ${$gif}->vistaPrevia() }}" class="mt-2 max-h-32 object-contain rounded" />
                 @endif
             </div>
             @endforeach
@@ -95,7 +95,7 @@
             {{-- Subir imagen --}}
             <input type="file" wire:model="{{ $campo . '_imagen' }}" accept=".jpg,.jpeg,.png" class="w-full mb-4">
             @if(${"{$campo}_imagen"})
-            <img src="{{ ${$campo . '_imagen'}->temporaryUrl() }}" class="mb-4 max-h-32 object-contain rounded" />
+            <img src="{{ ${$campo . '_imagen'}->vistaPrevia() }}" class="mb-4 max-h-32 object-contain rounded" />
             @elseif(isset(${$campo . '_imagen_preview'}))
             <img src="{{ ${$campo . '_imagen_preview'} }}" class="mb-4 max-h-32 object-contain rounded" />
             @endif
