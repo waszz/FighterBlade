@@ -3331,44 +3331,8 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
         $this->determinarGanador();
         $this->mostrarRanking = false;
 
-        // Bloque que procesa reducción de tiempo de recuperación
-foreach (['personaje', 'enemigo'] as $tipoReducidor) {
-    $esPersonaje = $tipoReducidor === 'personaje';
-    $actor = $esPersonaje ? $this->personaje : $this->enemigo;
-
-    $poderesActor = $actor->poderes ?? collect();
-
-    foreach ($poderesActor as $poder) {
-        $modsRaw = $poder['modificadores'] ?? '[]';
-        $mods = is_array($modsRaw) ? $modsRaw : (json_decode($modsRaw, true) ?? []);
-
-        foreach ($mods as $mod) {
-            if (($mod['tipo'] ?? '') === 'reduccion_tiempo_recuperacion') {
-                $porcentaje = $mod['porcentaje'] ?? 0;
-                if ($porcentaje <= 0) continue;
-
-                // Variable de tiempo de recuperación (ajusta según tu lógica)
-                if ($esPersonaje) {
-                    $this->tiempoRecuperacionPersonaje = max(0, $this->tiempoRecuperacionPersonaje - ($this->tiempoRecuperacionPersonaje * $porcentaje / 100));
-                } else {
-                    $this->tiempoRecuperacionEnemigo = max(0, $this->tiempoRecuperacionEnemigo - ($this->tiempoRecuperacionEnemigo * $porcentaje / 100));
-                }
-
-                // Registro del evento especial
-                $res[] = [
-                    'ronda' => 'final',
-                    'atacante' => $esPersonaje ? 'personaje' : 'enemigo',
-                    'danio' => 0,
-                    'gif' => $poder->imagen ?? 'especial.gif',
-                    'tipo_ataque' => 'reduccion_tiempo_recuperacion',
-                    'tipo_accion' => 'especial',
-                    'texto_tipo_danio' => ($esPersonaje ? $this->personaje->nombre : $this->enemigo->nombre)
-                        . " reduce su tiempo de recuperación un {$porcentaje}%.",
-                ];
-            }
-        }
-    }
-}
+        // (Siempre en pie / reducción de tiempo de recuperación se aplica en determinarGanador. Acá había un bloque viejo
+        // que usaba propiedades que no existen y tiraba error 500 contra rivales con ese poder, ej. Enja)
     }
 
 // Función para determinar el tipo combinado del personaje
