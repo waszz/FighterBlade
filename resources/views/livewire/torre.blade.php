@@ -31,7 +31,7 @@
             <div class="mt-2 text-center">
                 <button wire:click="empezarDeNuevo" wire:loading.attr="disabled"
                     class="px-5 py-2 rounded-lg border border-black text-white font-bold bg-gradient-to-b from-purple-500 to-purple-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
-                    <i class="fa-solid fa-rotate-right"></i> Empezar de nuevo (vuelta {{ $vuelta + 1 }}, rivales +{{ (int) round(\App\Livewire\Explorar::FACTOR_POR_VUELTA * 100 * $vuelta) }}%)
+                    <i class="fa-solid fa-rotate-right"></i> Empezar de nuevo (vuelta {{ $vuelta + 1 }}, rivales desde nivel {{ 100 * $vuelta + 1 }})
                 </button>
             </div>
         @elseif (! $puedeEntrar)
@@ -75,14 +75,14 @@
                             <div class="w-12 h-12 shrink-0 rounded-full border-2 border-black bg-black/70 flex items-center justify-center text-xl">🔒</div>
                             <div class="flex-1 min-w-0">
                                 <p class="font-bold text-gray-300 [text-shadow:0_1px_0_#000]">???</p>
-                                <p class="text-xs text-gray-400">Rival nivel {{ $rival?->nivel ?? $piso->nivel }}@if (\App\Support\RecompensasTorre::esNivelEspecial((int) $piso->nivel)) · <span class="text-amber-300 font-bold">🎁 Cofre o joya</span>@endif</p>
+                                <p class="text-xs text-gray-400">Rival nivel {{ \App\Livewire\Explorar::nivelRivalVuelta($vuelta - 1, $piso->piso) ?? ($rival?->nivel ?? $piso->nivel) }}@if (\App\Support\RecompensasTorre::esNivelEspecial((int) $piso->nivel)) · <span class="text-amber-300 font-bold">🎁 Cofre o joya</span>@endif</p>
                             </div>
                         @else
                             <img src="{{ asset('storage/' . $rival?->imagen) }}" alt="" class="w-12 h-12 shrink-0 rounded-full object-cover border-2 border-black">
                             <div class="flex-1 min-w-0">
                                 <p class="font-bold truncate [text-shadow:0_1px_0_#000]">{{ $rival?->titulo ?? 'Rival' }}</p>
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="px-1.5 py-px rounded-full text-[10px] font-bold text-yellow-300 {{ $etiqueta3d }}">Nv {{ $rival?->nivel }}</span>
+                                    <span class="px-1.5 py-px rounded-full text-[10px] font-bold text-yellow-300 {{ $etiqueta3d }}">Nv {{ \App\Livewire\Explorar::nivelRivalVuelta($vuelta - 1, $piso->piso) ?? $rival?->nivel }}</span>
                                     @if (\App\Support\RecompensasTorre::esNivelEspecial((int) $piso->nivel) && ! $superadoPiso)
                                         <span class="px-1.5 py-px rounded-full text-[10px] font-bold text-amber-200 bg-amber-900/70 border border-amber-500">🎁 Cofre o joya</span>
                                     @endif

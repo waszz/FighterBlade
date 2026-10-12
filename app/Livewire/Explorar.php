@@ -41,15 +41,46 @@ class Explorar extends Component
     // y el jefe de la semana
     const EQUIPO_RIVAL_MISION_TORRE = 2.0;
 
-    // Torre y Misiones: cada vuelta (empezar de nuevo después de terminarlas) suma este extra a los rivales (+30% por vuelta)
-    const FACTOR_POR_VUELTA = 0.3;
-
     // PvP: el clan del que gana (contra uno de otro clan) suma este prestigio
     const PRESTIGIO_PVP_CLAN = 100;
 
-    public static function factorVuelta(int $vuelta): float
+    // Torre y Misiones: en cada vuelta (empezar de nuevo después de terminarlas) los rivales siguen subiendo de nivel
+    // pasando el 100: en la vuelta 2 el primero es nivel 101, el segundo 102... (vuelta 3: 201, 202...).
+    // Sus stats salen de ese nivel (los puntos del nivel repartidos como su set, con el set equipado de Misiones y Torre)
+    public static function nivelRivalVuelta(int $vuelta, int $posicion): ?int
     {
-        return 1 + max(0, $vuelta) * self::FACTOR_POR_VUELTA;
+        return $vuelta > 0 ? 100 * $vuelta + max(1, $posicion) : null;
+    }
+
+    public static function statsRivalVuelta(Post $rival, int $nivel): array
+    {
+        $base = Personaje::decodificarStats($rival->stats);
+        $claves = ['fuerza', 'ataque', 'velocidad', 'resistencia', 'defensa', 'energia'];
+        $total = array_sum(array_map(fn ($c) => (float) ($base[$c] ?? 0), $claves)) ?: 1;
+        $factor = (30 + 5 * $nivel) / $total * self::refuerzoRivalMisionTorre($nivel);
+        $stats = [];
+        foreach ($claves as $c) {
+            $stats[$c] = (int) round(($base[$c] ?? 0) * $factor);
+        }
+        return $stats;
+    }
+
+    // Posición de una misión en la lista (1 = la primera)
+    public static function posicionMision(\App\Models\Mision $mision): int
+    {
+        return \App\Models\Mision::where('orden', '<=', $mision->orden)->count();
+    }
+
+    // Nivel del rival de la Torre o Misión en curso si se está en una vuelta (si no, null)
+    public function nivelVueltaActual(): ?int
+    {
+        if ($piso = $this->torreActiva()) {
+            return self::nivelRivalVuelta((int) $this->personaje->torre_vuelta, (int) $piso->piso);
+        }
+        if ($mision = $this->misionActiva()) {
+            return self::nivelRivalVuelta((int) $this->personaje->misiones_vuelta, self::posicionMision($mision));
+        }
+        return null;
     }
 
     // Contraataque (defensa) y rebote (resistencia), cuando al defensor le entra un golpe. Solo los tiene quien tiene más
@@ -1747,7 +1778,7 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
         $statsEnemigo   = $this->statsEnemigoEnPelea($poderesEnemigoPelea);
 
         $nivelPersonaje = $this->personaje->nivel;
-        $nivelEnemigo   = $this->jefeActivo() ? (int) $this->personaje->nivel : ($this->enemigo->nivel ?? 1);
+        $nivelEnemigo   = $this->jefeActivo() ? (int) $this->personaje->nivel : ($this->nivelVueltaActual() ?? ($this->enemigo->nivel ?? 1));
 
         $tipoPersonaje    = 'fisico';
         $poderesPersonaje = [];
@@ -4024,11 +4055,10 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             if ($mazmorraPelea) {
                 $factorRival *= $mazmorraPelea->factorStats();
             }
-            // 🗼📜 Vueltas de la Torre o de las Misiones: más fuertes en cada vuelta
-            if ($this->torreActiva()) {
-                $factorRival *= self::factorVuelta((int) $this->personaje->torre_vuelta);
-            } elseif ($this->misionActiva()) {
-                $factorRival *= self::factorVuelta((int) $this->personaje->misiones_vuelta);
+            // 🗼📜 Vueltas de la Torre o de las Misiones: el rival pelea al nivel de la vuelta (101, 102...)
+            if ($nivelVuelta = $this->nivelVueltaActual()) {
+                $statsEnemigo = self::statsRivalVuelta($this->enemigo, $nivelVuelta);
+                $factorRival = 1;
             }
             foreach ($statsEnemigo as $stat => $valor) {
                 if (is_numeric($valor)) {

@@ -90,7 +90,7 @@ class Misiones extends Component
         return null;
     }
 
-    // Todas las misiones completadas: se empiezan otra vez desde la primera, con rivales más fuertes (Explorar::factorVuelta).
+    // Todas las misiones completadas: se empiezan otra vez desde la primera, con rivales de nivel 101, 102... (Explorar::nivelRivalVuelta).
     // Sus premios se vuelven a ganar
     public function empezarDeNuevo()
     {
@@ -117,7 +117,11 @@ class Misiones extends Component
         return view('livewire.misiones', [
             'rivalModal'      => $misionModal?->rival,
             'escenarioModal'  => $misionModal?->escenario,
-            'statsRivalModal' => $misionModal?->rival ? Explorar::statsRivalMisionTorre($misionModal->rival, Explorar::factorVuelta((int) Personaje::find($this->personajeId)?->misiones_vuelta)) : [],
+            'statsRivalModal' => $misionModal?->rival
+                ? (($vm = (int) Personaje::find($this->personajeId)?->misiones_vuelta) > 0
+                    ? \App\Support\PoderesStats::aplicar(Explorar::statsRivalVuelta($misionModal->rival, Explorar::nivelRivalVuelta($vm, Explorar::posicionMision($misionModal))), $misionModal->rival->poderes)
+                    : Explorar::statsRivalMisionTorre($misionModal->rival))
+                : [],
             'vuelta'          => (int) Personaje::find($this->personajeId)?->misiones_vuelta + 1,
             'recuperacion' => Personaje::find($this->personajeId)?->segundosRecuperacion() ?? 0,
             'misiones'    => Mision::with('rival.poderes')->orderBy('orden')->get(),

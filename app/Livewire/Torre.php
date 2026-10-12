@@ -28,7 +28,7 @@ class Torre extends Component
         }
     }
 
-    // Torre terminada: empieza otra vez desde el piso 1, con rivales más fuertes (ver Explorar::factorVuelta)
+    // Torre terminada: empieza otra vez desde el piso 1, con rivales de nivel 101, 102... (ver Explorar::nivelRivalVuelta)
     public function empezarDeNuevo()
     {
         $personaje = Personaje::find($this->personajeId);
@@ -125,7 +125,11 @@ class Torre extends Component
         return view('livewire.torre', [
             'rivalModal'      => $pisoModal?->rival,
             'escenarioModal'  => $pisoModal?->escenario,
-            'statsRivalModal' => $pisoModal?->rival ? Explorar::statsRivalMisionTorre($pisoModal->rival, Explorar::factorVuelta((int) $personaje->torre_vuelta)) : [],
+            'statsRivalModal' => $pisoModal?->rival
+                ? ((int) $personaje->torre_vuelta > 0
+                    ? \App\Support\PoderesStats::aplicar(Explorar::statsRivalVuelta($pisoModal->rival, Explorar::nivelRivalVuelta((int) $personaje->torre_vuelta, $pisoModal->piso)), $pisoModal->rival->poderes)
+                    : Explorar::statsRivalMisionTorre($pisoModal->rival))
+                : [],
             'vuelta'          => (int) $personaje->torre_vuelta + 1,
             'personaje'    => $personaje,
             'pisos'        => $pisos,

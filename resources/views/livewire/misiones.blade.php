@@ -31,7 +31,7 @@
             <div class="mt-2 text-center">
                 <button wire:click="empezarDeNuevo" wire:loading.attr="disabled"
                     class="px-5 py-2 rounded-lg border border-black text-white font-bold bg-gradient-to-b from-amber-500 to-amber-800 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-none transition-all">
-                    <i class="fa-solid fa-rotate-right"></i> Empezar de nuevo (vuelta {{ $vuelta + 1 }}, rivales +{{ (int) round(\App\Livewire\Explorar::FACTOR_POR_VUELTA * 100 * $vuelta) }}%)
+                    <i class="fa-solid fa-rotate-right"></i> Empezar de nuevo (vuelta {{ $vuelta + 1 }}, rivales desde nivel {{ 100 * $vuelta + 1 }})
                 </button>
             </div>
         @endif
@@ -78,7 +78,7 @@
                             {{ $bloqueada ? '???' : $rival->titulo }}
                         </p>
                         <p class="text-xs">
-                            <span class="text-gray-300">Nivel {{ $rival->nivel }}</span>
+                            <span class="text-gray-300">Nivel {{ \App\Livewire\Explorar::nivelRivalVuelta($vuelta - 1, $loop->iteration) ?? $rival->nivel }}</span>
                             @unless ($bloqueada)
                                 · <span class="font-semibold {{ $colorTipo[$rival->tipo] ?? 'text-gray-300' }}">{{ ucfirst($rival->tipo) }}</span>
                                 @if ($rival->poderes->isNotEmpty())
