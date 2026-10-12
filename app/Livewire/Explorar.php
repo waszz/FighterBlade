@@ -3505,10 +3505,11 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
             // Misiones y Torre: el doble que una pelea común, pero con la misma baja que la exploración si el rival es de
             // menor nivel (10% menos por cada nivel que le llevás, mínimo 10%): un nivel 50 en una misión de nivel 17 cobra
             // el 10%, no el 100%
+            // (en las vueltas cuenta el nivel de la vuelta: 101, 102...)
             $this->misionActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * self::MISION_MULTIPLICADOR_EXP
-                * self::factorExpZona($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
+                * self::factorExpZona($nivelPersonaje, (int) ($this->nivelVueltaActual() ?? $this->enemigo->nivel ?? $nivelPersonaje)),
             $this->torreActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje) * \App\Support\RecompensasTorre::MULTIPLICADOR_EXP
-                * self::factorExpZona($nivelPersonaje, (int) ($this->enemigo->nivel ?? $nivelPersonaje)),
+                * self::factorExpZona($nivelPersonaje, (int) ($this->nivelVueltaActual() ?? $this->enemigo->nivel ?? $nivelPersonaje)),
             // Mazmorra: la de una pelea común (sin el descuento por zona)
             $this->mazmorraActiva() !== null => self::porcentajeExpPorNivel($nivelPersonaje),
             // Exploración y caza: menos exp si la zona es de menor nivel que el personaje
@@ -3628,7 +3629,7 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
 
         // 🗼 Torre: oro propio según el nivel del piso (100 en el primero, sube con cada piso)
         if ($pisoOroTorre = $this->torreActiva()) {
-            $oro = \App\Support\RecompensasTorre::oro((int) $pisoOroTorre->nivel);
+            $oro = \App\Support\RecompensasTorre::oro((int) ($this->nivelVueltaActual() ?? $pisoOroTorre->nivel));
         }
 
         // 🕳️ Mazmorra: oro según el nivel del rival y la dificultad; el jefe además da esmeraldas
