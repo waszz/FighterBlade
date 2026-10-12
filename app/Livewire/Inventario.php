@@ -301,6 +301,19 @@ class Inventario extends Component
             return;
         }
 
+        // Poción de oro o de esmeraldas: va en su lugar aparte (pocion_recurso_id); el resto, en el de siempre
+        if (in_array($statsPocion['afecta'] ?? null, ['oro', 'diamante'], true)) {
+            $this->personaje->pocion_recurso_id = $this->pocionSeleccionada->id;
+            if ((int) $this->personaje->objeto_consumible_id === (int) $this->pocionSeleccionada->id) {
+                $this->personaje->objeto_consumible_id = null;
+            }
+            $this->personaje->save();
+            $this->pocionSeleccionada = null;
+            $this->modalEquiparPocionAbierto = false;
+            $this->dispatch('statsActualizados');
+            return;
+        }
+
         // Guardar poción equipada usando el campo `objeto_consumible_id`
         $this->personaje->objeto_consumible_id = $this->pocionSeleccionada->id;
 
@@ -396,6 +409,14 @@ class Inventario extends Component
         $this->precioVentaPocion         = null;
         $this->mensajeErrorVentaPocion   = null;
     }
+    // Quita la poción de oro o de esmeraldas de su lugar (vuelve al inventario)
+    public function desequiparPocionRecurso()
+    {
+        $this->personaje->pocion_recurso_id = null;
+        $this->personaje->save();
+        $this->dispatch('statsActualizados');
+    }
+
     public function desequiparPocion()
     {
         // Obtener la poción antes de quitarla del personaje
@@ -1062,7 +1083,7 @@ class Inventario extends Component
             return;
         }
         $pj = $this->personaje;
-        $equipados = array_filter([$pj->equipo_id, $pj->entrenamiento_id, $pj->accesorio_id, $pj->joya_id, $pj->objeto_consumible_id]);
+        $equipados = array_filter([$pj->equipo_id, $pj->entrenamiento_id, $pj->accesorio_id, $pj->joya_id, $pj->objeto_consumible_id, $pj->pocion_recurso_id]);
         $this->objetosSeleccionadosParaTirar = Objeto::where('personaje_id', $pj->id)
             ->whereNotIn('id', $equipados)
             ->where(fn ($q) => $q->whereNull('precio_venta')->orWhere('precio_venta', 0))

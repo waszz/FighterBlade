@@ -136,7 +136,7 @@
     </div>
 
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 my-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 my-2">
 
       {{-- Equipo --}}
       <div class="relative bg-[#0c0f14] border border-indigo-500/30 p-3 rounded-2xl shadow-lg flex flex-col items-center"
@@ -424,6 +424,29 @@
         @endif
     </div>
 </div>
+{{-- Poción de oro o de esmeraldas (lugar aparte) --}}
+@php
+    $pocionRecurso = $personaje->pocion_recurso_id ? \App\Models\Objeto::find($personaje->pocion_recurso_id) : null;
+    $statsRecurso = $pocionRecurso ? \App\Models\Personaje::decodificarStats($pocionRecurso->stats) : [];
+@endphp
+<div class="relative bg-[#0c0f14] border border-yellow-500/30 p-3 rounded-2xl shadow-lg flex flex-col items-center"
+    style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 14px 14px;">
+    <div class="text-yellow-400 font-bold text-xs tracking-wider uppercase mb-2">Oro / Esmeraldas</div>
+    <div class="flex flex-col items-center space-y-2 w-full max-w-xs">
+        @if ($pocionRecurso)
+            <img src="{{ asset('images/' . $pocionRecurso->imagen) }}" alt="{{ $pocionRecurso->nombre }}" class="w-24 h-24 object-contain rounded-md mx-auto" />
+            <p class="text-sm font-bold text-yellow-200 text-center truncate w-full">{{ $pocionRecurso->nombre }}</p>
+            <p class="text-gray-300 text-sm italic text-center w-full">
+                {{ ($statsRecurso['afecta'] ?? '') === 'oro' ? 'Duplica el oro de la próxima victoria' : '+100 esmeraldas en la próxima victoria' }}
+            </p>
+            <p class="text-pink-400 text-sm text-center w-full">Usos: {{ $statsRecurso['usos_restantes'] ?? 1 }} / {{ $statsRecurso['usos_totales'] ?? 1 }}</p>
+            <button wire:click="desequiparPocionRecurso" class="mt-1 bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded shadow">Desequipar</button>
+        @else
+            <div class="w-14 h-14 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center text-gray-500 text-2xl mb-2">+</div>
+            <p class="text-gray-500 text-xs text-center">Vacío<br><span class="text-[10px] text-gray-600">Poción de oro o de esmeraldas</span></p>
+        @endif
+    </div>
+</div>
 @if (session('mensaje'))
 <div class="fixed top-4 right-4 z-[100] max-w-xs w-full"
     x-data="{ show: true }"
@@ -510,7 +533,7 @@
 
     // Las pociones también ocupan un lugar en el inventario (salvo la que está equipada)
     $pocionesEnInventario = collect($pociones ?? [])
-        ->filter(fn($p) => ! $objetoEquipado || $objetoEquipado->id !== $p->id);
+        ->filter(fn($p) => (! $objetoEquipado || $objetoEquipado->id !== $p->id) && (int) $p->id !== (int) $personaje->pocion_recurso_id);
 
     $cantidadGuardados = $objetosVisibles->count() + $pocionesEnInventario->count();
     // Lugares: 100 + los comprados (hasta 200)

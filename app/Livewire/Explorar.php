@@ -1180,7 +1180,21 @@ public function colorBarraPorStat($valor)
             // Restauramos stats si hubo alguna poción que haya modificado los stats
 
             // Procesamos las recompensas por la victoria
-            $recompensasBase = $this->asignarRecompensas($minutosOriginales, $statsOriginal);
+            // 💰 Poción de oro o de esmeraldas (su lugar aparte): se gasta un uso al ganar y suma su efecto en las recompensas
+            $statsRecurso = null;
+            if ($this->personaje->pocion_recurso_id && ($recurso = Objeto::find($this->personaje->pocion_recurso_id))) {
+                $statsRecurso = Personaje::decodificarStats($recurso->stats);
+                $usos = (int) ($statsRecurso['usos_restantes'] ?? 1);
+                if ($usos <= 1) {
+                    $this->personaje->pocion_recurso_id = null;
+                    $recurso->delete();
+                } else {
+                    $recurso->stats = array_merge($statsRecurso, ['usos_restantes' => $usos - 1]);
+                    $recurso->save();
+                }
+            }
+
+            $recompensasBase = $this->asignarRecompensas($minutosOriginales, $statsOriginal, $statsRecurso);
 
             unset($recompensasBase['diamante']);
             unset($recompensasBase['oro']);
@@ -3420,7 +3434,7 @@ foreach (['personaje', 'enemigo'] as $tipoAbsorvedor) {
         return min($totalBuff, 100);
     }
 
-    private function asignarRecompensas(int $minutos, ?array $statsOriginal = null): array
+    private function asignarRecompensas(int $minutos, ?array $statsOriginal = null, ?array $statsRecurso = null): array
     {
         $minutosOriginales = $minutos;
 // Reducir minutos reales si tiene exploración rápida activa
@@ -3520,6 +3534,14 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $oro *= 6;
         }
 
+        // Poción de oro / esmeraldas: puede venir del lugar aparte (statsRecurso) o del de siempre (pociones viejas)
+        $afectaRecurso = $statsRecurso['afecta'] ?? null;
+        if ($afectaRecurso === 'oro') {
+            $oro *= 2;
+        } elseif ($afectaRecurso === 'diamante') {
+            $diamantesExtra += 100;
+        }
+
         if ($statsOriginal && is_array($statsOriginal)) {
             switch ($statsOriginal['afecta'] ?? '') {
                 case 'oro':
@@ -3581,7 +3603,7 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
         // 🕳️ Mazmorra: oro según el nivel del rival y la dificultad; el jefe además da esmeraldas
         if ($mazmorraOro = $this->mazmorraActiva()) {
             $oro = $mazmorraOro->oroPorVictoria((int) ($this->enemigo->nivel ?? 1));
-            if (is_array($statsOriginal) && ($statsOriginal['afecta'] ?? '') === 'oro') {
+            if ((is_array($statsOriginal) && ($statsOriginal['afecta'] ?? '') === 'oro') || $afectaRecurso === 'oro') {
                 $oro *= 2; // la Poción de Oro también vale acá
             }
             $diamantesExtra += $mazmorraOro->esmeraldasPorVictoria();

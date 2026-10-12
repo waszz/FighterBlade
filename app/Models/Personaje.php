@@ -101,7 +101,7 @@ protected $casts = [
     // Objetos que ocupan lugar: todo lo que tiene menos lo equipado (partes, joya y poción equipada)
     public function objetosEnInventario(): int
     {
-        $equipados = array_filter([$this->equipo_id, $this->entrenamiento_id, $this->accesorio_id, $this->joya_id, $this->objeto_consumible_id]);
+        $equipados = array_filter([$this->equipo_id, $this->entrenamiento_id, $this->accesorio_id, $this->joya_id, $this->objeto_consumible_id, $this->pocion_recurso_id]);
 
         return Objeto::where('personaje_id', $this->id)->whereNotIn('id', $equipados)->count();
     }
