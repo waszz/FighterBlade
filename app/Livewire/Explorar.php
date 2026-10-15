@@ -111,6 +111,10 @@ class Explorar extends Component
     // torre, mazmorra, caza ni PvP
     const BUFF_JUGADOR_EXPLORACION = 1.05;
 
+    // Contra los rivales del juego (exploración, misiones, torre, mazmorra y jefe) el jugador pega este tanto
+    // (0.85 = 15% menos). No en PvP, torneo ni caza
+    const DANIO_JUGADOR_CONTRA_JUEGO = 0.85;
+
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
     public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
     {
@@ -1839,8 +1843,9 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
             return 'normal';
         };
 
+        $reductorDanioJugador = ($this->esPvp || $this->modoTorneo || $this->cazaActiva()) ? 1 : self::DANIO_JUGADOR_CONTRA_JUEGO;
         $calcularDanioSegunTipo = function ($tipo, $stats, $nivel, $tipoAtaque, $atacante) use (
-            $calcularDanioFisico, $calcularDanioElemental, &$poderesPersonaje
+            $calcularDanioFisico, $calcularDanioElemental, &$poderesPersonaje, $reductorDanioJugador
         ) {
             $danioFisico    = 0;
             $danioElemental = 0;
@@ -1942,8 +1947,8 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
                 ];
             } else {
                 return [
-                    'fisico'    => round($danioFisico),
-                    'elemental' => round($danioElemental),
+                    'fisico'    => round($danioFisico * $reductorDanioJugador),
+                    'elemental' => round($danioElemental * $reductorDanioJugador),
                 ];
             }
 
