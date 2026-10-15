@@ -126,11 +126,11 @@ class PoderesSeeder extends Seeder
             ],
             [
                 'nombre'        => 'DIRECT DAMAGE',//!!HECHO!!
-                'descripcion'   => 'Ejerce daño directo equivalente al 50% de una tirada de ENE',
+                'descripcion'   => 'Ejerce daño directo equivalente al 35% de una tirada de ENE',
                 'modificadores' => json_encode([
                     [
                         'tipo'       => 'daño_directo',
-                        'porcentaje' => 50,
+                        'porcentaje' => 35,
                         'stat_base'  => 'energia',
                     ],
                 ]),
