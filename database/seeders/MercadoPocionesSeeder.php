@@ -39,7 +39,7 @@ class MercadoPocionesSeeder extends Seeder
             'afecta' => 'drop_partes',
         ],
         'descripcion' => '100% de probabilidad de drop',
-        'precio' => 150,
+        'precio' => 250,
         'moneda' => 'diamante',
     ]);
 

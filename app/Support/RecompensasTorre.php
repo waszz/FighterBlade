@@ -124,7 +124,7 @@ class RecompensasTorre
             'requisitos'  => [],
             'origen_post_id' => null,
             'descripcion' => 'Abrilo desde el inventario pagando ' . number_format(self::costoAbrirCofre($nivel), 0, ',', '.') . ' de oro: '
-                . ($chanceSet ? "{$chanceSet}% de traer un set completo; si no, 3 pociones de drop, de oro o de esmeraldas." : '3 pociones de drop, de oro o de esmeraldas, o un set completo.'),
+                . ($chanceSet ? "{$chanceSet}% de traer un set completo; si no, 3 pociones de oro o de esmeraldas." : '3 pociones de oro o de esmeraldas, o un set completo.'),
         ];
     }
 
@@ -210,9 +210,10 @@ class RecompensasTorre
         $chanceSet = self::chanceSetCofre($cofre);
         $opcion = match (true) {
             $bienvenida => 'set',
-            // Cofre de la Mazmorra: su chance de set; si no, una de las 3 pociones
-            $chanceSet !== null => random_int(1, 100) <= $chanceSet ? 'set' : ['drop', 'oro', 'diamante'][random_int(0, 2)],
-            default => ['drop', 'oro', 'diamante', 'set'][random_int(0, 3)],
+            // Cofre de la Mazmorra: su chance de set; si no, pociones de oro o de esmeraldas (las de drop ya no salen en cofres:
+            // se compran en el mercado). Cofre común: 1 de 4 set, si no, pociones de oro o de esmeraldas
+            $chanceSet !== null => random_int(1, 100) <= $chanceSet ? 'set' : ['oro', 'diamante'][random_int(0, 1)],
+            default => random_int(1, 4) === 1 ? 'set' : ['oro', 'diamante'][random_int(0, 1)],
         };
 
         if ($opcion === 'set') {
