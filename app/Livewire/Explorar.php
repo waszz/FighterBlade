@@ -114,6 +114,8 @@ class Explorar extends Component
     // Contra los rivales del juego (exploración, misiones, torre, mazmorra y jefe) el jugador pega este tanto
     // (0.85 = 15% menos). No en PvP, torneo ni caza
     const DANIO_JUGADOR_CONTRA_JUEGO = 0.85;
+    // Igual, el contraataque y el rebote del jugador contra los rivales del juego salen la mitad de veces
+    const DEFENSIVO_JUGADOR_CONTRA_JUEGO = 0.5;
 
     // Multiplicador de stats del rival de misión o torre según su nivel: (30 + 5N + 5N·fracción) / (30 + 5N)
     public static function refuerzoRivalMisionTorre(int $nivel, float $fraccion = self::EQUIPO_RIVAL_MISION_TORRE): float
@@ -2531,6 +2533,11 @@ if ($tipoAtaque === 'defensa') {
 // Puede salir cuando el golpe le hace daño o cuando lo bloqueó con la defensa (no en la guardia de su propio turno)
 $defensaContra = $statsDefensor['defensa'] ?? 0;
 $chanceContraataque = $defensaContra > self::MINIMO_CONTRA_REBOTE ? min(self::CONTRA_TOPE, $defensaContra * self::CONTRA_POR_DEFENSA) : 0;
+// Jugador defendiéndose de un rival del juego: menos chance (ver DEFENSIVO_JUGADOR_CONTRA_JUEGO)
+$jugadorDefiendeContraJuego = $atacante !== 'personaje' && $reductorDanioJugador < 1;
+if ($jugadorDefiendeContraJuego) {
+    $chanceContraataque *= self::DEFENSIVO_JUGADOR_CONTRA_JUEGO;
+}
 $contraataqueOcurre = mt_rand(1, 10000) <= $chanceContraataque * 100 && ($danioFinal > 0 || ! empty($bloqueoPorDefensa));
 $bloqueoPorDefensa = false;
 
@@ -2552,6 +2559,11 @@ if ($contraataqueOcurre) {
         $danioExtraContra = 0; // Si no tiene, anulamos el daño extra
     }
 
+    if ($jugadorDefiendeContraJuego) {
+        $danioContraataqueFisico    = round($danioContraataqueFisico * $reductorDanioJugador);
+        $danioContraataqueElemental = round($danioContraataqueElemental * $reductorDanioJugador);
+        $danioExtraContra           = round($danioExtraContra * $reductorDanioJugador);
+    }
     $danioContraataqueTotal = $danioContraataqueFisico + $danioContraataqueElemental + $danioExtraContra;
 
     // El ataque original no hace daño ni texto ni gif
@@ -2592,10 +2604,14 @@ if ($contraataqueOcurre) {
     // Resiste el golpe entero (no recibe daño) y le rebota al atacante una parte
     $resistenciaRebote = $statsDefensor['resistencia'] ?? 0;
     $chanceRebote = $resistenciaRebote > self::MINIMO_CONTRA_REBOTE ? min(self::REBOTE_TOPE, $resistenciaRebote * self::REBOTE_POR_RESISTENCIA) : 0;
+    if ($jugadorDefiendeContraJuego) {
+        $chanceRebote *= self::DEFENSIVO_JUGADOR_CONTRA_JUEGO;
+    }
     $danioRebote = 0;
     if ($danioFinal > 0 && mt_rand(1, 10000) <= $chanceRebote * 100) {
         // Rebota el golpe entero, no lo que le quedaba después de su Piel dura / impenetrable
-        $danioRebote = (int) round(max($danioFinal, $danioSinReducir ?? 0) * self::REBOTE_PORCENTAJE);
+        $danioRebote = (int) round(max($danioFinal, $danioSinReducir ?? 0) * self::REBOTE_PORCENTAJE
+            * ($jugadorDefiendeContraJuego ? $reductorDanioJugador : 1));
         $danioFisicoFinal    = 0;
         $danioElementalFinal = 0;
         $danioFinal          = 0;
