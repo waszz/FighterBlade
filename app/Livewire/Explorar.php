@@ -111,8 +111,8 @@ class Explorar extends Component
     // torre, mazmorra, caza ni PvP
     const BUFF_JUGADOR_EXPLORACION = 1.05;
 
-    // Contra los rivales del juego (exploración, misiones, torre, mazmorra y jefe) el jugador pega este tanto
-    // (0.85 = 15% menos). No en PvP, torneo ni caza
+    // Contra los rivales del juego (exploración, misiones, torre, mazmorra, jefe y caza) el jugador pega este tanto
+    // (0.85 = 15% menos). No en PvP ni torneo
     const DANIO_JUGADOR_CONTRA_JUEGO = 0.85;
     // Igual, el contraataque y el rebote del jugador contra los rivales del juego salen la mitad de veces
     const DEFENSIVO_JUGADOR_CONTRA_JUEGO = 0.5;
@@ -1847,7 +1847,7 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
 
         $esCaza = (bool) $this->cazaActiva();
         $esExploracion = $this->esExploracion();
-        $reductorDanioJugador = ($this->esPvp || $this->modoTorneo || $esCaza) ? 1 : self::DANIO_JUGADOR_CONTRA_JUEGO;
+        $reductorDanioJugador = ($this->esPvp || $this->modoTorneo) ? 1 : self::DANIO_JUGADOR_CONTRA_JUEGO;
         $calcularDanioSegunTipo = function ($tipo, $stats, $nivel, $tipoAtaque, $atacante) use (
             $calcularDanioFisico, $calcularDanioElemental, &$poderesPersonaje, $reductorDanioJugador, $esCaza, $esExploracion
         ) {
