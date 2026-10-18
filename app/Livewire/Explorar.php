@@ -1939,14 +1939,14 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
             }
 
             if ($atacante !== 'personaje') {
-                // Los enemigos del juego pegan el 33% en exploración, el 44% el jefe, el 40% en la caza y el 38% en
+                // Los enemigos del juego pegan el 33% en exploración, el 44% el jefe, el 40% en la caza y el 35% en
                 // misiones, torre y mazmorra; en PvP el rival es otro jugador y pega completo
                 $reductorDanioEnemigo = match (true) {
                     (bool) $this->esPvp => 1,
                     $esExploracion => 0.33,
                     $esJefe => 0.44,
                     $esCaza => 0.4,
-                    default => 0.38,
+                    default => 0.35,
                 };
                 return [
                     'fisico'    => round($danioFisico * $reductorDanioEnemigo),
