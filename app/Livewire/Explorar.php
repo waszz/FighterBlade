@@ -1847,9 +1847,10 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
 
         $esCaza = (bool) $this->cazaActiva();
         $esExploracion = $this->esExploracion();
+        $esJefe = (bool) $this->jefeActivo();
         $reductorDanioJugador = ($this->esPvp || $this->modoTorneo) ? 1 : self::DANIO_JUGADOR_CONTRA_JUEGO;
         $calcularDanioSegunTipo = function ($tipo, $stats, $nivel, $tipoAtaque, $atacante) use (
-            $calcularDanioFisico, $calcularDanioElemental, &$poderesPersonaje, $reductorDanioJugador, $esCaza, $esExploracion
+            $calcularDanioFisico, $calcularDanioElemental, &$poderesPersonaje, $reductorDanioJugador, $esCaza, $esExploracion, $esJefe
         ) {
             $danioFisico    = 0;
             $danioElemental = 0;
@@ -1938,13 +1939,14 @@ private function aplicarReduccionDanioPorTipo($danio, $poderes, $tipoDanio)
             }
 
             if ($atacante !== 'personaje') {
-                // Los enemigos del juego pegan el 33% en exploración, el 44% en misiones, torre, mazmorra y jefe
-                // y el 40% en la caza; en PvP el rival es otro jugador y pega completo
+                // Los enemigos del juego pegan el 33% en exploración, el 44% el jefe, el 40% en la caza y el 38% en
+                // misiones, torre y mazmorra; en PvP el rival es otro jugador y pega completo
                 $reductorDanioEnemigo = match (true) {
                     (bool) $this->esPvp => 1,
                     $esExploracion => 0.33,
+                    $esJefe => 0.44,
                     $esCaza => 0.4,
-                    default => 0.44,
+                    default => 0.38,
                 };
                 return [
                     'fisico'    => round($danioFisico * $reductorDanioEnemigo),
