@@ -3646,11 +3646,10 @@ if ($poderesPersonaje->contains('SUERTUDO')) {
             $diamantesExtra += $infoRareza['diamantes'];
         }
 
-        // 📜 Misión: premio fijo de oro y diamantes (y sin drops, ver más abajo)
+        // 📜 Misión: premio fijo de oro (sin esmeraldas: solo oro y exp; y sin drops, ver más abajo)
         $mision = $this->misionActiva();
         if ($mision) {
-            $oro             = $mision->recompensa_oro;
-            $diamantesExtra += $mision->recompensa_diamantes;
+            $oro = $mision->recompensa_oro;
         }
 
         // 🗼 Torre: oro propio según el nivel del piso (100 en el primero, sube con cada piso)

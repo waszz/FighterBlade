@@ -4,7 +4,6 @@
     $panel3d = 'bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_4px_0_#000,0_6px_10px_rgba(0,0,0,0.6)]';
     $boton3d = 'font-bold rounded border border-black shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-1px_-1px_0_rgba(0,0,0,0.6),0_3px_0_#000] hover:brightness-125 active:translate-y-[3px] active:shadow-[inset_1px_1px_0_rgba(255,255,255,0.2),inset_-1px_-1px_0_rgba(0,0,0,0.6)] transition-all duration-100';
     $colorTipo = ['fisico' => 'text-red-400', 'elemental' => 'text-blue-400', 'hibrido' => 'text-purple-400'];
-    $total = $misiones->count();
     $hechas = count($completadas);
 @endphp
 
@@ -38,8 +37,10 @@
     </div>
 
     {{-- Escalera --}}
-    <div class="space-y-2 max-h-[70vh] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#4b5563_transparent]"
-         x-data x-init="$nextTick(() => $el.querySelector('[data-siguiente]')?.scrollIntoView({ block: 'center' }))">
+    <div class="space-y-2">
+        @if ($desde > 0)
+            <p class="text-center text-xs text-gray-400 font-bold">⋮ {{ $desde }} misiones completadas más arriba ⋮</p>
+        @endif
         @foreach ($misiones as $mision)
             @php
                 $rival = $mision->rival;
@@ -47,7 +48,7 @@
                 $esSiguiente = $siguiente && $siguiente->id === $mision->id;
                 $bloqueada = ! $hecha && ! $esSiguiente;
             @endphp
-            <div @if ($esSiguiente) data-siguiente @endif
+            <div wire:key="mision-{{ $mision->id }}" @if ($esSiguiente) data-siguiente @endif
                  class="relative overflow-hidden rounded-xl border-2 flex items-stretch
                         {{ $esSiguiente ? 'border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.45)]' : ($hecha ? 'border-green-700' : 'border-gray-700') }}">
                 {{-- Escenario de fondo --}}
@@ -63,22 +64,20 @@
                         {{ $mision->orden }}
                     </div>
 
-                    {{-- Rival --}}
-                    <div class="h-20 w-20 shrink-0 flex items-end justify-center overflow-hidden">
-                        @if ($bloqueada)
-                            <div class="h-16 w-16 rounded-lg bg-black/60 border border-gray-700 flex items-center justify-center text-3xl">🔒</div>
-                        @else
-                            <img src="{{ asset('storage/' . $rival->gif) }}" alt="{{ $rival->titulo }}" loading="lazy"
-                                 style="{{ Post::estiloGif($rival->gif, 0.6) }}" class="block max-w-none scale-x-[-1]">
-                        @endif
-                    </div>
+                    {{-- Rival: su imagen (no el gif), como en la Torre --}}
+                    @if ($bloqueada)
+                        <div class="w-12 h-12 shrink-0 rounded-full border-2 border-black bg-black/70 flex items-center justify-center text-xl">🔒</div>
+                    @else
+                        <img src="{{ asset('storage/' . $rival->imagen) }}" alt="{{ $rival->titulo }}" loading="lazy"
+                             class="w-12 h-12 shrink-0 rounded-full object-cover border-2 border-black">
+                    @endif
 
                     <div class="flex-1 min-w-0">
                         <p class="font-bold text-lg truncate [text-shadow:0_2px_0_#000] {{ $bloqueada ? 'text-gray-400' : 'text-white' }}">
                             {{ $bloqueada ? '???' : $rival->titulo }}
                         </p>
                         <p class="text-xs">
-                            <span class="text-gray-300">Nivel {{ \App\Livewire\Explorar::nivelRivalVuelta($vuelta - 1, $loop->iteration) ?? $rival->nivel }}</span>
+                            <span class="text-gray-300">Nivel {{ \App\Livewire\Explorar::nivelRivalVuelta($vuelta - 1, $desde + $loop->iteration) ?? $rival->nivel }}</span>
                             @unless ($bloqueada)
                                 · <span class="font-semibold {{ $colorTipo[$rival->tipo] ?? 'text-gray-300' }}">{{ ucfirst($rival->tipo) }}</span>
                                 @if ($rival->poderes->isNotEmpty())
@@ -89,9 +88,6 @@
                         <p class="mt-0.5 text-xs flex items-center gap-2">
                             <span class="flex items-center gap-1 text-yellow-300 font-bold">
                                 <img src="{{ asset('images/oro.png') }}" alt="" class="h-3.5 w-3.5">{{ number_format($mision->recompensa_oro, 0, ',', '.') }}
-                            </span>
-                            <span class="flex items-center gap-1 font-bold">
-                                <img src="{{ asset('images/diamante.png') }}" alt="" class="h-3.5 w-3.5"><span class="num-esmeralda">{{ $mision->recompensa_diamantes }}</span>
                             </span>
                             <span class="text-gray-400">+ exp</span>
                             @if (isset(\App\Support\RecompensasTorre::misionesConPremio()[$mision->id]) && ! $hecha)
@@ -116,6 +112,9 @@
                 </div>
             </div>
         @endforeach
+        @if ($desde + $misiones->count() < $total)
+            <p class="text-center text-xs text-gray-400 font-bold">⋮ faltan {{ $total - $desde - $misiones->count() }} misiones más abajo ⋮</p>
+        @endif
     </div>
 
     @include('livewire.partials.modal-rival')

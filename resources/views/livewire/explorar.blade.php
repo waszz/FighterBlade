@@ -34,8 +34,7 @@
         <div class="px-3 py-1.5 rounded-lg border-2 border-amber-400 text-amber-200 text-sm font-bold text-center
                     bg-gradient-to-b from-[#1c2533] to-[#0a0e14] shadow-[inset_1px_1px_0_rgba(255,255,255,0.25),0_3px_0_#000]">
           📜 Misión {{ $misionVista->orden }}: {{ $enemigo->titulo }} <span class="text-gray-300">(Nv {{ $enemigo->nivel }})</span>
-          <span class="text-yellow-300">· premio: {{ number_format($misionVista->recompensa_oro, 0, ',', '.') }} oro</span>
-          <span>+ <span class="num-esmeralda">{{ $misionVista->recompensa_diamantes }}</span> <img src="{{ asset('images/diamante.png') }}" alt="Esmeraldas" class="inline-block h-4 w-4 align-[-0.2em]"></span>
+          <span class="text-yellow-300">· premio: {{ number_format($misionVista->recompensa_oro, 0, ',', '.') }} oro + exp</span>
         </div>
       @endif
 

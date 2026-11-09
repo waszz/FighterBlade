@@ -110,21 +110,31 @@ class Misiones extends Component
 
     public function render()
     {
+        $personaje = Personaje::find($this->personajeId);
         $completadas = DB::table('mision_personaje')->where('personaje_id', $this->personajeId)->pluck('mision_id')->all();
         $siguiente = Mision::siguientePara($this->personajeId);
         $misionModal = $this->rivalModalId ? Mision::with('rival.poderes')->find($this->rivalModalId) : null;
+
+        // Misiones que se ven: unas cuantas ganadas, la siguiente y las próximas (bloqueadas), como los pisos de la Torre.
+        // Antes se cargaban las 86 con su escenario y el gif del rival: la sección andaba muy lenta
+        $total = Mision::count();
+        $posicion = $siguiente ? Mision::where('orden', '<', $siguiente->orden)->count() : $total; // misiones antes de la siguiente
+        $desde = max(0, $posicion - 3);
+        $misiones = Mision::with('rival.poderes')->orderBy('orden')->skip($desde)->take(10)->get();
 
         return view('livewire.misiones', [
             'rivalModal'      => $misionModal?->rival,
             'escenarioModal'  => $misionModal?->escenario,
             'statsRivalModal' => $misionModal?->rival
-                ? (($vm = (int) Personaje::find($this->personajeId)?->misiones_vuelta) > 0
+                ? (($vm = (int) $personaje?->misiones_vuelta) > 0
                     ? \App\Support\PoderesStats::aplicar(Explorar::statsRivalVuelta($misionModal->rival, Explorar::nivelRivalVuelta($vm, Explorar::posicionMision($misionModal))), $misionModal->rival->poderes)
                     : Explorar::statsRivalMisionTorre($misionModal->rival))
                 : [],
-            'vuelta'          => (int) Personaje::find($this->personajeId)?->misiones_vuelta + 1,
-            'recuperacion' => Personaje::find($this->personajeId)?->segundosRecuperacion() ?? 0,
-            'misiones'    => Mision::with('rival.poderes')->orderBy('orden')->get(),
+            'vuelta'          => (int) $personaje?->misiones_vuelta + 1,
+            'recuperacion' => $personaje?->segundosRecuperacion() ?? 0,
+            'misiones'    => $misiones,
+            'total'       => $total,
+            'desde'       => $desde,
             'completadas' => array_flip($completadas),
             'siguiente'   => $siguiente,
         ]);
