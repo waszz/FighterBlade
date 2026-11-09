@@ -161,7 +161,13 @@ public function getNombreAttribute()
                 $post->gif_medidas = $post->medirGifs();
             }
         });
+
+        // Los estilos de los gifs quedan guardados (ver cargarEstilosGif): al cambiar o borrar un set se rearman
+        static::saved(fn () => \Illuminate\Support\Facades\Cache::forget(self::CACHE_ESTILOS_GIF));
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget(self::CACHE_ESTILOS_GIF));
     }
+
+    const CACHE_ESTILOS_GIF = 'post_estilos_gif_v1';
 
     // [alto del personaje, px vacíos debajo] del primer cuadro de cada gif
     public function medirGifs(): array
@@ -388,6 +394,16 @@ public function getNombreAttribute()
 
     // [zoom, px vacíos debajo, girado, px a subir, filtro, px al costado] de cada gif de todos los sets, por ruta
     protected static function cargarEstilosGif(): void
+    {
+        // Armarlos lee todos los sets (~70 ms): se guardan 10 minutos y se rearman antes si cambia un set
+        self::$estilosGif = \Illuminate\Support\Facades\Cache::remember(self::CACHE_ESTILOS_GIF, 600, function () {
+            self::$estilosGif = [];
+            self::armarEstilosGif();
+            return self::$estilosGif;
+        });
+    }
+
+    protected static function armarEstilosGif(): void
     {
         // Las variantes de la zona inicial usan los mismos archivos que su set original: van primero, así en los archivos
         // compartidos manda el original (si no, la variante pisaba los ajustes de tamaño, altura y costado del set)

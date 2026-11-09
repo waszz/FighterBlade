@@ -53,6 +53,7 @@ class MostrarPost extends Component
             : array_merge($girados, [$campo]);
 
         $this->post->forceFill(['gifs_girados' => $girados ?: null])->saveQuietly();
+        \Illuminate\Support\Facades\Cache::forget(\App\Models\Post::CACHE_ESTILOS_GIF);
     }
 
     // Ajuste manual de una sola animación: tamaño ±5% (50%-200%), altura ±4 px (-80 a 80) o al costado ±4 px (-120 a 120)
@@ -81,6 +82,7 @@ class MostrarPost extends Component
             $ajustes[$campo] = $actual;
         }
         $this->post->forceFill(['gif_ajustes' => $ajustes ?: null])->saveQuietly();
+        \Illuminate\Support\Facades\Cache::forget(\App\Models\Post::CACHE_ESTILOS_GIF);
     }
 
     // Ajuste manual del tamaño del set en las peleas: ±10% por toque (entre 50% y 200%)
@@ -92,6 +94,7 @@ class MostrarPost extends Component
 
         $escala = round((float) ($this->post->gif_escala ?: 1) + ($direccion > 0 ? 0.1 : -0.1), 2);
         $this->post->forceFill(['gif_escala' => max(0.5, min(2, $escala))])->saveQuietly();
+        \Illuminate\Support\Facades\Cache::forget(\App\Models\Post::CACHE_ESTILOS_GIF);
     }
 
     public function render()
